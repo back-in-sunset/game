@@ -43,7 +43,7 @@ type (
 	User struct {
 		Id        uint64    `db:"id"`
 		Name      string    `db:"name"`     // 用户姓名
-		Gender    uint64    `db:"gender"`   // 用户性别
+		Gender    int64    `db:"gender"`   // 用户性别
 		Mobile    string    `db:"mobile"`   // 用户电话
 		Password  string    `db:"password"` // 用户密码
 		CreatedAt time.Time `db:"created_at"`

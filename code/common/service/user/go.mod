@@ -4,6 +4,7 @@ go 1.22.0
 
 require (
 	github.com/zeromicro/go-zero v1.8.3
+	golang.org/x/crypto v0.33.0
 	google.golang.org/grpc v1.65.0
 	google.golang.org/protobuf v1.36.5
 )
@@ -26,6 +27,7 @@ require (
 	github.com/go-openapi/swag v0.22.4 // indirect
 	github.com/go-sql-driver/mysql v1.9.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
