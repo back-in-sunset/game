@@ -7,7 +7,7 @@ import (
 	"user/rpc/internal/config"
 	"user/rpc/internal/server"
 	"user/rpc/internal/svc"
-	__user "user/rpc/pb/.user"
+	"user/rpc/pb/user"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"
@@ -26,7 +26,7 @@ func main() {
 	ctx := svc.NewServiceContext(c)
 
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
-		__user.RegisterUserServer(grpcServer, server.NewUserServer(ctx))
+		user.RegisterUserServer(grpcServer, server.NewUserServer(ctx))
 
 		if c.Mode == service.DevMode || c.Mode == service.TestMode {
 			reflection.Register(grpcServer)

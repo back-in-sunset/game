@@ -4,7 +4,7 @@
 // - protoc             v3.19.4
 // source: rpc/user.proto
 
-package __user
+package user
 
 import (
 	context "context"

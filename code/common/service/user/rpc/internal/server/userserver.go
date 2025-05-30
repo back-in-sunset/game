@@ -8,12 +8,12 @@ import (
 
 	"user/rpc/internal/logic"
 	"user/rpc/internal/svc"
-	"user/rpc/pb/.user"
+	"user/rpc/pb/user"
 )
 
 type UserServer struct {
 	svcCtx *svc.ServiceContext
-	__user.UnimplementedUserServer
+	user.UnimplementedUserServer
 }
 
 func NewUserServer(svcCtx *svc.ServiceContext) *UserServer {
@@ -22,17 +22,17 @@ func NewUserServer(svcCtx *svc.ServiceContext) *UserServer {
 	}
 }
 
-func (s *UserServer) Login(ctx context.Context, in *__user.LoginRequest) (*__user.LoginResponse, error) {
+func (s *UserServer) Login(ctx context.Context, in *user.LoginRequest) (*user.LoginResponse, error) {
 	l := logic.NewLoginLogic(ctx, s.svcCtx)
 	return l.Login(in)
 }
 
-func (s *UserServer) Register(ctx context.Context, in *__user.RegisterRequest) (*__user.RegisterResponse, error) {
+func (s *UserServer) Register(ctx context.Context, in *user.RegisterRequest) (*user.RegisterResponse, error) {
 	l := logic.NewRegisterLogic(ctx, s.svcCtx)
 	return l.Register(in)
 }
 
-func (s *UserServer) UserInfo(ctx context.Context, in *__user.UserInfoRequest) (*__user.UserInfoResponse, error) {
+func (s *UserServer) UserInfo(ctx context.Context, in *user.UserInfoRequest) (*user.UserInfoResponse, error) {
 	l := logic.NewUserInfoLogic(ctx, s.svcCtx)
 	return l.UserInfo(in)
 }

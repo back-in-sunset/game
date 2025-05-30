@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"user/rpc/internal/svc"
-	"user/rpc/pb/.user"
+	"user/rpc/user"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -23,8 +23,8 @@ func NewUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UserInfo
 	}
 }
 
-func (l *UserInfoLogic) UserInfo(in *__user.UserInfoRequest) (*__user.UserInfoResponse, error) {
+func (l *UserInfoLogic) UserInfo(in *user.UserInfoRequest) (*user.UserInfoResponse, error) {
 	// todo: add your logic here and delete this line
 
-	return &__user.UserInfoResponse{}, nil
+	return &user.UserInfoResponse{}, nil
 }

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package userclient;
 
-option go_package = ".user";
+option go_package = "/user";
 
 // 用户登录
 message LoginRequest {

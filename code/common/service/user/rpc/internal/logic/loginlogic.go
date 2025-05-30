@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"user/rpc/internal/svc"
-	"user/rpc/pb/.user"
+	"user/rpc/pb/user"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -23,8 +23,8 @@ func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginLogic 
 	}
 }
 
-func (l *LoginLogic) Login(in *__user.LoginRequest) (*__user.LoginResponse, error) {
+func (l *LoginLogic) Login(in *user.LoginRequest) (*user.LoginResponse, error) {
 	// todo: add your logic here and delete this line
 
-	return &__user.LoginResponse{}, nil
+	return &user.LoginResponse{}, nil
 }
