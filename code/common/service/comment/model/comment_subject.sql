@@ -13,4 +13,4 @@ CREATE TABLE `comment_subject` (
   PRIMARY KEY (`id`),
   UNIQUE KEY  `idx_obj_type_unique` (`state`, `attrs`, `obj_id`, `obj_type`),
   UNIQUE KEY `idx_member_unique` (`state`, `attrs`, `member_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COMMENT='评论主题表[0-49]';
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COMMENT='评论主题表[0-63] obj_id bitmod sharding';
