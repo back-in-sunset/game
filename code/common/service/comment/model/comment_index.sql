@@ -15,5 +15,6 @@ CREATE TABLE `comment_index` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
+  UNIQUE KEY `idx_obj_type_unique` (`state`, `attrs` `obj_id`, `obj_type`),
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COMMENT='评论表[0-199]';
 
