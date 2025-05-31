@@ -40,6 +40,7 @@ type (
 
 	CommentContent struct {
 		CommentId   uint64    `db:"comment_id"`    // 同评论indx_id
+		ObjId       uint64    `db:"obj_id"`        // 评论对象ID使用唯一id的话不用type联合主键
 		AtMemberIds string    `db:"at_member_ids"` // at用户ID列表
 		Ip          string    `db:"ip"`            // 评论IP
 		Platform    uint64    `db:"platform"`      // 评论平台
@@ -87,8 +88,8 @@ func (m *defaultCommentContentModel) FindOne(ctx context.Context, commentId uint
 func (m *defaultCommentContentModel) Insert(ctx context.Context, data *CommentContent) (sql.Result, error) {
 	commentContentCommentIdKey := fmt.Sprintf("%s%v", cacheCommentContentCommentIdPrefix, data.CommentId)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?)", m.table, commentContentRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.CommentId, data.AtMemberIds, data.Ip, data.Platform, data.Device, data.Massage, data.Meta)
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?)", m.table, commentContentRowsExpectAutoSet)
+		return conn.ExecCtx(ctx, query, data.CommentId, data.ObjId, data.AtMemberIds, data.Ip, data.Platform, data.Device, data.Massage, data.Meta)
 	}, commentContentCommentIdKey)
 	return ret, err
 }
@@ -97,7 +98,7 @@ func (m *defaultCommentContentModel) Update(ctx context.Context, data *CommentCo
 	commentContentCommentIdKey := fmt.Sprintf("%s%v", cacheCommentContentCommentIdPrefix, data.CommentId)
 	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `comment_id` = ?", m.table, commentContentRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, data.AtMemberIds, data.Ip, data.Platform, data.Device, data.Massage, data.Meta, data.CommentId)
+		return conn.ExecCtx(ctx, query, data.ObjId, data.AtMemberIds, data.Ip, data.Platform, data.Device, data.Massage, data.Meta, data.CommentId)
 	}, commentContentCommentIdKey)
 	return err
 }
