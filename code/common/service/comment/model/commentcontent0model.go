@@ -32,7 +32,7 @@ type (
 func newCustomCommentContent0Model(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache.Option) *defaultCommentContent0Model {
 	return &defaultCommentContent0Model{
 		CachedConn: sqlc.NewConn(conn, c, opts...),
-		table:      "`comment_content`",
+		table:      "`comment_content_0`",
 	}
 }
 
@@ -41,7 +41,9 @@ func NewCommentContent0Model(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache
 	return &customCommentContent0Model{
 		defaultCommentContent0Model: newCustomCommentContent0Model(conn, c, opts...),
 		tableFn: func(shardingId uint64) string {
-			return fmt.Sprintf("`comment_content_%d`", shardingId&0x0000_0000_0000_00ff)
+			// Use the last 8 bits of the shardingId for determining the table suffix.
+			const shardingBitmask = 0xFF // Adjust this bitmask if the sharding logic changes.
+			return fmt.Sprintf("`comment_content_%d`", shardingId&shardingBitmask)
 		},
 	}
 }
