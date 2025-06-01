@@ -1,4 +1,4 @@
-CREATE TABLE `comment_subject` (
+CREATE TABLE `comment_subject_0` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `obj_id` bigint unsigned NOT NULL DEFAULT '' COMMENT '评论对象ID 使用唯一id的话不用type联合主键',
   `obj_type` tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT '评论对象类型',
