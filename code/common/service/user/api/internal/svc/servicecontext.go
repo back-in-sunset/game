@@ -19,3 +19,16 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		UserRpc: userclient.NewUser(zrpc.MustNewClient(c.UserRpc)),
 	}
 }
+
+type Validater interface {
+	SendCode(receiver string, code string) error
+	Validate(code string) (bool, error)
+}
+
+type EmailValidater struct {
+	Email string
+}
+
+type SmsValidater struct {
+	Mobile string
+}

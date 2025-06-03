@@ -5,7 +5,7 @@ import (
 
 	"user/model"
 	"user/rpc/internal/svc"
-	"user/rpc/user"
+	"user/rpc/pb/user"
 	"user/utils/cryptx"
 
 	"github.com/zeromicro/go-zero/core/logx"
