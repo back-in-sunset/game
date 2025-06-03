@@ -1,4 +1,4 @@
-CREATE TABLE `comment_content_0` (
+CREATE TABLE `comment_content` (
   `comment_id` bigint unsigned NOT NULL COMMENT '同评论indx_id',
   `obj_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '评论对象ID使用唯一id的话不用type联合主键',
   `at_member_ids` text NOT NULL DEFAULT '' COMMENT 'at用户ID列表',
