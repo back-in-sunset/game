@@ -1,0 +1,197 @@
+syntax = "proto3";
+
+package commentclient;
+
+option go_package = "/comment";
+
+// 用户评论
+message CommentRequest {
+    uint64 ObjId = 1; // 评论对象ID
+    uint64 ObjType = 2; // 评论对象类型
+    uint64 MemberId = 3; // 作者用户ID
+    uint64 CommentId = 4; // 同评论indx_id
+    string AtMemberIds = 5; // at用户ID列表
+    string Ip = 6; // 评论IP
+    uint64 Platform = 7; // 评论平台
+    string Device = 8; // 评论设备
+    string Massage = 9; // 评论内容
+    string Meta = 10; // 评论元数据 背景 字体
+    uint64 ReplyId = 11; // 被回复的评论ID
+    uint64 State = 12; // 评论状态 0-正常, 1-隐藏
+}
+
+// 评论响应
+message CommentResponse {
+    uint64 CommentId = 1; // 评论ID
+}
+
+// 评论列表请求
+message CommentListRequest {
+    uint64 ObjId = 1; // 评论对象ID
+    uint64 ObjType = 2; // 评论对象类型
+    uint64 MemberId = 3; // 作者用户ID
+    uint64 CommentId = 4; // page索引ID
+    uint64 PageSize = 5; // 页大小
+    uint64 OrderBy = 6; // 排序方式 0-默认, 1-点赞数, 2-评论时间
+    uint64 State = 7; // 评论状态 0-正常, 1-隐藏
+}
+// 评论列表响应
+message CommentListResponse {
+    repeated CommentResponse Comments = 1; // 评论列表
+    uint64 Total = 2; // 总数
+}
+
+// 删除评论请求
+message DeleteCommentRequest {
+    uint64 ObjId = 1; // 评论对象ID
+    uint64 ObjType = 2; // 评论对象类型 
+    uint64 CommentId = 3; // 评论ID
+    uint64 MemberId = 4; // 用户ID
+}
+// 删除评论响应
+message DeleteCommentResponse {
+    bool Success = 1; // 是否成功
+    string Message = 2; // 响应消息
+}
+
+// 评论点赞
+message LikeCommentRequest {
+    uint64 ObjId = 1; // 评论对象ID
+    uint64 ObjType = 2; // 评论对象类型
+    uint64 CommentId = 3; // 评论ID
+    uint64 MemberId = 4; // 用户ID
+}
+// 评论点赞响应
+message LikeCommentResponse {
+    bool Success = 1; // 是否成功
+    string Message = 2; // 响应消息
+}
+// 评论取消点赞请求
+message UnLikeCommentRequest {
+    uint64 ObjId = 1; // 评论对象ID
+    uint64 ObjType = 2; // 评论对象类型
+    uint64 CommentId = 3; // 评论ID
+    uint64 MemberId = 4; // 用户ID
+}
+// 评论取消点赞响应
+message UnLikeCommentResponse {
+    bool Success = 1; // 是否成功
+    string Message = 2; // 响应消息
+}
+// 评论举报请求
+message ReportCommentRequest {
+    uint64 ObjId = 1; // 评论对象ID
+    uint64 ObjType = 2; // 评论对象类型
+    uint64 CommentId = 3; // 评论ID
+    uint64 MemberId = 4; // 用户ID
+    string Reason = 5; // 举报原因
+}
+// 评论举报响应
+message ReportCommentResponse {
+    bool Success = 1; // 是否成功
+    string Message = 2; // 响应消息
+}
+// 评论屏蔽请求
+message BlockCommentRequest {
+    uint64 ObjId = 1; // 评论对象ID
+    uint64 ObjType = 2; // 评论对象类型
+    uint64 CommentId = 3; // 评论ID
+    uint64 MemberId = 4; // 用户ID
+}
+// 评论屏蔽响应
+message BlockCommentResponse {
+    bool Success = 1; // 是否成功
+    string Message = 2; // 响应消息
+}
+// 评论取消屏蔽请求
+message UnBlockCommentRequest {
+    uint64 ObjId = 1; // 评论对象ID
+    uint64 ObjType = 2; // 评论对象类型
+    uint64 CommentId = 3; // 评论ID
+    uint64 MemberId = 4; // 用户ID
+}
+// 评论取消屏蔽响应
+message UnBlockCommentResponse {
+    bool Success = 1; // 是否成功
+    string Message = 2; // 响应消息
+}
+// 通过评论审核请求
+message AuditCommentRequest {
+    uint64 ObjId = 1; // 评论对象ID
+    uint64 ObjType = 2; // 评论对象类型
+    uint64 CommentId = 3; // 评论ID
+    uint64 MemberId = 4; // 用户ID
+}
+// 通过评论审核响应
+message AuditCommentResponse {
+    bool Success = 1; // 是否成功
+    string Message = 2; // 响应消息
+}
+// 评论取消审核请求
+message UnAuditCommentRequest {
+    uint64 ObjId = 1; // 评论对象ID
+    uint64 ObjType = 2; // 评论对象类型
+    uint64 CommentId = 3; // 评论ID
+    uint64 MemberId = 4; // 用户ID
+}
+
+// 评论取消审核响应
+message UnAuditCommentResponse {
+    bool Success = 1; // 是否成功
+    string Message = 2; // 响应消息
+}
+// 评论置顶请求
+message SetCommentAttrsRequest {
+    uint64 ObjId = 1; // 评论对象ID
+    uint64 ObjType = 2; // 评论对象类型
+    uint64 CommentId = 3; // 评论ID
+    uint64 MemberId = 4; // 用户ID
+}
+
+// 评论置顶响应
+message SetCommentAttrsResponse {
+    bool Success = 1; // 是否成功
+    string Message = 2; // 响应消息
+}
+
+// 评论取消置顶
+message UnSetCommentAttrsRequest {
+    uint64 ObjId = 1; // 评论对象ID
+    uint64 ObjType = 2; // 评论对象类型
+    uint64 CommentId = 3; // 评论ID
+    uint64 MemberId = 4; // 用户ID
+}
+message UnSetCommentAttrsResponse {
+    bool Success = 1; // 是否成功
+    string Message = 2; // 响应消息
+}
+
+// 评论服务
+service Comment {
+    // 添加评论
+    rpc AddComment(CommentRequest) returns (CommentResponse) {}
+    // 删除评论
+    rpc DeleteComment(CommentRequest) returns (CommentResponse) {}
+    // 获取评论
+    rpc GetComment(CommentRequest) returns (CommentResponse) {}
+    // 获取评论列表
+    rpc GetCommentList(CommentListRequest) returns (CommentListResponse) {}
+    // 评论点赞
+    rpc LikeComment(LikeCommentRequest) returns (LikeCommentResponse) {}
+    // 评论取消点赞
+    rpc UnLikeComment(UnLikeCommentRequest) returns (UnLikeCommentResponse) {}
+    // 评论举报
+    rpc ReportComment(ReportCommentRequest) returns (ReportCommentResponse) {}
+    // 评论屏蔽
+    rpc BlockComment(BlockCommentRequest) returns (BlockCommentResponse) {}
+    // 评论取消屏蔽
+    rpc UnBlockComment(UnBlockCommentRequest) returns (UnBlockCommentResponse) {}
+    // 通过评论审核
+    rpc AuditComment(AuditCommentRequest) returns (AuditCommentResponse) {}
+    // 评论取消审核
+    rpc UnAuditComment(UnAuditCommentRequest) returns (UnAuditCommentResponse) {}
+    // 评论置顶
+    rpc SetCommentAttrs(SetCommentAttrsRequest) returns (SetCommentAttrsResponse) {}
+    // 评论取消置顶
+    rpc UnSetCommentAttrs(UnSetCommentAttrsRequest) returns (UnSetCommentAttrsResponse) {}
+}
