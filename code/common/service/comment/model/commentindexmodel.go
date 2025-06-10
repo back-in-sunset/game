@@ -28,7 +28,7 @@ type (
 // NewCommentIndexModel returns a model for the database table.
 func NewCommentIndexModel(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache.Option) CommentIndexModel {
 	return &customCommentIndexModel{
-		defaultCommentIndexModel: newCustomCommentIndexModel(conn, c, opts...),
+		defaultCommentIndexModel: newCommentIndexModel(conn, c, opts...),
 		tableFn: func(shardingId uint64) string {
 			// Use the last 8 bits of the shardingId for determining the table suffix.
 			const shardingBitmask = 0xFF // Adjust this bitmask if the sharding logic changes.
@@ -37,10 +37,14 @@ func NewCommentIndexModel(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache.Op
 	}
 }
 
-func newCustomCommentIndexModel(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache.Option) *defaultCommentIndexModel {
-	return &defaultCommentIndexModel{
-		CachedConn: sqlc.NewConn(conn, c, opts...),
-		table:      "`comment_index_0`",
+func newCustomCommentIndexModel(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache.Option) *customCommentIndexModel {
+	return &customCommentIndexModel{
+		defaultCommentIndexModel: newCommentIndexModel(conn, c, opts...),
+		tableFn: func(shardingId uint64) string {
+			// Use the last 8 bits of the shardingId for determining the table suffix.
+			const shardingBitmask = 0xFF // Adjust this bitmask if the sharding logic changes.
+			return fmt.Sprintf("`comment_index_%d`", shardingId&shardingBitmask)
+		},
 	}
 }
 
@@ -53,7 +57,7 @@ func (m *customCommentIndexModel) Delete(ctx context.Context, id uint64) error {
 	commentIndexIdKey := fmt.Sprintf("%s%s%v", cacheCommentIndexIdPrefix, m.tableFn(data.ObjId), id)
 	commentIndexStateAttrsObjIdObjTypeKey := fmt.Sprintf("%s%v:%v:%v:%v", cacheCommentIndexStateAttrsObjIdObjTypePrefix, data.State, data.Attrs, data.ObjId, data.ObjType)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
+		query := fmt.Sprintf("delete from %s where `id` = ?", m.tableFn(data.ObjId))
 		return conn.ExecCtx(ctx, query, id)
 	}, commentIndexIdKey, commentIndexStateAttrsObjIdObjTypeKey)
 	return err
@@ -67,7 +71,7 @@ func (m *customCommentIndexModel) FindOne(ctx context.Context, id uint64) (*Comm
 	commentIndexIdKey := fmt.Sprintf("%s%s%v", cacheCommentIndexIdPrefix, m.tableFn(objId), id)
 	var resp CommentIndex
 	err := m.QueryRowCtx(ctx, &resp, commentIndexIdKey, func(ctx context.Context, conn sqlx.SqlConn, v any) error {
-		query := fmt.Sprintf("select %s from %s where `id` = ? limit 1", commentIndexRows, m.table)
+		query := fmt.Sprintf("select %s from %s where `id` = ? limit 1", commentIndexRows, m.tableFn(objId))
 		return conn.QueryRowCtx(ctx, v, query, id)
 	})
 	switch err {
@@ -84,7 +88,7 @@ func (m *customCommentIndexModel) FindOneByStateAttrsObjIdObjType(ctx context.Co
 	commentIndexStateAttrsObjIdObjTypeKey := fmt.Sprintf("%s%v:%v:%v:%v", cacheCommentIndexStateAttrsObjIdObjTypePrefix, state, attrs, objId, objType)
 	var resp CommentIndex
 	err := m.QueryRowIndexCtx(ctx, &resp, commentIndexStateAttrsObjIdObjTypeKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
-		query := fmt.Sprintf("select %s from %s where `state` = ? and `attrs` = ? and `obj_id` = ? and `obj_type` = ? limit 1", commentIndexRows, m.table)
+		query := fmt.Sprintf("select %s from %s where `state` = ? and `attrs` = ? and `obj_id` = ? and `obj_type` = ? limit 1", commentIndexRows, m.tableFn(objId))
 		if err := conn.QueryRowCtx(ctx, &resp, query, state, attrs, objId, objType); err != nil {
 			return nil, err
 		}
@@ -104,7 +108,7 @@ func (m *customCommentIndexModel) Insert(ctx context.Context, data *CommentIndex
 	commentIndexIdKey := fmt.Sprintf("%s%s%v", cacheCommentIndexIdPrefix, m.tableFn(data.ObjId), data.Id)
 	commentIndexStateAttrsObjIdObjTypeKey := fmt.Sprintf("%s%v:%v:%v:%v", cacheCommentIndexStateAttrsObjIdObjTypePrefix, data.State, data.Attrs, data.ObjId, data.ObjType)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, commentIndexRowsExpectAutoSet)
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.tableFn(data.ObjId), commentIndexRowsExpectAutoSet)
 		return conn.ExecCtx(ctx, query, data.ObjId, data.ObjType, data.MemberId, data.RootId, data.ReplyId, data.Floor, data.Count, data.RootCount, data.LikeCount, data.HateCount, data.State, data.Attrs)
 	}, commentIndexIdKey, commentIndexStateAttrsObjIdObjTypeKey)
 	return ret, err
@@ -119,7 +123,7 @@ func (m *customCommentIndexModel) Update(ctx context.Context, newData *CommentIn
 	commentIndexIdKey := fmt.Sprintf("%s%s%v", cacheCommentIndexIdPrefix, m.tableFn(data.ObjId), data.Id)
 	commentIndexStateAttrsObjIdObjTypeKey := fmt.Sprintf("%s%v:%v:%v:%v", cacheCommentIndexStateAttrsObjIdObjTypePrefix, data.State, data.Attrs, data.ObjId, data.ObjType)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, commentIndexRowsWithPlaceHolder)
+		query := fmt.Sprintf("update %s set %s where `id` = ?", m.tableFn(data.ObjId), commentIndexRowsWithPlaceHolder)
 		return conn.ExecCtx(ctx, query, newData.ObjId, newData.ObjType, newData.MemberId, newData.RootId, newData.ReplyId, newData.Floor, newData.Count, newData.RootCount, newData.LikeCount, newData.HateCount, newData.State, newData.Attrs, newData.Id)
 	}, commentIndexIdKey, commentIndexStateAttrsObjIdObjTypeKey)
 	return err

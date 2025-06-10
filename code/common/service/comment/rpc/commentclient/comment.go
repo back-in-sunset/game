@@ -25,8 +25,6 @@ type (
 	DeleteCommentResponse     = comment.DeleteCommentResponse
 	LikeCommentRequest        = comment.LikeCommentRequest
 	LikeCommentResponse       = comment.LikeCommentResponse
-	ReportCommentRequest      = comment.ReportCommentRequest
-	ReportCommentResponse     = comment.ReportCommentResponse
 	SetCommentAttrsRequest    = comment.SetCommentAttrsRequest
 	SetCommentAttrsResponse   = comment.SetCommentAttrsResponse
 	UnAuditCommentRequest     = comment.UnAuditCommentRequest
@@ -51,16 +49,10 @@ type (
 		LikeComment(ctx context.Context, in *LikeCommentRequest, opts ...grpc.CallOption) (*LikeCommentResponse, error)
 		// 评论取消点赞
 		UnLikeComment(ctx context.Context, in *UnLikeCommentRequest, opts ...grpc.CallOption) (*UnLikeCommentResponse, error)
-		// 评论举报
-		ReportComment(ctx context.Context, in *ReportCommentRequest, opts ...grpc.CallOption) (*ReportCommentResponse, error)
 		// 评论屏蔽
 		BlockComment(ctx context.Context, in *BlockCommentRequest, opts ...grpc.CallOption) (*BlockCommentResponse, error)
 		// 评论取消屏蔽
 		UnBlockComment(ctx context.Context, in *UnBlockCommentRequest, opts ...grpc.CallOption) (*UnBlockCommentResponse, error)
-		// 通过评论审核
-		AuditComment(ctx context.Context, in *AuditCommentRequest, opts ...grpc.CallOption) (*AuditCommentResponse, error)
-		// 评论取消审核
-		UnAuditComment(ctx context.Context, in *UnAuditCommentRequest, opts ...grpc.CallOption) (*UnAuditCommentResponse, error)
 		// 评论置顶
 		SetCommentAttrs(ctx context.Context, in *SetCommentAttrsRequest, opts ...grpc.CallOption) (*SetCommentAttrsResponse, error)
 		// 评论取消置顶
@@ -114,12 +106,6 @@ func (m *defaultComment) UnLikeComment(ctx context.Context, in *UnLikeCommentReq
 	return client.UnLikeComment(ctx, in, opts...)
 }
 
-// 评论举报
-func (m *defaultComment) ReportComment(ctx context.Context, in *ReportCommentRequest, opts ...grpc.CallOption) (*ReportCommentResponse, error) {
-	client := comment.NewCommentClient(m.cli.Conn())
-	return client.ReportComment(ctx, in, opts...)
-}
-
 // 评论屏蔽
 func (m *defaultComment) BlockComment(ctx context.Context, in *BlockCommentRequest, opts ...grpc.CallOption) (*BlockCommentResponse, error) {
 	client := comment.NewCommentClient(m.cli.Conn())
@@ -130,18 +116,6 @@ func (m *defaultComment) BlockComment(ctx context.Context, in *BlockCommentReque
 func (m *defaultComment) UnBlockComment(ctx context.Context, in *UnBlockCommentRequest, opts ...grpc.CallOption) (*UnBlockCommentResponse, error) {
 	client := comment.NewCommentClient(m.cli.Conn())
 	return client.UnBlockComment(ctx, in, opts...)
-}
-
-// 通过评论审核
-func (m *defaultComment) AuditComment(ctx context.Context, in *AuditCommentRequest, opts ...grpc.CallOption) (*AuditCommentResponse, error) {
-	client := comment.NewCommentClient(m.cli.Conn())
-	return client.AuditComment(ctx, in, opts...)
-}
-
-// 评论取消审核
-func (m *defaultComment) UnAuditComment(ctx context.Context, in *UnAuditCommentRequest, opts ...grpc.CallOption) (*UnAuditCommentResponse, error) {
-	client := comment.NewCommentClient(m.cli.Conn())
-	return client.UnAuditComment(ctx, in, opts...)
 }
 
 // 评论置顶

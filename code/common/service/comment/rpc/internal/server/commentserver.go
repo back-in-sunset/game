@@ -58,12 +58,6 @@ func (s *CommentServer) UnLikeComment(ctx context.Context, in *comment.UnLikeCom
 	return l.UnLikeComment(in)
 }
 
-// 评论举报
-func (s *CommentServer) ReportComment(ctx context.Context, in *comment.ReportCommentRequest) (*comment.ReportCommentResponse, error) {
-	l := logic.NewReportCommentLogic(ctx, s.svcCtx)
-	return l.ReportComment(in)
-}
-
 // 评论屏蔽
 func (s *CommentServer) BlockComment(ctx context.Context, in *comment.BlockCommentRequest) (*comment.BlockCommentResponse, error) {
 	l := logic.NewBlockCommentLogic(ctx, s.svcCtx)
@@ -74,18 +68,6 @@ func (s *CommentServer) BlockComment(ctx context.Context, in *comment.BlockComme
 func (s *CommentServer) UnBlockComment(ctx context.Context, in *comment.UnBlockCommentRequest) (*comment.UnBlockCommentResponse, error) {
 	l := logic.NewUnBlockCommentLogic(ctx, s.svcCtx)
 	return l.UnBlockComment(in)
-}
-
-// 通过评论审核
-func (s *CommentServer) AuditComment(ctx context.Context, in *comment.AuditCommentRequest) (*comment.AuditCommentResponse, error) {
-	l := logic.NewAuditCommentLogic(ctx, s.svcCtx)
-	return l.AuditComment(in)
-}
-
-// 评论取消审核
-func (s *CommentServer) UnAuditComment(ctx context.Context, in *comment.UnAuditCommentRequest) (*comment.UnAuditCommentResponse, error) {
-	l := logic.NewUnAuditCommentLogic(ctx, s.svcCtx)
-	return l.UnAuditComment(in)
 }
 
 // 评论置顶

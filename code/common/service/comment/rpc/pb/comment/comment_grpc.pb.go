@@ -25,11 +25,8 @@ const (
 	Comment_GetCommentList_FullMethodName    = "/commentclient.Comment/GetCommentList"
 	Comment_LikeComment_FullMethodName       = "/commentclient.Comment/LikeComment"
 	Comment_UnLikeComment_FullMethodName     = "/commentclient.Comment/UnLikeComment"
-	Comment_ReportComment_FullMethodName     = "/commentclient.Comment/ReportComment"
 	Comment_BlockComment_FullMethodName      = "/commentclient.Comment/BlockComment"
 	Comment_UnBlockComment_FullMethodName    = "/commentclient.Comment/UnBlockComment"
-	Comment_AuditComment_FullMethodName      = "/commentclient.Comment/AuditComment"
-	Comment_UnAuditComment_FullMethodName    = "/commentclient.Comment/UnAuditComment"
 	Comment_SetCommentAttrs_FullMethodName   = "/commentclient.Comment/SetCommentAttrs"
 	Comment_UnSetCommentAttrs_FullMethodName = "/commentclient.Comment/UnSetCommentAttrs"
 )
@@ -52,16 +49,10 @@ type CommentClient interface {
 	LikeComment(ctx context.Context, in *LikeCommentRequest, opts ...grpc.CallOption) (*LikeCommentResponse, error)
 	// 评论取消点赞
 	UnLikeComment(ctx context.Context, in *UnLikeCommentRequest, opts ...grpc.CallOption) (*UnLikeCommentResponse, error)
-	// 评论举报
-	ReportComment(ctx context.Context, in *ReportCommentRequest, opts ...grpc.CallOption) (*ReportCommentResponse, error)
 	// 评论屏蔽
 	BlockComment(ctx context.Context, in *BlockCommentRequest, opts ...grpc.CallOption) (*BlockCommentResponse, error)
 	// 评论取消屏蔽
 	UnBlockComment(ctx context.Context, in *UnBlockCommentRequest, opts ...grpc.CallOption) (*UnBlockCommentResponse, error)
-	// 通过评论审核
-	AuditComment(ctx context.Context, in *AuditCommentRequest, opts ...grpc.CallOption) (*AuditCommentResponse, error)
-	// 评论取消审核
-	UnAuditComment(ctx context.Context, in *UnAuditCommentRequest, opts ...grpc.CallOption) (*UnAuditCommentResponse, error)
 	// 评论置顶
 	SetCommentAttrs(ctx context.Context, in *SetCommentAttrsRequest, opts ...grpc.CallOption) (*SetCommentAttrsResponse, error)
 	// 评论取消置顶
@@ -136,16 +127,6 @@ func (c *commentClient) UnLikeComment(ctx context.Context, in *UnLikeCommentRequ
 	return out, nil
 }
 
-func (c *commentClient) ReportComment(ctx context.Context, in *ReportCommentRequest, opts ...grpc.CallOption) (*ReportCommentResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ReportCommentResponse)
-	err := c.cc.Invoke(ctx, Comment_ReportComment_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *commentClient) BlockComment(ctx context.Context, in *BlockCommentRequest, opts ...grpc.CallOption) (*BlockCommentResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(BlockCommentResponse)
@@ -160,26 +141,6 @@ func (c *commentClient) UnBlockComment(ctx context.Context, in *UnBlockCommentRe
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UnBlockCommentResponse)
 	err := c.cc.Invoke(ctx, Comment_UnBlockComment_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *commentClient) AuditComment(ctx context.Context, in *AuditCommentRequest, opts ...grpc.CallOption) (*AuditCommentResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AuditCommentResponse)
-	err := c.cc.Invoke(ctx, Comment_AuditComment_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *commentClient) UnAuditComment(ctx context.Context, in *UnAuditCommentRequest, opts ...grpc.CallOption) (*UnAuditCommentResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UnAuditCommentResponse)
-	err := c.cc.Invoke(ctx, Comment_UnAuditComment_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -224,16 +185,10 @@ type CommentServer interface {
 	LikeComment(context.Context, *LikeCommentRequest) (*LikeCommentResponse, error)
 	// 评论取消点赞
 	UnLikeComment(context.Context, *UnLikeCommentRequest) (*UnLikeCommentResponse, error)
-	// 评论举报
-	ReportComment(context.Context, *ReportCommentRequest) (*ReportCommentResponse, error)
 	// 评论屏蔽
 	BlockComment(context.Context, *BlockCommentRequest) (*BlockCommentResponse, error)
 	// 评论取消屏蔽
 	UnBlockComment(context.Context, *UnBlockCommentRequest) (*UnBlockCommentResponse, error)
-	// 通过评论审核
-	AuditComment(context.Context, *AuditCommentRequest) (*AuditCommentResponse, error)
-	// 评论取消审核
-	UnAuditComment(context.Context, *UnAuditCommentRequest) (*UnAuditCommentResponse, error)
 	// 评论置顶
 	SetCommentAttrs(context.Context, *SetCommentAttrsRequest) (*SetCommentAttrsResponse, error)
 	// 评论取消置顶
@@ -266,20 +221,11 @@ func (UnimplementedCommentServer) LikeComment(context.Context, *LikeCommentReque
 func (UnimplementedCommentServer) UnLikeComment(context.Context, *UnLikeCommentRequest) (*UnLikeCommentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnLikeComment not implemented")
 }
-func (UnimplementedCommentServer) ReportComment(context.Context, *ReportCommentRequest) (*ReportCommentResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ReportComment not implemented")
-}
 func (UnimplementedCommentServer) BlockComment(context.Context, *BlockCommentRequest) (*BlockCommentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BlockComment not implemented")
 }
 func (UnimplementedCommentServer) UnBlockComment(context.Context, *UnBlockCommentRequest) (*UnBlockCommentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnBlockComment not implemented")
-}
-func (UnimplementedCommentServer) AuditComment(context.Context, *AuditCommentRequest) (*AuditCommentResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AuditComment not implemented")
-}
-func (UnimplementedCommentServer) UnAuditComment(context.Context, *UnAuditCommentRequest) (*UnAuditCommentResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UnAuditComment not implemented")
 }
 func (UnimplementedCommentServer) SetCommentAttrs(context.Context, *SetCommentAttrsRequest) (*SetCommentAttrsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetCommentAttrs not implemented")
@@ -416,24 +362,6 @@ func _Comment_UnLikeComment_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Comment_ReportComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReportCommentRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CommentServer).ReportComment(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Comment_ReportComment_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CommentServer).ReportComment(ctx, req.(*ReportCommentRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Comment_BlockComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(BlockCommentRequest)
 	if err := dec(in); err != nil {
@@ -466,42 +394,6 @@ func _Comment_UnBlockComment_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CommentServer).UnBlockComment(ctx, req.(*UnBlockCommentRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Comment_AuditComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AuditCommentRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CommentServer).AuditComment(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Comment_AuditComment_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CommentServer).AuditComment(ctx, req.(*AuditCommentRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Comment_UnAuditComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UnAuditCommentRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CommentServer).UnAuditComment(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Comment_UnAuditComment_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CommentServer).UnAuditComment(ctx, req.(*UnAuditCommentRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -574,24 +466,12 @@ var Comment_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Comment_UnLikeComment_Handler,
 		},
 		{
-			MethodName: "ReportComment",
-			Handler:    _Comment_ReportComment_Handler,
-		},
-		{
 			MethodName: "BlockComment",
 			Handler:    _Comment_BlockComment_Handler,
 		},
 		{
 			MethodName: "UnBlockComment",
 			Handler:    _Comment_UnBlockComment_Handler,
-		},
-		{
-			MethodName: "AuditComment",
-			Handler:    _Comment_AuditComment_Handler,
-		},
-		{
-			MethodName: "UnAuditComment",
-			Handler:    _Comment_UnAuditComment_Handler,
 		},
 		{
 			MethodName: "SetCommentAttrs",

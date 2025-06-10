@@ -29,17 +29,21 @@ type (
 	}
 )
 
-func newCustomCommentContentModel(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache.Option) *defaultCommentContentModel {
-	return &defaultCommentContentModel{
-		CachedConn: sqlc.NewConn(conn, c, opts...),
-		table:      "`comment_content_0`",
+func newCustomCommentContentModel(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache.Option) *customCommentContentModel {
+	return &customCommentContentModel{
+		defaultCommentContentModel: newCommentContentModel(conn, c, opts...),
+		tableFn: func(shardingId uint64) string {
+			// Use the last 8 bits of the shardingId for determining the table suffix.
+			const shardingBitmask = 0xFF // Adjust this bitmask if the sharding logic changes.
+			return fmt.Sprintf("`comment_content_%d`", shardingId&shardingBitmask)
+		},
 	}
 }
 
 // NewCommentContentModel returns a model for the database table.
 func NewCommentContentModel(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache.Option) CommentContentModel {
 	return &customCommentContentModel{
-		defaultCommentContentModel: newCustomCommentContentModel(conn, c, opts...),
+		defaultCommentContentModel: newCommentContentModel(conn, c, opts...),
 		tableFn: func(shardingId uint64) string {
 			// Use the last 8 bits of the shardingId for determining the table suffix.
 			const shardingBitmask = 0xFF // Adjust this bitmask if the sharding logic changes.
@@ -87,8 +91,8 @@ func (m *customCommentContentModel) Delete(ctx context.Context, commentId uint64
 func (m *customCommentContentModel) Insert(ctx context.Context, data *CommentContent) (sql.Result, error) {
 	commentContentCommentIdKey := fmt.Sprintf("%s%v%v", cacheCommentContentObjIdCommentIdPrefix, data.ObjId, data.CommentId)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?)", m.tableFn(data.ObjId), commentContentRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.CommentId, data.AtMemberIds, data.Ip, data.Platform, data.Device, data.Message, data.Meta)
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?)", m.tableFn(data.ObjId), commentContentRowsExpectAutoSet)
+		return conn.ExecCtx(ctx, query, data.CommentId, data.ObjId, data.AtMemberIds, data.Ip, data.Platform, data.Device, data.Message, data.Meta)
 	}, commentContentCommentIdKey)
 	return ret, err
 }

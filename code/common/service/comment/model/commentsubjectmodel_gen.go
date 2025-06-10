@@ -22,17 +22,17 @@ var (
 	commentSubjectRowsExpectAutoSet   = strings.Join(stringx.Remove(commentSubjectFieldNames, "`id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), ",")
 	commentSubjectRowsWithPlaceHolder = strings.Join(stringx.Remove(commentSubjectFieldNames, "`id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), "=?,") + "=?"
 
-	cacheCommentSubjectIdPrefix                     = "cache:commentSubject:id:"
-	cacheCommentSubjectStateAttrsMemberIdPrefix     = "cache:commentSubject:state:attrs:memberId:"
-	cacheCommentSubjectStateAttrsObjIdObjTypePrefix = "cache:commentSubject:state:attrs:objId:objType:"
+	cacheCommentSubjectIdPrefix                = "cache:commentSubject:id:"
+	cacheCommentSubjectStateMemberIdPrefix     = "cache:commentSubject:state:memberId:"
+	cacheCommentSubjectStateObjIdObjTypePrefix = "cache:commentSubject:state:objId:objType:"
 )
 
 type (
 	commentSubjectModel interface {
 		Insert(ctx context.Context, data *CommentSubject) (sql.Result, error)
 		FindOne(ctx context.Context, id uint64) (*CommentSubject, error)
-		FindOneByStateAttrsMemberId(ctx context.Context, state uint64, attrs int64, memberId uint64) (*CommentSubject, error)
-		FindOneByStateAttrsObjIdObjType(ctx context.Context, state uint64, attrs int64, objId uint64, objType uint64) (*CommentSubject, error)
+		FindOneByStateMemberId(ctx context.Context, state uint64, memberId uint64) (*CommentSubject, error)
+		FindOneByStateObjIdObjType(ctx context.Context, state uint64, objId uint64, objType uint64) (*CommentSubject, error)
 		Update(ctx context.Context, data *CommentSubject) error
 		Delete(ctx context.Context, id uint64) error
 	}
@@ -71,12 +71,12 @@ func (m *defaultCommentSubjectModel) Delete(ctx context.Context, id uint64) erro
 	}
 
 	commentSubjectIdKey := fmt.Sprintf("%s%v", cacheCommentSubjectIdPrefix, id)
-	commentSubjectStateAttrsMemberIdKey := fmt.Sprintf("%s%v:%v:%v", cacheCommentSubjectStateAttrsMemberIdPrefix, data.State, data.Attrs, data.MemberId)
-	commentSubjectStateAttrsObjIdObjTypeKey := fmt.Sprintf("%s%v:%v:%v:%v", cacheCommentSubjectStateAttrsObjIdObjTypePrefix, data.State, data.Attrs, data.ObjId, data.ObjType)
+	commentSubjectStateMemberIdKey := fmt.Sprintf("%s%v:%v", cacheCommentSubjectStateMemberIdPrefix, data.State, data.MemberId)
+	commentSubjectStateObjIdObjTypeKey := fmt.Sprintf("%s%v:%v:%v", cacheCommentSubjectStateObjIdObjTypePrefix, data.State, data.ObjId, data.ObjType)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
 		return conn.ExecCtx(ctx, query, id)
-	}, commentSubjectIdKey, commentSubjectStateAttrsMemberIdKey, commentSubjectStateAttrsObjIdObjTypeKey)
+	}, commentSubjectIdKey, commentSubjectStateMemberIdKey, commentSubjectStateObjIdObjTypeKey)
 	return err
 }
 
@@ -97,12 +97,12 @@ func (m *defaultCommentSubjectModel) FindOne(ctx context.Context, id uint64) (*C
 	}
 }
 
-func (m *defaultCommentSubjectModel) FindOneByStateAttrsMemberId(ctx context.Context, state uint64, attrs int64, memberId uint64) (*CommentSubject, error) {
-	commentSubjectStateAttrsMemberIdKey := fmt.Sprintf("%s%v:%v:%v", cacheCommentSubjectStateAttrsMemberIdPrefix, state, attrs, memberId)
+func (m *defaultCommentSubjectModel) FindOneByStateMemberId(ctx context.Context, state uint64, memberId uint64) (*CommentSubject, error) {
+	commentSubjectStateMemberIdKey := fmt.Sprintf("%s%v:%v", cacheCommentSubjectStateMemberIdPrefix, state, memberId)
 	var resp CommentSubject
-	err := m.QueryRowIndexCtx(ctx, &resp, commentSubjectStateAttrsMemberIdKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
-		query := fmt.Sprintf("select %s from %s where `state` = ? and `attrs` = ? and `member_id` = ? limit 1", commentSubjectRows, m.table)
-		if err := conn.QueryRowCtx(ctx, &resp, query, state, attrs, memberId); err != nil {
+	err := m.QueryRowIndexCtx(ctx, &resp, commentSubjectStateMemberIdKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
+		query := fmt.Sprintf("select %s from %s where `state` = ? and `member_id` = ? limit 1", commentSubjectRows, m.table)
+		if err := conn.QueryRowCtx(ctx, &resp, query, state, memberId); err != nil {
 			return nil, err
 		}
 		return resp.Id, nil
@@ -117,12 +117,12 @@ func (m *defaultCommentSubjectModel) FindOneByStateAttrsMemberId(ctx context.Con
 	}
 }
 
-func (m *defaultCommentSubjectModel) FindOneByStateAttrsObjIdObjType(ctx context.Context, state uint64, attrs int64, objId uint64, objType uint64) (*CommentSubject, error) {
-	commentSubjectStateAttrsObjIdObjTypeKey := fmt.Sprintf("%s%v:%v:%v:%v", cacheCommentSubjectStateAttrsObjIdObjTypePrefix, state, attrs, objId, objType)
+func (m *defaultCommentSubjectModel) FindOneByStateObjIdObjType(ctx context.Context, state uint64, objId uint64, objType uint64) (*CommentSubject, error) {
+	commentSubjectStateObjIdObjTypeKey := fmt.Sprintf("%s%v:%v:%v", cacheCommentSubjectStateObjIdObjTypePrefix, state, objId, objType)
 	var resp CommentSubject
-	err := m.QueryRowIndexCtx(ctx, &resp, commentSubjectStateAttrsObjIdObjTypeKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
-		query := fmt.Sprintf("select %s from %s where `state` = ? and `attrs` = ? and `obj_id` = ? and `obj_type` = ? limit 1", commentSubjectRows, m.table)
-		if err := conn.QueryRowCtx(ctx, &resp, query, state, attrs, objId, objType); err != nil {
+	err := m.QueryRowIndexCtx(ctx, &resp, commentSubjectStateObjIdObjTypeKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
+		query := fmt.Sprintf("select %s from %s where `state` = ? and `obj_id` = ? and `obj_type` = ? limit 1", commentSubjectRows, m.table)
+		if err := conn.QueryRowCtx(ctx, &resp, query, state, objId, objType); err != nil {
 			return nil, err
 		}
 		return resp.Id, nil
@@ -139,12 +139,12 @@ func (m *defaultCommentSubjectModel) FindOneByStateAttrsObjIdObjType(ctx context
 
 func (m *defaultCommentSubjectModel) Insert(ctx context.Context, data *CommentSubject) (sql.Result, error) {
 	commentSubjectIdKey := fmt.Sprintf("%s%v", cacheCommentSubjectIdPrefix, data.Id)
-	commentSubjectStateAttrsMemberIdKey := fmt.Sprintf("%s%v:%v:%v", cacheCommentSubjectStateAttrsMemberIdPrefix, data.State, data.Attrs, data.MemberId)
-	commentSubjectStateAttrsObjIdObjTypeKey := fmt.Sprintf("%s%v:%v:%v:%v", cacheCommentSubjectStateAttrsObjIdObjTypePrefix, data.State, data.Attrs, data.ObjId, data.ObjType)
+	commentSubjectStateMemberIdKey := fmt.Sprintf("%s%v:%v", cacheCommentSubjectStateMemberIdPrefix, data.State, data.MemberId)
+	commentSubjectStateObjIdObjTypeKey := fmt.Sprintf("%s%v:%v:%v", cacheCommentSubjectStateObjIdObjTypePrefix, data.State, data.ObjId, data.ObjType)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?)", m.table, commentSubjectRowsExpectAutoSet)
 		return conn.ExecCtx(ctx, query, data.ObjId, data.ObjType, data.MemberId, data.Count, data.RootCount, data.AllCount, data.State, data.Attrs)
-	}, commentSubjectIdKey, commentSubjectStateAttrsMemberIdKey, commentSubjectStateAttrsObjIdObjTypeKey)
+	}, commentSubjectIdKey, commentSubjectStateMemberIdKey, commentSubjectStateObjIdObjTypeKey)
 	return ret, err
 }
 
@@ -155,12 +155,12 @@ func (m *defaultCommentSubjectModel) Update(ctx context.Context, newData *Commen
 	}
 
 	commentSubjectIdKey := fmt.Sprintf("%s%v", cacheCommentSubjectIdPrefix, data.Id)
-	commentSubjectStateAttrsMemberIdKey := fmt.Sprintf("%s%v:%v:%v", cacheCommentSubjectStateAttrsMemberIdPrefix, data.State, data.Attrs, data.MemberId)
-	commentSubjectStateAttrsObjIdObjTypeKey := fmt.Sprintf("%s%v:%v:%v:%v", cacheCommentSubjectStateAttrsObjIdObjTypePrefix, data.State, data.Attrs, data.ObjId, data.ObjType)
+	commentSubjectStateMemberIdKey := fmt.Sprintf("%s%v:%v", cacheCommentSubjectStateMemberIdPrefix, data.State, data.MemberId)
+	commentSubjectStateObjIdObjTypeKey := fmt.Sprintf("%s%v:%v:%v", cacheCommentSubjectStateObjIdObjTypePrefix, data.State, data.ObjId, data.ObjType)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, commentSubjectRowsWithPlaceHolder)
 		return conn.ExecCtx(ctx, query, newData.ObjId, newData.ObjType, newData.MemberId, newData.Count, newData.RootCount, newData.AllCount, newData.State, newData.Attrs, newData.Id)
-	}, commentSubjectIdKey, commentSubjectStateAttrsMemberIdKey, commentSubjectStateAttrsObjIdObjTypeKey)
+	}, commentSubjectIdKey, commentSubjectStateMemberIdKey, commentSubjectStateObjIdObjTypeKey)
 	return err
 }
 
