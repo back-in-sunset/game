@@ -56,10 +56,10 @@ message CommentListRequest {
     uint64 ReplyId = 11; // 被回复的评论ID
     uint64 SortedField = 12; // 排序字段
     uint64 CreatedAt = 13; // 创建时间
-    uint64 Floor = 14; //
-    uint64 LikeCount = 15; //
-    uint64 HateCount = 16; // 
-    uint64 Count = 17; //
+    uint64 Floor = 14; // 楼层
+    uint64 LikeCount = 15; // 点赞数
+    uint64 HateCount = 16; // 踩数
+    uint64 Count = 17; // 
     uint64 CommentId = 18; // offse
 }
 // 评论列表响应

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/cache"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
@@ -13,7 +14,7 @@ import (
 type (
 	CommentModel interface {
 		AddComment(ctx context.Context, data *CommentSubject, ci *CommentIndex, cc *CommentContent) (*comment.CommentResponse, error)
-		CommentByObjId(ctx context.Context, objId uint64, objType uint64, sortLikeCount uint64, sortPublishTime string, sortField string, limit uint64) (*comment.CommentListResponse, error)
+		CommentByObjId(ctx context.Context, objId uint64, objType uint64, sortLikeCount uint64, sortPublishTime string, sortField string, limit uint64) ([]*Comment, error)
 		FindOneByObjId(ctx context.Context, objId uint64, id uint64) (*Comment, error)
 	}
 
@@ -84,6 +85,7 @@ func (m *customCommentModel) AddComment(ctx context.Context, data *CommentSubjec
 				return err
 			}
 		} else {
+			// 缓存更新
 			err = m.customCommentSubjectModel.Update(ctx, &CommentSubject{
 				Id:        cj.Id,
 				ObjId:     cj.ObjId,
@@ -102,7 +104,7 @@ func (m *customCommentModel) AddComment(ctx context.Context, data *CommentSubjec
 			if err != nil {
 				return err
 			}
-
+			// 缓存更新
 			err = m.customCommentIndexModel.Update(ctx, &CommentIndex{
 				Id:        ci.RootId,
 				ObjId:     data.ObjId,
@@ -188,6 +190,40 @@ func (m *customCommentModel) FindOneByObjId(ctx context.Context, objId uint64, i
 
 }
 
-func (m *customCommentModel) CommentByObjId(ctx context.Context, objId uint64, objType uint64, sortLikeCount uint64, sortPublishTime string, sortField string, limit uint64) (*comment.CommentListResponse, error) {
-	return nil, nil
+func (m *customCommentModel) CommentByObjId(ctx context.Context, objId uint64, objType uint64, sortLikeCount uint64, sortPublishTime string, sortField string, limit uint64) ([]*Comment, error) {
+	var (
+		err error
+		sql string
+		// anyField any
+		commentIndexs []*CommentIndex
+	)
+	// if sortField == "like_num" {
+	// 	// anyField = sortLikeCount
+	// 	sql = fmt.Sprintf("select "+commentIndexRows+" from "+m.customCommentIndexModel.tableFn(objId)+
+	// 		" where obj_id=? and obj_type=? order by %s desc limit ?", sortField)
+	// } else {
+	// 	// anyField = sortPublishTime
+	// 	sql = fmt.Sprintf("select "+commentIndexRows+" from "+m.customCommentIndexModel.tableFn(objId)+
+	// 		" where obj_id=? and obj_type=? order by %s desc limit ?", sortField)
+	// }
+
+	sql = fmt.Sprintf("select "+commentIndexRows+" from "+m.customCommentIndexModel.tableFn(objId)+
+		" where obj_id=? and obj_type=? order by %s desc limit ?", sortField)
+
+	err = m.defaultCommentIndexModel.QueryRowsNoCacheCtx(ctx, &commentIndexs, sql, objId, objType, limit)
+	if err != nil {
+		logx.Error("QueryRowNoCacheCtx commentIndexs err:", err)
+		return nil, err
+	}
+
+	var comments = make([]*Comment, 0, len(commentIndexs))
+	for _, commentIndex := range commentIndexs {
+		comment, err := m.FindOneByObjId(ctx, objId, commentIndex.Id)
+		if err != nil {
+			logx.Error("FindOneByObjId err:", err)
+		}
+		comments = append(comments, comment)
+	}
+
+	return comments, nil
 }

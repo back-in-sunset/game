@@ -1,8 +1,8 @@
 package types
 
 const (
-	SortPublishTime = iota
-	SortLikeCount
+	SortLikeCount = iota
+	SortPublishTime
 )
 
 const (

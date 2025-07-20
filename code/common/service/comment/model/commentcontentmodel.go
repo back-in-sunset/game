@@ -61,7 +61,7 @@ func (m *customCommentContentModel) FindOne(ctx context.Context, commentId uint6
 	commentContentCommentIdKey := fmt.Sprintf("%s%v%v", cacheCommentContentObjIdCommentIdPrefix, objId, commentId)
 	var resp CommentContent
 	err := m.QueryRowCtx(ctx, &resp, commentContentCommentIdKey, func(ctx context.Context, conn sqlx.SqlConn, v any) error {
-		query := fmt.Sprintf("select %s from %s where `comment_id` = ? limit 1", commentContentRows, m.tableFn(commentId))
+		query := fmt.Sprintf("select %s from %s where `comment_id` = ? limit 1", commentContentRows, m.tableFn(objId))
 		return conn.QueryRowCtx(ctx, v, query, commentId)
 	})
 	switch err {
@@ -82,7 +82,7 @@ func (m *customCommentContentModel) Delete(ctx context.Context, commentId uint64
 
 	commentContentCommentIdKey := fmt.Sprintf("%s%v%v", cacheCommentContentObjIdCommentIdPrefix, objId, commentId)
 	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("delete from %s where `comment_id` = ?", m.tableFn(commentId))
+		query := fmt.Sprintf("delete from %s where `comment_id` = ?", m.tableFn(objId))
 		return conn.ExecCtx(ctx, query, commentId)
 	}, commentContentCommentIdKey)
 	return err

@@ -1,0 +1,77 @@
+type (
+	CommentRequest {
+		ObjId       uint64 // 评论对象ID
+		ObjType     uint64 // 评论对象类型
+		MemberId    uint64 // 作者用户ID
+		CommentId   uint64 // 同评论indx_id
+		AtMemberIds string // at用户ID列表
+		Ip          string // 评论IP
+		Platform    uint64 // 评论平台
+		Device      string // 评论设备
+		Message     string // 评论内容
+		Meta        string // 评论元数据 背景 字体
+		ReplyId     uint64 // 被回复的评论ID
+		State       uint64 // 评论状态 0-正常, 1-隐藏
+		RootId      uint64 // 根评论id 不为0则为回复一级评论
+	}
+
+	CommentResponse {
+		ObjId       uint64 // 评论对象ID
+		ObjType     uint64 // 评论对象类型
+		MemberId    uint64 // 作者用户ID
+		CommentId   uint64 // 同评论indx_id
+		AtMemberIds string // at用户ID列表
+		Ip          string // 评论IP
+		Platform    uint64 // 评论平台
+		Device      string // 评论设备
+		Message     string // 评论内容
+		Meta        string // 评论元数据 背景 字体
+		ReplyId     uint64 // 被回复的评论ID
+		State       uint64 // 评论状态 0-正常, 1-隐藏
+		RootId      uint64 // 根评论id 不为0则为回复一级评论
+		CreatedAt   uint64 // 创建时间
+		Floor       uint64 //
+		LikeCount   uint64 //
+		HateCount   uint64 //
+		Count       uint64 //
+	}
+
+	CommentListRequest {
+		ObjId       uint64 // 评论对象ID
+		ObjType     uint64 // 评论对象类型
+		MemberId    uint64 // 作者用户ID
+		Cursor      uint64 // cursor游标 排序数据
+		PageSize    uint64 // 页大小
+		SortType    uint64 // 排序方式 0-默认, 1-点赞数, 2-评论时间
+		State       uint64 // 评论状态 0-正常, 1-隐藏
+		RootId      uint64 // 根评论ID 不为0则为回复一级评论
+		ReplyId     uint64 // 被回复的评论ID
+		SortedField uint64 // 排序字段
+		CreatedAt   uint64 // 创建时间
+		Floor       uint64 // 楼层
+		LikeCount   uint64 // 点赞数
+		HateCount   uint64 // 踩数
+		Count       uint64 //
+		CommentId   uint64 // offse
+	}
+
+	CommentListResponse {
+		List []CommentResponse
+	}
+)
+
+service Comment {
+	//
+	@handler Add
+	post /api/comments (CommentRequest) returns (CommentResponse)
+	// 删除评论
+	@handler Delete
+	delete /api/comments (CommentRequest) returns (CommentResponse)
+	// 获取评论
+	@handler Get
+	get /api/comments/:id (CommentRequest) returns (CommentResponse)
+	// 获取评论列表
+	@handler list
+	get /api/comments (CommentListRequest) returns (CommentListResponse)
+
+}

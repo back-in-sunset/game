@@ -12,3 +12,8 @@ CacheRedis:
   - Host: localhost:6379
     Type: node
     Pass:
+
+BizRedis:
+  Host: localhost:6379
+  Type: node
+  Pass:

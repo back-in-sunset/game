@@ -38,7 +38,7 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 		return nil, fmt.Errorf("sortType is not valid")
 	}
 	if in.ObjId <= 0 {
-		return nil, fmt.Errorf("bojId is not valid")
+		return nil, fmt.Errorf("objId is not valid")
 	}
 	if in.PageSize == 0 {
 		in.PageSize = types.DefaultPageSize
@@ -57,18 +57,18 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 		sortPublishTime string
 	)
 	if in.SortType == types.SortLikeCount {
-		sortField = "like_num"
+		sortField = "like_count"
 		sortLikeCount = in.Cursor
 	} else {
-		sortField = "publish_time"
+		sortField = "created_at"
 		sortPublishTime = time.Unix(int64(in.Cursor), 0).Format("2006-01-02 15:04:05")
 	}
 
 	var (
-		err            error
-		isCache, isEnd bool
-		lastId, cursor int64
-		cachePage      []*comment.CommentResponse
+		err              error
+		isCache, isEnd   bool
+		lastId, cursor   int64
+		cacheCommentPage []*comment.CommentResponse
 		// model
 		comments []*model.Comment
 	)
@@ -91,7 +91,7 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 
 		// 通过sortFiled对comments进行排序
 		var cmpFunc func(a, b *model.Comment) int
-		if sortField == "like_num" {
+		if sortField == "like_count" {
 			cmpFunc = func(a, b *model.Comment) int {
 				return cmp.Compare(b.LikeCount, a.LikeCount)
 			}
@@ -102,7 +102,7 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 		}
 		slices.SortFunc(comments, cmpFunc)
 		for _, commentModel := range comments {
-			cachePage = append(cachePage, &comment.CommentResponse{
+			cacheCommentPage = append(cacheCommentPage, &comment.CommentResponse{
 				ObjId:       commentModel.ObjId,
 				ObjType:     commentModel.ObjType,
 				MemberId:    commentModel.MemberId,
@@ -130,7 +130,7 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 			return l.svcCtx.CommentModel.CommentByObjId(l.ctx, in.ObjId, in.ObjType, sortLikeCount, sortPublishTime, sortField, types.DefaultLimit)
 		})
 		if err != nil {
-			logx.Errorf("ArticlesByUserId userId: %d sortField: %s error: %v", in.ObjId, sortField, err)
+			logx.Errorf("CommentByObjId ObjId: %d sortField: %s error: %v", in.ObjId, sortField, err)
 			return nil, err
 		}
 		if v == nil {
@@ -145,7 +145,7 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 			isEnd = true
 		}
 		for _, commentModel := range firstPageComments {
-			cachePage = append(cachePage, &comment.CommentResponse{
+			cacheCommentPage = append(cacheCommentPage, &comment.CommentResponse{
 				ObjId:       commentModel.ObjId,
 				ObjType:     commentModel.ObjType,
 				MemberId:    commentModel.MemberId,
@@ -168,8 +168,8 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 		}
 	}
 
-	if len(cachePage) > 0 {
-		pageLast := cachePage[len(cachePage)-1]
+	if len(cacheCommentPage) > 0 {
+		pageLast := cacheCommentPage[len(cacheCommentPage)-1]
 		lastId = int64(pageLast.CommentId)
 		if in.SortType == types.SortPublishTime {
 			cursor = int64(pageLast.CreatedAt)
@@ -181,15 +181,15 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 		}
 
 		// 从开始offset开始截断成当前页
-		for k, comment := range cachePage {
+		for k, comment := range cacheCommentPage {
 			if in.SortType == types.SortPublishTime {
 				if comment.CreatedAt == in.Cursor && comment.CommentId == in.CommentId {
-					cachePage = cachePage[k:]
+					cacheCommentPage = cacheCommentPage[k:]
 					break
 				}
 			} else {
 				if comment.LikeCount == in.Cursor && comment.CommentId == in.CommentId {
-					cachePage = cachePage[k:]
+					cacheCommentPage = cacheCommentPage[k:]
 					break
 				}
 			}
@@ -200,7 +200,7 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 		Cursor:   cursor,
 		IsEnd:    isEnd,
 		LastId:   lastId,
-		Comments: cachePage,
+		Comments: cacheCommentPage,
 	}
 
 	if !isCache {
@@ -214,7 +214,7 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 			}
 		})
 	}
-
+	logx.Info("get comment list result:", ret)
 	return ret, nil
 }
 
