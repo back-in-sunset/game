@@ -17,7 +17,7 @@ func commentIdsKey(objId, objType uint64, sortType int64) string {
 	return fmt.Sprintf(prefixCommentIds, objId, objType, sortType)
 }
 
-// 并发问题
+// 问题
 func (l *GetCommentListLogic) addCacheComments(ctx context.Context, comments []*model.Comment, objId, objType uint64, sortType uint64) error {
 	if len(comments) == 0 {
 		return nil

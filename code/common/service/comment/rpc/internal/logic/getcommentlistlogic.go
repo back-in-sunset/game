@@ -18,6 +18,11 @@ import (
 	"github.com/zeromicro/go-zero/core/threading"
 )
 
+const (
+	likeSorted        = "like_count"
+	createdTimeSorted = "created_at"
+)
+
 type GetCommentListLogic struct {
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
@@ -46,7 +51,7 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 	if in.Cursor == 0 {
 		if in.SortType == types.SortPublishTime {
 			in.Cursor = uint64(time.Now().Unix())
-		} else {
+		} else if in.CommentId == 0 {
 			in.Cursor = types.DefaultSortLikeCursor
 		}
 	}
@@ -57,10 +62,10 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 		sortPublishTime string
 	)
 	if in.SortType == types.SortLikeCount {
-		sortField = "like_count"
+		sortField = likeSorted
 		sortLikeCount = in.Cursor
 	} else {
-		sortField = "created_at"
+		sortField = createdTimeSorted
 		sortPublishTime = time.Unix(int64(in.Cursor), 0).Format("2006-01-02 15:04:05")
 	}
 
@@ -75,10 +80,12 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 
 	// 查询索引 再根据索引查询内容
 	// 1. id cache aside
-	// 2  id is last
-	// 2  build cache
+	// 2  sortedset 10page isEnd, cursor comment
+	// 3  build cache
+	// 4  idx cache all next query db
 
 	commentIds, _ := l.cacheCommentIds(l.ctx, in.ObjId, in.ObjType, int64(in.Cursor), int64(in.PageSize), int64(in.SortType))
+	// 命中部分缓存 把缓存的不在一页的数据返回 isEnd=false 继续db查询构建
 	if len(commentIds) > 0 {
 		isCache = true
 		if commentIds[len(commentIds)-1] == -1 {
@@ -91,9 +98,13 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 
 		// 通过sortFiled对comments进行排序
 		var cmpFunc func(a, b *model.Comment) int
-		if sortField == "like_count" {
+		if sortField == likeSorted {
 			cmpFunc = func(a, b *model.Comment) int {
-				return cmp.Compare(b.LikeCount, a.LikeCount)
+				cmpResult := cmp.Compare(b.LikeCount, a.LikeCount)
+				if cmpResult == 0 {
+					return cmp.Compare(b.CreatedAt.Unix(), b.CreatedAt.Unix())
+				}
+				return cmpResult
 			}
 		} else {
 			cmpFunc = func(a, b *model.Comment) int {
@@ -126,7 +137,7 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 
 	} else {
 		// 没命中
-		v, err, _ := l.svcCtx.SingleFlightGroup.Do(fmt.Sprintf("CommentByObjIds:%d:%d", in.ObjId, in.SortType), func() (interface{}, error) {
+		v, err, _ := l.svcCtx.SingleFlightGroup.Do(fmt.Sprintf("CommentByObjIds:%d:%d", in.ObjId, in.SortType), func() (any, error) {
 			return l.svcCtx.CommentModel.CommentByObjId(l.ctx, in.ObjId, in.ObjType, sortLikeCount, sortPublishTime, sortField, types.DefaultLimit)
 		})
 		if err != nil {

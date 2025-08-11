@@ -9,7 +9,8 @@ CREATE TABLE `comment_content` (
   `meta` text NOT NULL COMMENT '评论元数据 背景 字体',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`comment_id`)
+  PRIMARY KEY (`comment_id`),
+  KEY `idx_comment_obj_unique` (`comment_id`, `obj_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COMMENT='评论点赞表[0-255]';
 
 
@@ -37,6 +38,7 @@ BEGIN
             '  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,',
             '  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,',
             '  PRIMARY KEY (`comment_id`)',
+            '  KEY `idx_comment_obj_unique` (`comment_id`, `obj_id`)',
             ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT=''评论内容表[', i, ']'';'
         );
         

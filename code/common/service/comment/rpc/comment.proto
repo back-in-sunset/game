@@ -48,7 +48,7 @@ message CommentListRequest {
     uint64 ObjId = 1; // 评论对象ID
     uint64 ObjType = 2; // 评论对象类型
     uint64 MemberId = 3; // 作者用户ID
-    uint64 Cursor = 4; // cursor游标 排序数据
+    uint64 Cursor = 4; // cursor游标 排序数据游标
     uint64 PageSize = 5; // 页大小
     uint64 SortType = 6; // 排序方式 0-默认, 1-点赞数, 2-评论时间
     uint64 State = 7; // 评论状态 0-正常, 1-隐藏

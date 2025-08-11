@@ -369,7 +369,7 @@ type CommentListRequest struct {
 	LikeCount   uint64 `protobuf:"varint,15,opt,name=LikeCount,proto3" json:"LikeCount,omitempty"`     //
 	HateCount   uint64 `protobuf:"varint,16,opt,name=HateCount,proto3" json:"HateCount,omitempty"`     //
 	Count       uint64 `protobuf:"varint,17,opt,name=Count,proto3" json:"Count,omitempty"`             //
-	CommentId   uint64 `protobuf:"varint,18,opt,name=CommentId,proto3" json:"CommentId,omitempty"`     // offse
+	CommentId   uint64 `protobuf:"varint,18,opt,name=CommentId,proto3" json:"CommentId,omitempty"`     // 排序数据相同 id游标
 }
 
 func (x *CommentListRequest) Reset() {
