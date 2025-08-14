@@ -1,5 +1,5 @@
-.Phoney: start
-
+.PHONY: start rpc api gen model rpc-tag
+ 
 API_DIR=./api
 RPC_DIR=./rpc
 
@@ -23,6 +23,9 @@ api:
 
 rpc:
 	goctl rpc protoc $(RPC_DIR)/$(SERVER).proto --go_out=$(RPC_DIR) --go-grpc_out=$(RPC_DIR) --zrpc_out=$(RPC_DIR)
+	
+rpc-tag: rpc
+	protoc-go-inject-tag -input="$(RPC_DIR)/$(SERVER)/*.pb.go" 
 
 model:
-	goctl model mysql ddl -s model/$(wildcard *.sql) -d model -c 
+	goctl model mysql ddl -s model/*.sql -d model -c 

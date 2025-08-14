@@ -1,7 +1,7 @@
 package model
 
 import (
-	"comment/rpc/pb/comment"
+	"comment/rpc/comment"
 	"context"
 	"fmt"
 	"time"
@@ -12,10 +12,11 @@ import (
 )
 
 type (
+	// CommentModel 评论模型
 	CommentModel interface {
 		AddComment(ctx context.Context, data *CommentSubject, ci *CommentIndex, cc *CommentContent) (*comment.CommentResponse, error)
-		CommentByObjId(ctx context.Context, objId uint64, objType uint64, sortLikeCount uint64, sortPublishTime string, sortField string, limit uint64) ([]*Comment, error)
-		FindOneByObjId(ctx context.Context, objId uint64, id uint64) (*Comment, error)
+		CommentByObjID(ctx context.Context, objID uint64, objType uint64, sortField string, limit uint64) ([]*Comment, error)
+		FindOneByObjID(ctx context.Context, objID uint64, id uint64) (*Comment, error)
 	}
 
 	customCommentModel struct {
@@ -26,13 +27,14 @@ type (
 	}
 )
 
+// Comment 评论
 type Comment struct {
-	Id          int64     `db:"id"`
-	ObjId       uint64    `db:"obj_id"`        // 评论对象ID使用唯一id的话不用type联合主键
+	ID          int64     `db:"id"`
+	ObjID       uint64    `db:"obj_id"`        // 评论对象ID使用唯一id的话不用type联合主键
 	ObjType     uint64    `db:"obj_type"`      // 评论对象类型
-	MemberId    uint64    `db:"member_id"`     // 作者用户ID
-	RootId      uint64    `db:"root_id"`       // 根评论ID 不为0表示是回复评论
-	ReplyId     uint64    `db:"reply_id"`      // 被回复的评论ID
+	MemberID    uint64    `db:"member_id"`     // 作者用户ID
+	RootID      uint64    `db:"root_id"`       // 根评论ID 不为0表示是回复评论
+	ReplyID     uint64    `db:"reply_id"`      // 被回复的评论ID
 	Floor       uint64    `db:"floor"`         // 评论楼层
 	Count       int64     `db:"count"`         // 挂载子评论总数 可见
 	RootCount   int64     `db:"root_count"`    // 挂载子评论总数 所以
@@ -40,8 +42,8 @@ type Comment struct {
 	HateCount   int64     `db:"hate_count"`    // 点踩数
 	State       uint64    `db:"state"`         // 0-正常, 1-隐藏
 	Attrs       int64     `db:"attrs"`         // 属性(bit 0-运营置顶, 1-owner置顶 2-大数据)
-	AtMemberIds string    `db:"at_member_ids"` // at用户ID列表
-	Ip          string    `db:"ip"`            // 评论IP
+	AtMemberIDs string    `db:"at_member_ids"` // at用户ID列表
+	IP          string    `db:"ip"`            // 评论IP
 	Platform    uint64    `db:"platform"`      // 评论平台
 	Device      string    `db:"device"`        // 评论设备
 	Message     string    `db:"message"`       // 评论内容
@@ -50,6 +52,7 @@ type Comment struct {
 	UpdatedAt   time.Time `db:"updated_at"`
 }
 
+// NewCommentModel 创建评论模型
 func NewCommentModel(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache.Option) CommentModel {
 	return &customCommentModel{
 		customCommentContentModel: newCustomCommentContentModel(conn, c, opts...),
@@ -63,10 +66,10 @@ func NewCommentModel(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache.Option)
 	}
 }
 
+// AddComment 添加评论
 func (m *customCommentModel) AddComment(ctx context.Context, data *CommentSubject, ci *CommentIndex, cc *CommentContent) (*comment.CommentResponse, error) {
-	ctx = context.WithValue(ctx, "objId", data.ObjId)
 	m.defaultCommentSubjectModel.TransactCtx(ctx, func(ctx context.Context, s sqlx.Session) error {
-		cj, err := m.customCommentSubjectModel.FindOneByStateAttrsObjIdObjType(ctx, 0, data.ObjId, data.ObjType)
+		cj, err := m.customCommentSubjectModel.FindOneByStateAttrsObjIDObjType(ctx, 0, data.ObjId, data.ObjType)
 		if err != nil && err != ErrNotFound {
 			return err
 		}
@@ -87,7 +90,7 @@ func (m *customCommentModel) AddComment(ctx context.Context, data *CommentSubjec
 		} else {
 			// 缓存更新
 			err = m.customCommentSubjectModel.Update(ctx, &CommentSubject{
-				Id:        cj.Id,
+				ID:        cj.ID,
 				ObjId:     cj.ObjId,
 				ObjType:   cj.ObjType,
 				Count:     cj.Count + 1,
@@ -100,13 +103,13 @@ func (m *customCommentModel) AddComment(ctx context.Context, data *CommentSubjec
 		}
 
 		if ci.RootId > 0 {
-			oci, err := m.customCommentIndexModel.FindOne(ctx, ci.RootId)
+			oci, err := m.customCommentIndexModel.FindOne(ctx, ci.ObjId, ci.RootId)
 			if err != nil {
 				return err
 			}
 			// 缓存更新
 			err = m.customCommentIndexModel.Update(ctx, &CommentIndex{
-				Id:        ci.RootId,
+				ID:        ci.RootId,
 				ObjId:     data.ObjId,
 				ObjType:   data.ObjType,
 				MemberId:  data.MemberId,
@@ -140,38 +143,38 @@ func (m *customCommentModel) AddComment(ctx context.Context, data *CommentSubjec
 		if err != nil {
 			return err
 		}
-		commentId, _ := cires.LastInsertId()
-		ci.Id = uint64(commentId)
+		commentID, _ := cires.LastInsertId()
+		ci.ID = uint64(commentID)
 		return nil
 	})
 
-	cc.CommentId = uint64(ci.Id)
+	cc.CommentId = uint64(ci.ID)
 	_, err := m.customCommentContentModel.Insert(ctx, cc)
 	if err != nil {
 		return nil, err
 	}
 	return &comment.CommentResponse{
-		CommentId: cc.CommentId,
+		CommentID: cc.CommentId,
 	}, nil
 }
 
-func (m *customCommentModel) FindOneByObjId(ctx context.Context, objId uint64, id uint64) (*Comment, error) {
-	ctx = context.WithValue(ctx, "objId", objId)
-	oci, err := m.customCommentIndexModel.FindOne(ctx, id)
+// FindOneByObjID 查询评论
+func (m *customCommentModel) FindOneByObjID(ctx context.Context, objID uint64, id uint64) (*Comment, error) {
+	oci, err := m.customCommentIndexModel.FindOne(ctx, objID, id)
 	if err != nil {
 		return nil, err
 	}
-	occ, err := m.customCommentContentModel.FindOne(ctx, id)
+	occ, err := m.customCommentContentModel.FindOne(ctx, objID, id)
 	if err != nil {
 		return nil, err
 	}
 	return &Comment{
-		Id:          int64(oci.Id),
-		ObjId:       oci.ObjId,
+		ID:          int64(oci.ID),
+		ObjID:       oci.ObjId,
 		ObjType:     oci.ObjType,
-		MemberId:    oci.MemberId,
-		RootId:      oci.RootId,
-		ReplyId:     oci.ReplyId,
+		MemberID:    oci.MemberId,
+		RootID:      oci.RootId,
+		ReplyID:     oci.ReplyId,
 		Floor:       oci.Floor,
 		Count:       oci.Count,
 		RootCount:   oci.RootCount,
@@ -179,8 +182,8 @@ func (m *customCommentModel) FindOneByObjId(ctx context.Context, objId uint64, i
 		HateCount:   oci.HateCount,
 		State:       oci.State,
 		Attrs:       oci.Attrs,
-		AtMemberIds: occ.AtMemberIds,
-		Ip:          occ.Ip,
+		AtMemberIDs: occ.AtMemberIds,
+		IP:          occ.Ip,
 		Platform:    occ.Platform,
 		Device:      occ.Device,
 		Message:     occ.Message,
@@ -190,27 +193,29 @@ func (m *customCommentModel) FindOneByObjId(ctx context.Context, objId uint64, i
 
 }
 
-func (m *customCommentModel) CommentByObjId(ctx context.Context, objId uint64, objType uint64, sortLikeCount uint64, sortPublishTime string, sortField string, limit uint64) ([]*Comment, error) {
+// CommentByObjID 查询评论
+func (m *customCommentModel) CommentByObjID(ctx context.Context, objID uint64, objType uint64, sortField string, limit uint64) ([]*Comment, error) {
 	var (
 		err error
 		sql string
 		// anyField any
 		commentIndexs []*CommentIndex
 	)
-	// if sortField == "like_num" {
-	// 	// anyField = sortLikeCount
-	// 	sql = fmt.Sprintf("select "+commentIndexRows+" from "+m.customCommentIndexModel.tableFn(objId)+
-	// 		" where obj_id=? and obj_type=? order by %s desc limit ?", sortField)
-	// } else {
-	// 	// anyField = sortPublishTime
-	// 	sql = fmt.Sprintf("select "+commentIndexRows+" from "+m.customCommentIndexModel.tableFn(objId)+
-	// 		" where obj_id=? and obj_type=? order by %s desc limit ?", sortField)
-	// }
 
-	sql = fmt.Sprintf("select "+commentIndexRows+" from "+m.customCommentIndexModel.tableFn(objId)+
-		" where obj_id=? and obj_type=? order by %s desc limit ?", sortField)
+	if sortField == "like_count" {
+		// anyField := sortLikeCount
+		sql = fmt.Sprintf("select " + commentIndexRows + " from " + m.customCommentIndexModel.tableFn(objID) +
+			" where obj_id=? and obj_type=? order by like_count desc limit ?")
+	} else {
+		// anyField := sortPublishTime
+		sql = fmt.Sprintf("select " + commentIndexRows + " from " + m.customCommentIndexModel.tableFn(objID) +
+			" where obj_id=? and obj_type=? order by publish_time desc limit ?")
+	}
 
-	err = m.defaultCommentIndexModel.QueryRowsNoCacheCtx(ctx, &commentIndexs, sql, objId, objType, limit)
+	// sql = fmt.Sprintf("select "+commentIndexRows+" from "+m.customCommentIndexModel.tableFn(objID)+
+	// 	" where obj_id=? and obj_type=? order by %s desc limit ?", sortField)
+
+	err = m.defaultCommentIndexModel.QueryRowsNoCacheCtx(ctx, &commentIndexs, sql, objID, objType, limit)
 	if err != nil {
 		logx.Error("QueryRowNoCacheCtx commentIndexs err:", err)
 		return nil, err
@@ -218,7 +223,7 @@ func (m *customCommentModel) CommentByObjId(ctx context.Context, objId uint64, o
 
 	var comments = make([]*Comment, 0, len(commentIndexs))
 	for _, commentIndex := range commentIndexs {
-		comment, err := m.FindOneByObjId(ctx, objId, commentIndex.Id)
+		comment, err := m.FindOneByObjID(ctx, objID, commentIndex.ID)
 		if err != nil {
 			logx.Error("FindOneByObjId err:", err)
 		}

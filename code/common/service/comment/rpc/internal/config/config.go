@@ -5,18 +5,14 @@ import (
 	"github.com/zeromicro/go-zero/zrpc"
 )
 
-type Config struct {
-	zrpc.RpcServerConf
+type (
+	Config struct {
+		zrpc.RpcServerConf
 
-	Mysql struct {
-		DataSource string
+		Mysql struct {
+			DataSource string
+		}
+
+		CacheRedis cache.CacheConf
 	}
-
-	CacheRedis cache.CacheConf
-
-	BizRedis struct {
-		Host string
-		Pass string
-		Type string
-	}
-}
+)

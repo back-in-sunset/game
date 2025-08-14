@@ -4,10 +4,10 @@ import (
 	"flag"
 	"fmt"
 
+	"comment/rpc/comment"
 	"comment/rpc/internal/config"
 	"comment/rpc/internal/server"
 	"comment/rpc/internal/svc"
-	"comment/rpc/pb/comment"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"

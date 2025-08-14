@@ -1,0 +1,13 @@
+Name: Comment
+Host: 0.0.0.0
+Port: 8888
+
+Log:
+  Level: debug
+
+CommentRPC:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: comment.rpc
+  NonBlock: true

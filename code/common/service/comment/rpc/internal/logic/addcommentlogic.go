@@ -3,9 +3,8 @@ package logic
 import (
 	"context"
 
-	"comment/model"
+	"comment/rpc/comment"
 	"comment/rpc/internal/svc"
-	"comment/rpc/pb/comment"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -26,27 +25,7 @@ func NewAddCommentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AddCom
 
 // 添加评论
 func (l *AddCommentLogic) AddComment(in *comment.CommentRequest) (*comment.CommentResponse, error) {
-	return l.svcCtx.CommentModel.AddComment(l.ctx, &model.CommentSubject{
-		ObjId:    in.ObjId,
-		ObjType:  in.ObjType,
-		MemberId: in.MemberId,
-		State:    0,
-		Attrs:    0,
-	}, &model.CommentIndex{
-		ObjId:    in.ObjId,
-		ObjType:  in.ObjType,
-		MemberId: in.MemberId,
-		RootId:   in.RootId,
-		ReplyId:  in.ReplyId,
-		State:    0,
-		Attrs:    0,
-	}, &model.CommentContent{
-		ObjId:       in.ObjId,
-		AtMemberIds: in.AtMemberIds,
-		Ip:          in.Ip,
-		Platform:    in.Platform,
-		Device:      in.Device,
-		Message:     in.Message,
-		Meta:        in.Meta,
-	})
+	// todo: add your logic here and delete this line
+
+	return &comment.CommentResponse{}, nil
 }

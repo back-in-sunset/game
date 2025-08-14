@@ -1,7 +1,7 @@
-CREATE TABLE `comment_content` (
+CREATE TABLE `comment_content_0` (
   `comment_id` bigint unsigned NOT NULL COMMENT '同评论indx_id',
   `obj_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT '评论对象ID使用唯一id的话不用type联合主键',
-  `at_member_ids` text NOT NULL DEFAULT '' COMMENT 'at用户ID列表',
+  `at_member_ids` text NOT NULL COMMENT 'at用户ID列表',
   `ip` varchar(255) NOT NULL COMMENT '评论IP',
   `platform` tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT '评论平台',
   `device` varchar(255) NOT NULL DEFAULT '' COMMENT '评论设备',
@@ -37,7 +37,7 @@ BEGIN
             '  `meta` text NOT NULL COMMENT ''评论元数据 背景 字体'',',
             '  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,',
             '  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,',
-            '  PRIMARY KEY (`comment_id`)',
+            '  PRIMARY KEY (`comment_id`),',
             '  KEY `idx_comment_obj_unique` (`comment_id`, `obj_id`)',
             ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT=''评论内容表[', i, ']'';'
         );

@@ -41,7 +41,7 @@ type (
 	}
 
 	CommentIndex struct {
-		Id        uint64    `db:"id"`
+		ID        uint64    `db:"id"`
 		ObjId     uint64    `db:"obj_id"`     // 评论对象ID使用唯一id的话不用type联合主键
 		ObjType   uint64    `db:"obj_type"`   // 评论对象类型
 		MemberId  uint64    `db:"member_id"`  // 作者用户ID
@@ -106,7 +106,7 @@ func (m *defaultCommentIndexModel) FindOneByStateAttrsObjIdObjType(ctx context.C
 		if err := conn.QueryRowCtx(ctx, &resp, query, state, attrs, objId, objType); err != nil {
 			return nil, err
 		}
-		return resp.Id, nil
+		return resp.ID, nil
 	}, m.queryPrimary)
 	switch err {
 	case nil:
@@ -119,7 +119,7 @@ func (m *defaultCommentIndexModel) FindOneByStateAttrsObjIdObjType(ctx context.C
 }
 
 func (m *defaultCommentIndexModel) Insert(ctx context.Context, data *CommentIndex) (sql.Result, error) {
-	commentIndexIdKey := fmt.Sprintf("%s%v", cacheCommentIndexIdPrefix, data.Id)
+	commentIndexIdKey := fmt.Sprintf("%s%v", cacheCommentIndexIdPrefix, data.ID)
 	commentIndexStateAttrsObjIdObjTypeKey := fmt.Sprintf("%s%v:%v:%v:%v", cacheCommentIndexStateAttrsObjIdObjTypePrefix, data.State, data.Attrs, data.ObjId, data.ObjType)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, commentIndexRowsExpectAutoSet)
@@ -129,16 +129,16 @@ func (m *defaultCommentIndexModel) Insert(ctx context.Context, data *CommentInde
 }
 
 func (m *defaultCommentIndexModel) Update(ctx context.Context, newData *CommentIndex) error {
-	data, err := m.FindOne(ctx, newData.Id)
+	data, err := m.FindOne(ctx, newData.ID)
 	if err != nil {
 		return err
 	}
 
-	commentIndexIdKey := fmt.Sprintf("%s%v", cacheCommentIndexIdPrefix, data.Id)
+	commentIndexIdKey := fmt.Sprintf("%s%v", cacheCommentIndexIdPrefix, data.ID)
 	commentIndexStateAttrsObjIdObjTypeKey := fmt.Sprintf("%s%v:%v:%v:%v", cacheCommentIndexStateAttrsObjIdObjTypePrefix, data.State, data.Attrs, data.ObjId, data.ObjType)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, commentIndexRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, newData.ObjId, newData.ObjType, newData.MemberId, newData.RootId, newData.ReplyId, newData.Floor, newData.Count, newData.RootCount, newData.LikeCount, newData.HateCount, newData.State, newData.Attrs, newData.Id)
+		return conn.ExecCtx(ctx, query, newData.ObjId, newData.ObjType, newData.MemberId, newData.RootId, newData.ReplyId, newData.Floor, newData.Count, newData.RootCount, newData.LikeCount, newData.HateCount, newData.State, newData.Attrs, newData.ID)
 	}, commentIndexIdKey, commentIndexStateAttrsObjIdObjTypeKey)
 	return err
 }

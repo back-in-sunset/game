@@ -1,60 +1,57 @@
 type (
 	CommentRequest {
-		ObjId       uint64 // 评论对象ID
-		ObjType     uint64 // 评论对象类型
-		MemberId    uint64 // 作者用户ID
-		CommentId   uint64 // 同评论indx_id
-		AtMemberIds string // at用户ID列表
-		Ip          string // 评论IP
-		Platform    uint64 // 评论平台
-		Device      string // 评论设备
-		Message     string // 评论内容
-		Meta        string // 评论元数据 背景 字体
-		ReplyId     uint64 // 被回复的评论ID
-		State       uint64 // 评论状态 0-正常, 1-隐藏
-		RootId      uint64 // 根评论id 不为0则为回复一级评论
+		ObjID       uint64 `json:"obj_id" form:"obj_id"` // 评论对象ID
+		ObjType     uint64 `json:"obj_type" form:"obj_type"` // 评论对象类型
+		MemberID    uint64 `json:"member_id" form:"member_id"` // 作者用户ID
+		CommentID   uint64 `json:"comment_id" form:"comment_id"` // 同评论indx_id
+		AtMemberIDs string `json:"at_member_ids" form:"at_member_ids"` // at用户ID列表
+		Ip          string `json:"ip" form:"ip"` // 评论IP
+		Platform    uint64 `json:"platform" form:"platform"` // 评论平台
+		Device      string `json:"device" form:"device"` // 评论设备
+		Message     string `json:"message" form:"message"` // 评论内容
+		Meta        string `json:"meta" form:"meta"` // 评论元数据 背景 字体
+		ReplyID     uint64 `json:"reply_id" form:"reply_id"` // 被回复的评论ID
+		State       uint64 `json:"state" form:"state"` // 评论状态 0-正常, 1-隐藏
+		RootID      uint64 `json:"root_id" form:"root_id"` // 根评论id 不为0则为回复一级评论
 	}
-
 	CommentResponse {
-		ObjId       uint64 // 评论对象ID
-		ObjType     uint64 // 评论对象类型
-		MemberId    uint64 // 作者用户ID
-		CommentId   uint64 // 同评论indx_id
-		AtMemberIds string // at用户ID列表
-		Ip          string // 评论IP
-		Platform    uint64 // 评论平台
-		Device      string // 评论设备
-		Message     string // 评论内容
-		Meta        string // 评论元数据 背景 字体
-		ReplyId     uint64 // 被回复的评论ID
-		State       uint64 // 评论状态 0-正常, 1-隐藏
-		RootId      uint64 // 根评论id 不为0则为回复一级评论
-		CreatedAt   uint64 // 创建时间
-		Floor       uint64 //
-		LikeCount   uint64 //
-		HateCount   uint64 //
-		Count       uint64 //
+		ObjID       uint64 `json:"obj_id"` // 评论对象ID
+		ObjType     uint64 `json:"obj_type"` // 评论对象类型
+		MemberID    uint64 `json:"member_id"` // 作者用户ID
+		CommentID   uint64 `json:"comment_id"` // 同评论indx_id
+		AtMemberIDs string `json:"at_member_ids"` // at用户ID列表
+		Ip          string `json:"ip"` // 评论IP
+		Platform    uint64 `json:"platform"` // 评论平台
+		Device      string `json:"device"` // 评论设备
+		Message     string `json:"message"` // 评论内容
+		Meta        string `json:"meta"` // 评论元数据 背景 字体
+		ReplyID     uint64 `json:"reply_id"` // 被回复的评论ID
+		State       uint64 `json:"state"` // 评论状态 0-正常, 1-隐藏
+		RootID      uint64 `json:"root_id"` // 根评论id 不为0则为回复一级评论
+		CreatedAt   uint64 `json:"created_at"` // 创建时间
+		Floor       uint64 `json:"floor"` //
+		LikeCount   uint64 `json:"like_count"` //
+		HateCount   uint64 `json:"hate_count"` //
+		Count       uint64 `json:"count"` //
 	}
-
 	CommentListRequest {
-		ObjId       uint64 // 评论对象ID
-		ObjType     uint64 // 评论对象类型
-		MemberId    uint64 // 作者用户ID
-		Cursor      uint64 // cursor游标 排序数据
-		PageSize    uint64 // 页大小
-		SortType    uint64 // 排序方式 0-默认, 1-点赞数, 2-评论时间
-		State       uint64 // 评论状态 0-正常, 1-隐藏
-		RootId      uint64 // 根评论ID 不为0则为回复一级评论
-		ReplyId     uint64 // 被回复的评论ID
-		SortedField uint64 // 排序字段
-		CreatedAt   uint64 // 创建时间
-		Floor       uint64 // 楼层
-		LikeCount   uint64 // 点赞数
-		HateCount   uint64 // 踩数
-		Count       uint64 //
-		CommentId   uint64 // offse
+		ObjID    uint64 `form:"obj_id" json:"obj_id"` // 评论对象ID
+		ObjType  uint64 `form:"obj_type" json:"obj_type"` // 评论对象类型
+		PageSize uint64 `form:"page_size" json:"page_size"` // 页大小
+	// MemberID    uint64 `form:"member_id" json:"member_id"` // 作者用户ID
+	// Cursor      uint64 `form:"cursor" json:"cursor"` // cursor游标 排序数据
+	// SortType    uint64 `form:"sort_type" json:"sort_type"` // 排序方式 0-默认, 1-点赞数, 2-评论时间
+	// State       uint64 `form:"state" json:"state"` // 评论状态 0-正常, 1-隐藏
+	// RootID      uint64 `form:"root_id" json:"root_id"` // 根评论ID 不为0则为回复一级评论
+	// ReplyID     uint64 `form:"reply_id" json:"reply_id"` // 被回复的评论ID
+	// SortedField uint64 `form:"sorted_field" json:"sorted_field"` // 排序字段
+	// CreatedAt   uint64 `form:"creatd_at" json:"creatd_at"` // 创建时间
+	// Floor       uint64 `form:"floor" json:"floor"` // 楼层
+	// LikeCount   uint64 `form:"like_count" json:"like_count"` // 点赞数
+	// HateCount   uint64 `form:"hate_count" json:"hate_count"` // 踩数
+	// Count       uint64 `form:"count" json:"count"` //
+	// CommentID   uint64 `form:"comment_id" json:"comment_id"` // offse
 	}
-
 	CommentListResponse {
 		List []CommentResponse
 	}
@@ -64,14 +61,17 @@ service Comment {
 	//
 	@handler Add
 	post /api/comments (CommentRequest) returns (CommentResponse)
+
 	// 删除评论
 	@handler Delete
 	delete /api/comments (CommentRequest) returns (CommentResponse)
+
 	// 获取评论
 	@handler Get
 	get /api/comments/:id (CommentRequest) returns (CommentResponse)
+
 	// 获取评论列表
 	@handler list
 	get /api/comments (CommentListRequest) returns (CommentListResponse)
-
 }
+
