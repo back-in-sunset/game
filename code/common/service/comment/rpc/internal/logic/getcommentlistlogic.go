@@ -24,9 +24,9 @@ func NewGetCommentListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Ge
 	}
 }
 
-// 获取评论列表
+// GetCommentList 获取评论列表
 func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*comment.CommentListResponse, error) {
-	comments, err := l.svcCtx.CommentModel.CommentByObjID(l.ctx, in.ObjID, in.ObjType, "like_count",
+	comments, err := l.svcCtx.CommentModel.CommentListByObjID(l.ctx, in.ObjID, in.ObjType, "like_count",
 		in.PageSize,
 	)
 	if err != nil {

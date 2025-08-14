@@ -15,7 +15,7 @@ type (
 	// CommentModel 评论模型
 	CommentModel interface {
 		AddComment(ctx context.Context, data *CommentSubject, ci *CommentIndex, cc *CommentContent) (*comment.CommentResponse, error)
-		CommentByObjID(ctx context.Context, objID uint64, objType uint64, sortField string, limit uint64) ([]*Comment, error)
+		CommentListByObjID(ctx context.Context, objID uint64, objType uint64, sortField string, limit uint64) ([]*Comment, error)
 		FindOneByObjID(ctx context.Context, objID uint64, id uint64) (*Comment, error)
 	}
 
@@ -193,8 +193,8 @@ func (m *customCommentModel) FindOneByObjID(ctx context.Context, objID uint64, i
 
 }
 
-// CommentByObjID 查询评论
-func (m *customCommentModel) CommentByObjID(ctx context.Context, objID uint64, objType uint64, sortField string, limit uint64) ([]*Comment, error) {
+// CommentListByObjID 查询评论
+func (m *customCommentModel) CommentListByObjID(ctx context.Context, objID uint64, objType uint64, sortField string, limit uint64) ([]*Comment, error) {
 	var (
 		err error
 		sql string
