@@ -6,61 +6,63 @@ option go_package = "/comment";
 
 // 用户评论
 message CommentRequest {
-    uint64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
-    uint64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型
-    uint64 MemberID = 3; // @gotags: json:"member_id" 作者用户ID
-    uint64 CommentID = 4; // @gotags: json:"comment_id" 同评论indx_id
+    int64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
+    int64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型
+    int64 MemberID = 3; // @gotags: json:"member_id" 作者用户ID
+    int64 CommentID = 4; // @gotags: json:"comment_id" 同评论indx_id
     string AtMemberIDs = 5; // @gotags: json:"at_member_ids" at用户ID列表
     string Ip = 6; // @gotags: json:"ip" 评论IP
-    uint64 Platform = 7; // @gotags: json:"platform" 评论平台
+    int64 Platform = 7; // @gotags: json:"platform" 评论平台
     string Device = 8; // @gotags: json:"device" 评论设备
     string Message = 9; // @gotags: json:"message" 评论内容
     string Meta = 10; // @gotags: json:"meta" 评论元数据 背景 字体
-    uint64 ReplyID = 11; // @gotags: json:"reply_id" 被回复的评论ID
-    uint64 State = 12; // @gotags: json:"state" 评论状态 0-正常, 1-隐藏
-    uint64 RootID = 13; // @gotags: json:"root_id" 根评论id 不为0则为回复一级评论
+    int64 ReplyID = 11; // @gotags: json:"reply_id" 被回复的评论ID
+    int64 State = 12; // @gotags: json:"state" 评论状态 0-正常, 1-隐藏
+    int64 RootID = 13; // @gotags: json:"root_id" 根评论id 不为0则为回复一级评论
 }
 
 // 评论响应
 message CommentResponse {
-    uint64 ObjID = 1; // go tag: json:"obj_id" 评论对象ID
-    uint64 ObjType = 2; // go tag: json:"obj_type" 评论对象类型
-    uint64 MemberID = 3; // go tag: json:"member_id" 作者用户ID
-    uint64 CommentID = 4; // go tag: json:"comment_id" 同评论indx_id
+    int64 ObjID = 1; // go tag: json:"obj_id" 评论对象ID
+    int64 ObjType = 2; // go tag: json:"obj_type" 评论对象类型
+    int64 MemberID = 3; // go tag: json:"member_id" 作者用户ID
+    int64 CommentID = 4; // go tag: json:"comment_id" 同评论indx_id
     string AtMemberIDs = 5; // go tag: json:"at_member_ids" at用户ID列表
     string Ip = 6; // go tag: json:"ip" 评论IP
-    uint64 Platform = 7; // go tag: json:"platform" 评论平台
+    int64 Platform = 7; // go tag: json:"platform" 评论平台
     string Device = 8; // go tag: json:"device" 评论设备
     string Message = 9; // go tag: json:"message" 评论内容
     string Meta = 10; // go tag: json:"meta" 评论元数据 背景 字体
-    uint64 ReplyID = 11; // go tag: json:"reply_id" 被回复的评论ID
-    uint64 State = 12; // go tag: json:"state" 评论状态 0-正常, 1-隐藏
-    uint64 RootID = 13; // go tag: json:"root_id" 根评论id 不为0则为回复一级评论
-    uint64 CreatedAt = 14; // go tag: json:"created_at" 创建时间
-    uint64 Floor = 15; // go tag: json:"floor" 楼层
-    uint64 LikeCount = 16; // go tag: json:"like_count" 点赞数
-    uint64 HateCount = 17; // go tag: json:"hate_count" 踩数
-    uint64 Count = 18; // go tag: json:"count" 评论数
+    int64 ReplyID = 11; // go tag: json:"reply_id" 被回复的评论ID
+    int64 State = 12; // go tag: json:"state" 评论状态 0-正常, 1-隐藏
+    int64 RootID = 13; // go tag: json:"root_id" 根评论id 不为0则为回复一级评论
+    int64 CreatedAt = 14; // go tag: json:"created_at" 创建时间
+    int64 Floor = 15; // go tag: json:"floor" 楼层
+    int64 LikeCount = 16; // go tag: json:"like_count" 点赞数
+    int64 HateCount = 17; // go tag: json:"hate_count" 踩数
+    int64 Count = 18; // go tag: json:"count" 评论数
+    int64 ID = 19; // go tag: json:"id" 评论ID
+
 }
 
 // 评论列表请求
 message CommentListRequest {
-    uint64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
-    uint64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型
-    uint64 MemberID = 3; // @gotags: json:"member_id" 作者用户ID
-    uint64 Cursor = 4; // @gotags: json:"cursor" cursor游标 排序数据游标
-    uint64 PageSize = 5; // @gotags: json:"page_size" 页大小
-    uint64 SortType = 6; // @gotags: json:"sort_type" 排序方式 0-默认, 1-点赞数, 2-评论时间
-    uint64 State = 7; // @gotags: json:"state" 评论状态 0-正常, 1-隐藏
-    uint64 RootID = 8; // @gotags: json:"root_id" 根评论ID 不为0则为回复一级评论
-    uint64 ReplyID = 11; // @gotags: json:"reply_id" 被回复的评论ID  
-    uint64 SortedField = 12; // @gotags: json:"sorted_field" 排序字段
-    uint64 CreatedAt = 13; // @gotags: json:"created_at" 创建时间
-    uint64 Floor = 14; // @gotags: json:"floor" 楼层
-    uint64 LikeCount = 15; // @gotags: json:"like_count" 点赞数
-    uint64 HateCount = 16; // @gotags: json:"hate_count" 踩数
-    uint64 Count = 17; // @gotags: json:"count" 评论数
-    uint64 CommentID = 18; // @gotags: json:"comment_id" 评论ID
+    int64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
+    int64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型
+    int64 MemberID = 3; // @gotags: json:"member_id" 作者用户ID
+    int64 Cursor = 4; // @gotags: json:"cursor" cursor游标 排序数据游标
+    int64 PageSize = 5; // @gotags: json:"page_size" 页大小
+    int64 SortType = 6; // @gotags: json:"sort_type" 排序方式 0-默认, 1-点赞数, 2-评论时间
+    int64 State = 7; // @gotags: json:"state" 评论状态 0-正常, 1-隐藏
+    int64 RootID = 8; // @gotags: json:"root_id" 根评论ID 不为0则为回复一级评论
+    int64 ReplyID = 11; // @gotags: json:"reply_id" 被回复的评论ID  
+    int64 SortedField = 12; // @gotags: json:"sorted_field" 排序字段
+    int64 CreatedAt = 13; // @gotags: json:"created_at" 创建时间
+    int64 Floor = 14; // @gotags: json:"floor" 楼层
+    int64 LikeCount = 15; // @gotags: json:"like_count" 点赞数
+    int64 HateCount = 16; // @gotags: json:"hate_count" 踩数
+    int64 Count = 17; // @gotags: json:"count" 评论数
+    int64 CommentID = 18; // @gotags: json:"comment_id" 评论ID
 }
 // 评论列表响应
 message CommentListResponse {
@@ -72,10 +74,10 @@ message CommentListResponse {
 
 // 删除评论请求
 message DeleteCommentRequest {
-    uint64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
-    uint64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型 
-    uint64 CommentID = 3; // @gotags: json:"comment_id" 评论ID
-    uint64 MemberID = 4; // @gotags: json:"member_id" 用户ID
+    int64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
+    int64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型 
+    int64 CommentID = 3; // @gotags: json:"comment_id" 评论ID
+    int64 MemberID = 4; // @gotags: json:"member_id" 用户ID
 }
 // 删除评论响应
 message DeleteCommentResponse {
@@ -85,10 +87,10 @@ message DeleteCommentResponse {
 
 // 评论点赞
 message LikeCommentRequest {
-    uint64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
-    uint64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型
-    uint64 CommentID = 3; // @gotags: json:"comment_id" 评论ID
-    uint64 MemberID = 4; // @gotags: json:"member_id" 用户ID
+    int64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
+    int64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型
+    int64 CommentID = 3; // @gotags: json:"comment_id" 评论ID
+    int64 MemberID = 4; // @gotags: json:"member_id" 用户ID
 }
 // 评论点赞响应
 message LikeCommentResponse {
@@ -97,10 +99,10 @@ message LikeCommentResponse {
 }
 // 评论取消点赞请求
 message UnLikeCommentRequest {
-    uint64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
-    uint64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型
-    uint64 CommentID = 3; // @gotags: json:"comment_id" 评论ID
-    uint64 MemberID = 4; // @gotags: json:"member_id" 用户ID
+    int64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
+    int64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型
+    int64 CommentID = 3; // @gotags: json:"comment_id" 评论ID
+    int64 MemberID = 4; // @gotags: json:"member_id" 用户ID
 }
 // 评论取消点赞响应
 message UnLikeCommentResponse {
@@ -110,10 +112,10 @@ message UnLikeCommentResponse {
 
 // 评论屏蔽请求
 message BlockCommentRequest {
-    uint64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
-    uint64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型
-    uint64 CommentID = 3; // @gotags: json:"comment_id" 评论ID
-    uint64 MemberID = 4; // @gotags: json:"member_id" 用户ID
+    int64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
+    int64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型
+    int64 CommentID = 3; // @gotags: json:"comment_id" 评论ID
+    int64 MemberID = 4; // @gotags: json:"member_id" 用户ID
 }
 // 评论屏蔽响应
 message BlockCommentResponse {
@@ -122,10 +124,10 @@ message BlockCommentResponse {
 }
 // 评论取消屏蔽请求
 message UnBlockCommentRequest {
-    uint64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
-    uint64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型
-    uint64 CommentID = 3; // @gotags: json:"comment_id" 评论ID
-    uint64 MemberID = 4; // @gotags: json:"member_id" 用户ID
+    int64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
+    int64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型
+    int64 CommentID = 3; // @gotags: json:"comment_id" 评论ID
+    int64 MemberID = 4; // @gotags: json:"member_id" 用户ID
 }
 // 评论取消屏蔽响应
 message UnBlockCommentResponse {
@@ -134,10 +136,10 @@ message UnBlockCommentResponse {
 }
 // 通过评论审核请求
 message AuditCommentRequest {
-    uint64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
-    uint64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型
-    uint64 CommentID = 3; // @gotags: json:"comment_id" 评论ID
-    uint64 MemberID = 4; // @gotags: json:"member_id" 用户ID
+    int64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
+    int64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型
+    int64 CommentID = 3; // @gotags: json:"comment_id" 评论ID
+    int64 MemberID = 4; // @gotags: json:"member_id" 用户ID
 }
 // 通过评论审核响应
 message AuditCommentResponse {
@@ -146,10 +148,10 @@ message AuditCommentResponse {
 }
 // 评论取消审核请求
 message UnAuditCommentRequest {
-    uint64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
-    uint64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型
-    uint64 CommentID = 3; // @gotags: json:"comment_id" 评论ID
-    uint64 MemberID = 4; // @gotags: json:"member_id" 用户ID
+    int64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
+    int64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型
+    int64 CommentID = 3; // @gotags: json:"comment_id" 评论ID
+    int64 MemberID = 4; // @gotags: json:"member_id" 用户ID
 }
 
 // 评论取消审核响应
@@ -159,10 +161,10 @@ message UnAuditCommentResponse {
 }
 // 评论置顶请求
 message SetCommentAttrsRequest {
-    uint64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
-    uint64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型
-    uint64 CommentID = 3; // @gotags: json:"comment_id" 评论ID
-    uint64 MemberID = 4; // @gotags: json:"member_id" 用户ID
+    int64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
+    int64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型
+    int64 CommentID = 3; // @gotags: json:"comment_id" 评论ID
+    int64 MemberID = 4; // @gotags: json:"member_id" 用户ID
 }
 
 // 评论置顶响应
@@ -173,10 +175,10 @@ message SetCommentAttrsResponse {
 
 // 评论取消置顶
 message UnSetCommentAttrsRequest {
-    uint64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
-    uint64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型
-    uint64 CommentID = 3; // @gotags: json:"comment_id" 评论ID
-    uint64 MemberID = 4; // @gotags: json:"member_id" 用户ID
+    int64 ObjID = 1; // @gotags: json:"obj_id" 评论对象ID
+    int64 ObjType = 2; // @gotags: json:"obj_type" 评论对象类型
+    int64 CommentID = 3; // @gotags: json:"comment_id" 评论ID
+    int64 MemberID = 4; // @gotags: json:"member_id" 用户ID
 }
 message UnSetCommentAttrsResponse {
     bool Success = 1; // @gotags: json:"success" 是否成功

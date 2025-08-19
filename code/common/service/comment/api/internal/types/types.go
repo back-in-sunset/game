@@ -4,9 +4,9 @@
 package types
 
 type CommentListRequest struct {
-	ObjID    uint64 `form:"obj_id" json:"obj_id"`       // 评论对象ID
-	ObjType  uint64 `form:"obj_type" json:"obj_type"`   // 评论对象类型
-	PageSize uint64 `form:"page_size" json:"page_size"` // 页大小
+	ObjID    uint64 `form:"obj_id"`    // 评论对象ID
+	ObjType  uint64 `form:"obj_type"`  // 评论对象类型
+	PageSize uint64 `form:"page_size"` // 页大小
 }
 
 type CommentListResponse struct {

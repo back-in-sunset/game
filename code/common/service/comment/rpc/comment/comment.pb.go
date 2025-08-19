@@ -7,12 +7,11 @@
 package comment
 
 import (
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
-
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -25,19 +24,19 @@ const (
 // 用户评论
 type CommentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ObjID         uint64                 `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`             // @gotags: json:"obj_id" 评论对象ID
-	ObjType       uint64                 `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`         // @gotags: json:"obj_type" 评论对象类型
-	MemberID      uint64                 `protobuf:"varint,3,opt,name=MemberID,proto3" json:"member_id"`       // @gotags: json:"member_id" 作者用户ID
-	CommentID     uint64                 `protobuf:"varint,4,opt,name=CommentID,proto3" json:"comment_id"`     // @gotags: json:"comment_id" 同评论indx_id
+	ObjID         int64                  `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`            // @gotags: json:"obj_id" 评论对象ID
+	ObjType       int64                  `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`        // @gotags: json:"obj_type" 评论对象类型
+	MemberID      int64                  `protobuf:"varint,3,opt,name=MemberID,proto3" json:"member_id"`      // @gotags: json:"member_id" 作者用户ID
+	CommentID     int64                  `protobuf:"varint,4,opt,name=CommentID,proto3" json:"comment_id"`    // @gotags: json:"comment_id" 同评论indx_id
 	AtMemberIDs   string                 `protobuf:"bytes,5,opt,name=AtMemberIDs,proto3" json:"at_member_ids"` // @gotags: json:"at_member_ids" at用户ID列表
-	Ip            string                 `protobuf:"bytes,6,opt,name=Ip,proto3" json:"ip"`                     // @gotags: json:"ip" 评论IP
-	Platform      uint64                 `protobuf:"varint,7,opt,name=Platform,proto3" json:"platform"`        // @gotags: json:"platform" 评论平台
-	Device        string                 `protobuf:"bytes,8,opt,name=Device,proto3" json:"device"`             // @gotags: json:"device" 评论设备
-	Message       string                 `protobuf:"bytes,9,opt,name=Message,proto3" json:"message"`           // @gotags: json:"message" 评论内容
-	Meta          string                 `protobuf:"bytes,10,opt,name=Meta,proto3" json:"meta"`                // @gotags: json:"meta" 评论元数据 背景 字体
-	ReplyID       uint64                 `protobuf:"varint,11,opt,name=ReplyID,proto3" json:"reply_id"`        // @gotags: json:"reply_id" 被回复的评论ID
-	State         uint64                 `protobuf:"varint,12,opt,name=State,proto3" json:"state"`             // @gotags: json:"state" 评论状态 0-正常, 1-隐藏
-	RootID        uint64                 `protobuf:"varint,13,opt,name=RootID,proto3" json:"root_id"`          // @gotags: json:"root_id" 根评论id 不为0则为回复一级评论
+	Ip            string                 `protobuf:"bytes,6,opt,name=Ip,proto3" json:"ip"`                   // @gotags: json:"ip" 评论IP
+	Platform      int64                  `protobuf:"varint,7,opt,name=Platform,proto3" json:"platform"`      // @gotags: json:"platform" 评论平台
+	Device        string                 `protobuf:"bytes,8,opt,name=Device,proto3" json:"device"`           // @gotags: json:"device" 评论设备
+	Message       string                 `protobuf:"bytes,9,opt,name=Message,proto3" json:"message"`         // @gotags: json:"message" 评论内容
+	Meta          string                 `protobuf:"bytes,10,opt,name=Meta,proto3" json:"meta"`              // @gotags: json:"meta" 评论元数据 背景 字体
+	ReplyID       int64                  `protobuf:"varint,11,opt,name=ReplyID,proto3" json:"reply_id"`       // @gotags: json:"reply_id" 被回复的评论ID
+	State         int64                  `protobuf:"varint,12,opt,name=State,proto3" json:"state"`           // @gotags: json:"state" 评论状态 0-正常, 1-隐藏
+	RootID        int64                  `protobuf:"varint,13,opt,name=RootID,proto3" json:"root_id"`         // @gotags: json:"root_id" 根评论id 不为0则为回复一级评论
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -72,28 +71,28 @@ func (*CommentRequest) Descriptor() ([]byte, []int) {
 	return file_rpc_comment_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *CommentRequest) GetObjID() uint64 {
+func (x *CommentRequest) GetObjID() int64 {
 	if x != nil {
 		return x.ObjID
 	}
 	return 0
 }
 
-func (x *CommentRequest) GetObjType() uint64 {
+func (x *CommentRequest) GetObjType() int64 {
 	if x != nil {
 		return x.ObjType
 	}
 	return 0
 }
 
-func (x *CommentRequest) GetMemberID() uint64 {
+func (x *CommentRequest) GetMemberID() int64 {
 	if x != nil {
 		return x.MemberID
 	}
 	return 0
 }
 
-func (x *CommentRequest) GetCommentID() uint64 {
+func (x *CommentRequest) GetCommentID() int64 {
 	if x != nil {
 		return x.CommentID
 	}
@@ -114,7 +113,7 @@ func (x *CommentRequest) GetIp() string {
 	return ""
 }
 
-func (x *CommentRequest) GetPlatform() uint64 {
+func (x *CommentRequest) GetPlatform() int64 {
 	if x != nil {
 		return x.Platform
 	}
@@ -142,21 +141,21 @@ func (x *CommentRequest) GetMeta() string {
 	return ""
 }
 
-func (x *CommentRequest) GetReplyID() uint64 {
+func (x *CommentRequest) GetReplyID() int64 {
 	if x != nil {
 		return x.ReplyID
 	}
 	return 0
 }
 
-func (x *CommentRequest) GetState() uint64 {
+func (x *CommentRequest) GetState() int64 {
 	if x != nil {
 		return x.State
 	}
 	return 0
 }
 
-func (x *CommentRequest) GetRootID() uint64 {
+func (x *CommentRequest) GetRootID() int64 {
 	if x != nil {
 		return x.RootID
 	}
@@ -166,24 +165,25 @@ func (x *CommentRequest) GetRootID() uint64 {
 // 评论响应
 type CommentResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ObjID         uint64                 `protobuf:"varint,1,opt,name=ObjID,proto3" json:"ObjID,omitempty"`            // go tag: json:"obj_id" 评论对象ID
-	ObjType       uint64                 `protobuf:"varint,2,opt,name=ObjType,proto3" json:"ObjType,omitempty"`        // go tag: json:"obj_type" 评论对象类型
-	MemberID      uint64                 `protobuf:"varint,3,opt,name=MemberID,proto3" json:"MemberID,omitempty"`      // go tag: json:"member_id" 作者用户ID
-	CommentID     uint64                 `protobuf:"varint,4,opt,name=CommentID,proto3" json:"CommentID,omitempty"`    // go tag: json:"comment_id" 同评论indx_id
+	ObjID         int64                  `protobuf:"varint,1,opt,name=ObjID,proto3" json:"ObjID,omitempty"`            // go tag: json:"obj_id" 评论对象ID
+	ObjType       int64                  `protobuf:"varint,2,opt,name=ObjType,proto3" json:"ObjType,omitempty"`        // go tag: json:"obj_type" 评论对象类型
+	MemberID      int64                  `protobuf:"varint,3,opt,name=MemberID,proto3" json:"MemberID,omitempty"`      // go tag: json:"member_id" 作者用户ID
+	CommentID     int64                  `protobuf:"varint,4,opt,name=CommentID,proto3" json:"CommentID,omitempty"`    // go tag: json:"comment_id" 同评论indx_id
 	AtMemberIDs   string                 `protobuf:"bytes,5,opt,name=AtMemberIDs,proto3" json:"AtMemberIDs,omitempty"` // go tag: json:"at_member_ids" at用户ID列表
 	Ip            string                 `protobuf:"bytes,6,opt,name=Ip,proto3" json:"Ip,omitempty"`                   // go tag: json:"ip" 评论IP
-	Platform      uint64                 `protobuf:"varint,7,opt,name=Platform,proto3" json:"Platform,omitempty"`      // go tag: json:"platform" 评论平台
+	Platform      int64                  `protobuf:"varint,7,opt,name=Platform,proto3" json:"Platform,omitempty"`      // go tag: json:"platform" 评论平台
 	Device        string                 `protobuf:"bytes,8,opt,name=Device,proto3" json:"Device,omitempty"`           // go tag: json:"device" 评论设备
 	Message       string                 `protobuf:"bytes,9,opt,name=Message,proto3" json:"Message,omitempty"`         // go tag: json:"message" 评论内容
 	Meta          string                 `protobuf:"bytes,10,opt,name=Meta,proto3" json:"Meta,omitempty"`              // go tag: json:"meta" 评论元数据 背景 字体
-	ReplyID       uint64                 `protobuf:"varint,11,opt,name=ReplyID,proto3" json:"ReplyID,omitempty"`       // go tag: json:"reply_id" 被回复的评论ID
-	State         uint64                 `protobuf:"varint,12,opt,name=State,proto3" json:"State,omitempty"`           // go tag: json:"state" 评论状态 0-正常, 1-隐藏
-	RootID        uint64                 `protobuf:"varint,13,opt,name=RootID,proto3" json:"RootID,omitempty"`         // go tag: json:"root_id" 根评论id 不为0则为回复一级评论
-	CreatedAt     uint64                 `protobuf:"varint,14,opt,name=CreatedAt,proto3" json:"CreatedAt,omitempty"`   // go tag: json:"created_at" 创建时间
-	Floor         uint64                 `protobuf:"varint,15,opt,name=Floor,proto3" json:"Floor,omitempty"`           // go tag: json:"floor" 楼层
-	LikeCount     uint64                 `protobuf:"varint,16,opt,name=LikeCount,proto3" json:"LikeCount,omitempty"`   // go tag: json:"like_count" 点赞数
-	HateCount     uint64                 `protobuf:"varint,17,opt,name=HateCount,proto3" json:"HateCount,omitempty"`   // go tag: json:"hate_count" 踩数
-	Count         uint64                 `protobuf:"varint,18,opt,name=Count,proto3" json:"Count,omitempty"`           // go tag: json:"count" 评论数
+	ReplyID       int64                  `protobuf:"varint,11,opt,name=ReplyID,proto3" json:"ReplyID,omitempty"`       // go tag: json:"reply_id" 被回复的评论ID
+	State         int64                  `protobuf:"varint,12,opt,name=State,proto3" json:"State,omitempty"`           // go tag: json:"state" 评论状态 0-正常, 1-隐藏
+	RootID        int64                  `protobuf:"varint,13,opt,name=RootID,proto3" json:"RootID,omitempty"`         // go tag: json:"root_id" 根评论id 不为0则为回复一级评论
+	CreatedAt     int64                  `protobuf:"varint,14,opt,name=CreatedAt,proto3" json:"CreatedAt,omitempty"`   // go tag: json:"created_at" 创建时间
+	Floor         int64                  `protobuf:"varint,15,opt,name=Floor,proto3" json:"Floor,omitempty"`           // go tag: json:"floor" 楼层
+	LikeCount     int64                  `protobuf:"varint,16,opt,name=LikeCount,proto3" json:"LikeCount,omitempty"`   // go tag: json:"like_count" 点赞数
+	HateCount     int64                  `protobuf:"varint,17,opt,name=HateCount,proto3" json:"HateCount,omitempty"`   // go tag: json:"hate_count" 踩数
+	Count         int64                  `protobuf:"varint,18,opt,name=Count,proto3" json:"Count,omitempty"`           // go tag: json:"count" 评论数
+	ID            int64                  `protobuf:"varint,19,opt,name=ID,proto3" json:"ID,omitempty"`                 // go tag: json:"id" 评论ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -218,28 +218,28 @@ func (*CommentResponse) Descriptor() ([]byte, []int) {
 	return file_rpc_comment_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *CommentResponse) GetObjID() uint64 {
+func (x *CommentResponse) GetObjID() int64 {
 	if x != nil {
 		return x.ObjID
 	}
 	return 0
 }
 
-func (x *CommentResponse) GetObjType() uint64 {
+func (x *CommentResponse) GetObjType() int64 {
 	if x != nil {
 		return x.ObjType
 	}
 	return 0
 }
 
-func (x *CommentResponse) GetMemberID() uint64 {
+func (x *CommentResponse) GetMemberID() int64 {
 	if x != nil {
 		return x.MemberID
 	}
 	return 0
 }
 
-func (x *CommentResponse) GetCommentID() uint64 {
+func (x *CommentResponse) GetCommentID() int64 {
 	if x != nil {
 		return x.CommentID
 	}
@@ -260,7 +260,7 @@ func (x *CommentResponse) GetIp() string {
 	return ""
 }
 
-func (x *CommentResponse) GetPlatform() uint64 {
+func (x *CommentResponse) GetPlatform() int64 {
 	if x != nil {
 		return x.Platform
 	}
@@ -288,58 +288,65 @@ func (x *CommentResponse) GetMeta() string {
 	return ""
 }
 
-func (x *CommentResponse) GetReplyID() uint64 {
+func (x *CommentResponse) GetReplyID() int64 {
 	if x != nil {
 		return x.ReplyID
 	}
 	return 0
 }
 
-func (x *CommentResponse) GetState() uint64 {
+func (x *CommentResponse) GetState() int64 {
 	if x != nil {
 		return x.State
 	}
 	return 0
 }
 
-func (x *CommentResponse) GetRootID() uint64 {
+func (x *CommentResponse) GetRootID() int64 {
 	if x != nil {
 		return x.RootID
 	}
 	return 0
 }
 
-func (x *CommentResponse) GetCreatedAt() uint64 {
+func (x *CommentResponse) GetCreatedAt() int64 {
 	if x != nil {
 		return x.CreatedAt
 	}
 	return 0
 }
 
-func (x *CommentResponse) GetFloor() uint64 {
+func (x *CommentResponse) GetFloor() int64 {
 	if x != nil {
 		return x.Floor
 	}
 	return 0
 }
 
-func (x *CommentResponse) GetLikeCount() uint64 {
+func (x *CommentResponse) GetLikeCount() int64 {
 	if x != nil {
 		return x.LikeCount
 	}
 	return 0
 }
 
-func (x *CommentResponse) GetHateCount() uint64 {
+func (x *CommentResponse) GetHateCount() int64 {
 	if x != nil {
 		return x.HateCount
 	}
 	return 0
 }
 
-func (x *CommentResponse) GetCount() uint64 {
+func (x *CommentResponse) GetCount() int64 {
 	if x != nil {
 		return x.Count
+	}
+	return 0
+}
+
+func (x *CommentResponse) GetID() int64 {
+	if x != nil {
+		return x.ID
 	}
 	return 0
 }
@@ -347,22 +354,22 @@ func (x *CommentResponse) GetCount() uint64 {
 // 评论列表请求
 type CommentListRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ObjID         uint64                 `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`              // @gotags: json:"obj_id" 评论对象ID
-	ObjType       uint64                 `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`          // @gotags: json:"obj_type" 评论对象类型
-	MemberID      uint64                 `protobuf:"varint,3,opt,name=MemberID,proto3" json:"member_id"`        // @gotags: json:"member_id" 作者用户ID
-	Cursor        uint64                 `protobuf:"varint,4,opt,name=Cursor,proto3" json:"cursor"`             // @gotags: json:"cursor" cursor游标 排序数据游标
-	PageSize      uint64                 `protobuf:"varint,5,opt,name=PageSize,proto3" json:"page_size"`        // @gotags: json:"page_size" 页大小
-	SortType      uint64                 `protobuf:"varint,6,opt,name=SortType,proto3" json:"sort_type"`        // @gotags: json:"sort_type" 排序方式 0-默认, 1-点赞数, 2-评论时间
-	State         uint64                 `protobuf:"varint,7,opt,name=State,proto3" json:"state"`               // @gotags: json:"state" 评论状态 0-正常, 1-隐藏
-	RootID        uint64                 `protobuf:"varint,8,opt,name=RootID,proto3" json:"root_id"`            // @gotags: json:"root_id" 根评论ID 不为0则为回复一级评论
-	ReplyID       uint64                 `protobuf:"varint,11,opt,name=ReplyID,proto3" json:"reply_id"`         // @gotags: json:"reply_id" 被回复的评论ID
-	SortedField   uint64                 `protobuf:"varint,12,opt,name=SortedField,proto3" json:"sorted_field"` // @gotags: json:"sorted_field" 排序字段
-	CreatedAt     uint64                 `protobuf:"varint,13,opt,name=CreatedAt,proto3" json:"created_at"`     // @gotags: json:"created_at" 创建时间
-	Floor         uint64                 `protobuf:"varint,14,opt,name=Floor,proto3" json:"floor"`              // @gotags: json:"floor" 楼层
-	LikeCount     uint64                 `protobuf:"varint,15,opt,name=LikeCount,proto3" json:"like_count"`     // @gotags: json:"like_count" 点赞数
-	HateCount     uint64                 `protobuf:"varint,16,opt,name=HateCount,proto3" json:"hate_count"`     // @gotags: json:"hate_count" 踩数
-	Count         uint64                 `protobuf:"varint,17,opt,name=Count,proto3" json:"count"`              // @gotags: json:"count" 评论数
-	CommentID     uint64                 `protobuf:"varint,18,opt,name=CommentID,proto3" json:"comment_id"`     // @gotags: json:"comment_id" 评论ID
+	ObjID         int64                  `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`              // @gotags: json:"obj_id" 评论对象ID
+	ObjType       int64                  `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`          // @gotags: json:"obj_type" 评论对象类型
+	MemberID      int64                  `protobuf:"varint,3,opt,name=MemberID,proto3" json:"member_id"`        // @gotags: json:"member_id" 作者用户ID
+	Cursor        int64                  `protobuf:"varint,4,opt,name=Cursor,proto3" json:"cursor"`            // @gotags: json:"cursor" cursor游标 排序数据游标
+	PageSize      int64                  `protobuf:"varint,5,opt,name=PageSize,proto3" json:"page_size"`        // @gotags: json:"page_size" 页大小
+	SortType      int64                  `protobuf:"varint,6,opt,name=SortType,proto3" json:"sort_type"`        // @gotags: json:"sort_type" 排序方式 0-默认, 1-点赞数, 2-评论时间
+	State         int64                  `protobuf:"varint,7,opt,name=State,proto3" json:"state"`              // @gotags: json:"state" 评论状态 0-正常, 1-隐藏
+	RootID        int64                  `protobuf:"varint,8,opt,name=RootID,proto3" json:"root_id"`            // @gotags: json:"root_id" 根评论ID 不为0则为回复一级评论
+	ReplyID       int64                  `protobuf:"varint,11,opt,name=ReplyID,proto3" json:"reply_id"`         // @gotags: json:"reply_id" 被回复的评论ID
+	SortedField   int64                  `protobuf:"varint,12,opt,name=SortedField,proto3" json:"sorted_field"` // @gotags: json:"sorted_field" 排序字段
+	CreatedAt     int64                  `protobuf:"varint,13,opt,name=CreatedAt,proto3" json:"created_at"`     // @gotags: json:"created_at" 创建时间
+	Floor         int64                  `protobuf:"varint,14,opt,name=Floor,proto3" json:"floor"`             // @gotags: json:"floor" 楼层
+	LikeCount     int64                  `protobuf:"varint,15,opt,name=LikeCount,proto3" json:"like_count"`     // @gotags: json:"like_count" 点赞数
+	HateCount     int64                  `protobuf:"varint,16,opt,name=HateCount,proto3" json:"hate_count"`     // @gotags: json:"hate_count" 踩数
+	Count         int64                  `protobuf:"varint,17,opt,name=Count,proto3" json:"count"`             // @gotags: json:"count" 评论数
+	CommentID     int64                  `protobuf:"varint,18,opt,name=CommentID,proto3" json:"comment_id"`     // @gotags: json:"comment_id" 评论ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -397,112 +404,112 @@ func (*CommentListRequest) Descriptor() ([]byte, []int) {
 	return file_rpc_comment_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *CommentListRequest) GetObjID() uint64 {
+func (x *CommentListRequest) GetObjID() int64 {
 	if x != nil {
 		return x.ObjID
 	}
 	return 0
 }
 
-func (x *CommentListRequest) GetObjType() uint64 {
+func (x *CommentListRequest) GetObjType() int64 {
 	if x != nil {
 		return x.ObjType
 	}
 	return 0
 }
 
-func (x *CommentListRequest) GetMemberID() uint64 {
+func (x *CommentListRequest) GetMemberID() int64 {
 	if x != nil {
 		return x.MemberID
 	}
 	return 0
 }
 
-func (x *CommentListRequest) GetCursor() uint64 {
+func (x *CommentListRequest) GetCursor() int64 {
 	if x != nil {
 		return x.Cursor
 	}
 	return 0
 }
 
-func (x *CommentListRequest) GetPageSize() uint64 {
+func (x *CommentListRequest) GetPageSize() int64 {
 	if x != nil {
 		return x.PageSize
 	}
 	return 0
 }
 
-func (x *CommentListRequest) GetSortType() uint64 {
+func (x *CommentListRequest) GetSortType() int64 {
 	if x != nil {
 		return x.SortType
 	}
 	return 0
 }
 
-func (x *CommentListRequest) GetState() uint64 {
+func (x *CommentListRequest) GetState() int64 {
 	if x != nil {
 		return x.State
 	}
 	return 0
 }
 
-func (x *CommentListRequest) GetRootID() uint64 {
+func (x *CommentListRequest) GetRootID() int64 {
 	if x != nil {
 		return x.RootID
 	}
 	return 0
 }
 
-func (x *CommentListRequest) GetReplyID() uint64 {
+func (x *CommentListRequest) GetReplyID() int64 {
 	if x != nil {
 		return x.ReplyID
 	}
 	return 0
 }
 
-func (x *CommentListRequest) GetSortedField() uint64 {
+func (x *CommentListRequest) GetSortedField() int64 {
 	if x != nil {
 		return x.SortedField
 	}
 	return 0
 }
 
-func (x *CommentListRequest) GetCreatedAt() uint64 {
+func (x *CommentListRequest) GetCreatedAt() int64 {
 	if x != nil {
 		return x.CreatedAt
 	}
 	return 0
 }
 
-func (x *CommentListRequest) GetFloor() uint64 {
+func (x *CommentListRequest) GetFloor() int64 {
 	if x != nil {
 		return x.Floor
 	}
 	return 0
 }
 
-func (x *CommentListRequest) GetLikeCount() uint64 {
+func (x *CommentListRequest) GetLikeCount() int64 {
 	if x != nil {
 		return x.LikeCount
 	}
 	return 0
 }
 
-func (x *CommentListRequest) GetHateCount() uint64 {
+func (x *CommentListRequest) GetHateCount() int64 {
 	if x != nil {
 		return x.HateCount
 	}
 	return 0
 }
 
-func (x *CommentListRequest) GetCount() uint64 {
+func (x *CommentListRequest) GetCount() int64 {
 	if x != nil {
 		return x.Count
 	}
 	return 0
 }
 
-func (x *CommentListRequest) GetCommentID() uint64 {
+func (x *CommentListRequest) GetCommentID() int64 {
 	if x != nil {
 		return x.CommentID
 	}
@@ -513,9 +520,9 @@ func (x *CommentListRequest) GetCommentID() uint64 {
 type CommentListResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Comments      []*CommentResponse     `protobuf:"bytes,1,rep,name=Comments,proto3" json:"comments"` // @gotags: json:"comments" 评论列表
-	IsEnd         bool                   `protobuf:"varint,2,opt,name=isEnd,proto3" json:"is_end"`     // @gotags: json:"is_end" 是否结束
+	IsEnd         bool                   `protobuf:"varint,2,opt,name=isEnd,proto3" json:"is_end"`      // @gotags: json:"is_end" 是否结束
 	Cursor        int64                  `protobuf:"varint,3,opt,name=cursor,proto3" json:"cursor"`    // @gotags: json:"cursor" 游标
-	LastID        int64                  `protobuf:"varint,4,opt,name=lastID,proto3" json:"last_id"`   // @gotags: json:"last_id" 最后一条评论ID
+	LastID        int64                  `protobuf:"varint,4,opt,name=lastID,proto3" json:"last_id"`    // @gotags: json:"last_id" 最后一条评论ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -581,10 +588,10 @@ func (x *CommentListResponse) GetLastID() int64 {
 // 删除评论请求
 type DeleteCommentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ObjID         uint64                 `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`         // @gotags: json:"obj_id" 评论对象ID
-	ObjType       uint64                 `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`     // @gotags: json:"obj_type" 评论对象类型
-	CommentID     uint64                 `protobuf:"varint,3,opt,name=CommentID,proto3" json:"comment_id"` // @gotags: json:"comment_id" 评论ID
-	MemberID      uint64                 `protobuf:"varint,4,opt,name=MemberID,proto3" json:"member_id"`   // @gotags: json:"member_id" 用户ID
+	ObjID         int64                  `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`         // @gotags: json:"obj_id" 评论对象ID
+	ObjType       int64                  `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`     // @gotags: json:"obj_type" 评论对象类型
+	CommentID     int64                  `protobuf:"varint,3,opt,name=CommentID,proto3" json:"comment_id"` // @gotags: json:"comment_id" 评论ID
+	MemberID      int64                  `protobuf:"varint,4,opt,name=MemberID,proto3" json:"member_id"`   // @gotags: json:"member_id" 用户ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -619,28 +626,28 @@ func (*DeleteCommentRequest) Descriptor() ([]byte, []int) {
 	return file_rpc_comment_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *DeleteCommentRequest) GetObjID() uint64 {
+func (x *DeleteCommentRequest) GetObjID() int64 {
 	if x != nil {
 		return x.ObjID
 	}
 	return 0
 }
 
-func (x *DeleteCommentRequest) GetObjType() uint64 {
+func (x *DeleteCommentRequest) GetObjType() int64 {
 	if x != nil {
 		return x.ObjType
 	}
 	return 0
 }
 
-func (x *DeleteCommentRequest) GetCommentID() uint64 {
+func (x *DeleteCommentRequest) GetCommentID() int64 {
 	if x != nil {
 		return x.CommentID
 	}
 	return 0
 }
 
-func (x *DeleteCommentRequest) GetMemberID() uint64 {
+func (x *DeleteCommentRequest) GetMemberID() int64 {
 	if x != nil {
 		return x.MemberID
 	}
@@ -703,10 +710,10 @@ func (x *DeleteCommentResponse) GetMessage() string {
 // 评论点赞
 type LikeCommentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ObjID         uint64                 `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`         // @gotags: json:"obj_id" 评论对象ID
-	ObjType       uint64                 `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`     // @gotags: json:"obj_type" 评论对象类型
-	CommentID     uint64                 `protobuf:"varint,3,opt,name=CommentID,proto3" json:"comment_id"` // @gotags: json:"comment_id" 评论ID
-	MemberID      uint64                 `protobuf:"varint,4,opt,name=MemberID,proto3" json:"member_id"`   // @gotags: json:"member_id" 用户ID
+	ObjID         int64                  `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`         // @gotags: json:"obj_id" 评论对象ID
+	ObjType       int64                  `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`     // @gotags: json:"obj_type" 评论对象类型
+	CommentID     int64                  `protobuf:"varint,3,opt,name=CommentID,proto3" json:"comment_id"` // @gotags: json:"comment_id" 评论ID
+	MemberID      int64                  `protobuf:"varint,4,opt,name=MemberID,proto3" json:"member_id"`   // @gotags: json:"member_id" 用户ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -741,28 +748,28 @@ func (*LikeCommentRequest) Descriptor() ([]byte, []int) {
 	return file_rpc_comment_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *LikeCommentRequest) GetObjID() uint64 {
+func (x *LikeCommentRequest) GetObjID() int64 {
 	if x != nil {
 		return x.ObjID
 	}
 	return 0
 }
 
-func (x *LikeCommentRequest) GetObjType() uint64 {
+func (x *LikeCommentRequest) GetObjType() int64 {
 	if x != nil {
 		return x.ObjType
 	}
 	return 0
 }
 
-func (x *LikeCommentRequest) GetCommentID() uint64 {
+func (x *LikeCommentRequest) GetCommentID() int64 {
 	if x != nil {
 		return x.CommentID
 	}
 	return 0
 }
 
-func (x *LikeCommentRequest) GetMemberID() uint64 {
+func (x *LikeCommentRequest) GetMemberID() int64 {
 	if x != nil {
 		return x.MemberID
 	}
@@ -825,10 +832,10 @@ func (x *LikeCommentResponse) GetMessage() string {
 // 评论取消点赞请求
 type UnLikeCommentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ObjID         uint64                 `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`         // @gotags: json:"obj_id" 评论对象ID
-	ObjType       uint64                 `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`     // @gotags: json:"obj_type" 评论对象类型
-	CommentID     uint64                 `protobuf:"varint,3,opt,name=CommentID,proto3" json:"comment_id"` // @gotags: json:"comment_id" 评论ID
-	MemberID      uint64                 `protobuf:"varint,4,opt,name=MemberID,proto3" json:"member_id"`   // @gotags: json:"member_id" 用户ID
+	ObjID         int64                  `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`         // @gotags: json:"obj_id" 评论对象ID
+	ObjType       int64                  `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`     // @gotags: json:"obj_type" 评论对象类型
+	CommentID     int64                  `protobuf:"varint,3,opt,name=CommentID,proto3" json:"comment_id"` // @gotags: json:"comment_id" 评论ID
+	MemberID      int64                  `protobuf:"varint,4,opt,name=MemberID,proto3" json:"member_id"`   // @gotags: json:"member_id" 用户ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -863,28 +870,28 @@ func (*UnLikeCommentRequest) Descriptor() ([]byte, []int) {
 	return file_rpc_comment_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *UnLikeCommentRequest) GetObjID() uint64 {
+func (x *UnLikeCommentRequest) GetObjID() int64 {
 	if x != nil {
 		return x.ObjID
 	}
 	return 0
 }
 
-func (x *UnLikeCommentRequest) GetObjType() uint64 {
+func (x *UnLikeCommentRequest) GetObjType() int64 {
 	if x != nil {
 		return x.ObjType
 	}
 	return 0
 }
 
-func (x *UnLikeCommentRequest) GetCommentID() uint64 {
+func (x *UnLikeCommentRequest) GetCommentID() int64 {
 	if x != nil {
 		return x.CommentID
 	}
 	return 0
 }
 
-func (x *UnLikeCommentRequest) GetMemberID() uint64 {
+func (x *UnLikeCommentRequest) GetMemberID() int64 {
 	if x != nil {
 		return x.MemberID
 	}
@@ -947,10 +954,10 @@ func (x *UnLikeCommentResponse) GetMessage() string {
 // 评论屏蔽请求
 type BlockCommentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ObjID         uint64                 `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`         // @gotags: json:"obj_id" 评论对象ID
-	ObjType       uint64                 `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`     // @gotags: json:"obj_type" 评论对象类型
-	CommentID     uint64                 `protobuf:"varint,3,opt,name=CommentID,proto3" json:"comment_id"` // @gotags: json:"comment_id" 评论ID
-	MemberID      uint64                 `protobuf:"varint,4,opt,name=MemberID,proto3" json:"member_id"`   // @gotags: json:"member_id" 用户ID
+	ObjID         int64                  `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`         // @gotags: json:"obj_id" 评论对象ID
+	ObjType       int64                  `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`     // @gotags: json:"obj_type" 评论对象类型
+	CommentID     int64                  `protobuf:"varint,3,opt,name=CommentID,proto3" json:"comment_id"` // @gotags: json:"comment_id" 评论ID
+	MemberID      int64                  `protobuf:"varint,4,opt,name=MemberID,proto3" json:"member_id"`   // @gotags: json:"member_id" 用户ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -985,28 +992,28 @@ func (*BlockCommentRequest) Descriptor() ([]byte, []int) {
 	return file_rpc_comment_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *BlockCommentRequest) GetObjID() uint64 {
+func (x *BlockCommentRequest) GetObjID() int64 {
 	if x != nil {
 		return x.ObjID
 	}
 	return 0
 }
 
-func (x *BlockCommentRequest) GetObjType() uint64 {
+func (x *BlockCommentRequest) GetObjType() int64 {
 	if x != nil {
 		return x.ObjType
 	}
 	return 0
 }
 
-func (x *BlockCommentRequest) GetCommentID() uint64 {
+func (x *BlockCommentRequest) GetCommentID() int64 {
 	if x != nil {
 		return x.CommentID
 	}
 	return 0
 }
 
-func (x *BlockCommentRequest) GetMemberID() uint64 {
+func (x *BlockCommentRequest) GetMemberID() int64 {
 	if x != nil {
 		return x.MemberID
 	}
@@ -1069,10 +1076,10 @@ func (x *BlockCommentResponse) GetMessage() string {
 // 评论取消屏蔽请求
 type UnBlockCommentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ObjID         uint64                 `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`         // @gotags: json:"obj_id" 评论对象ID
-	ObjType       uint64                 `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`     // @gotags: json:"obj_type" 评论对象类型
-	CommentID     uint64                 `protobuf:"varint,3,opt,name=CommentID,proto3" json:"comment_id"` // @gotags: json:"comment_id" 评论ID
-	MemberID      uint64                 `protobuf:"varint,4,opt,name=MemberID,proto3" json:"member_id"`   // @gotags: json:"member_id" 用户ID
+	ObjID         int64                  `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`         // @gotags: json:"obj_id" 评论对象ID
+	ObjType       int64                  `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`     // @gotags: json:"obj_type" 评论对象类型
+	CommentID     int64                  `protobuf:"varint,3,opt,name=CommentID,proto3" json:"comment_id"` // @gotags: json:"comment_id" 评论ID
+	MemberID      int64                  `protobuf:"varint,4,opt,name=MemberID,proto3" json:"member_id"`   // @gotags: json:"member_id" 用户ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1107,28 +1114,28 @@ func (*UnBlockCommentRequest) Descriptor() ([]byte, []int) {
 	return file_rpc_comment_proto_rawDescGZIP(), []int{12}
 }
 
-func (x *UnBlockCommentRequest) GetObjID() uint64 {
+func (x *UnBlockCommentRequest) GetObjID() int64 {
 	if x != nil {
 		return x.ObjID
 	}
 	return 0
 }
 
-func (x *UnBlockCommentRequest) GetObjType() uint64 {
+func (x *UnBlockCommentRequest) GetObjType() int64 {
 	if x != nil {
 		return x.ObjType
 	}
 	return 0
 }
 
-func (x *UnBlockCommentRequest) GetCommentID() uint64 {
+func (x *UnBlockCommentRequest) GetCommentID() int64 {
 	if x != nil {
 		return x.CommentID
 	}
 	return 0
 }
 
-func (x *UnBlockCommentRequest) GetMemberID() uint64 {
+func (x *UnBlockCommentRequest) GetMemberID() int64 {
 	if x != nil {
 		return x.MemberID
 	}
@@ -1191,10 +1198,10 @@ func (x *UnBlockCommentResponse) GetMessage() string {
 // 通过评论审核请求
 type AuditCommentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ObjID         uint64                 `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`         // @gotags: json:"obj_id" 评论对象ID
-	ObjType       uint64                 `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`     // @gotags: json:"obj_type" 评论对象类型
-	CommentID     uint64                 `protobuf:"varint,3,opt,name=CommentID,proto3" json:"comment_id"` // @gotags: json:"comment_id" 评论ID
-	MemberID      uint64                 `protobuf:"varint,4,opt,name=MemberID,proto3" json:"member_id"`   // @gotags: json:"member_id" 用户ID
+	ObjID         int64                  `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`         // @gotags: json:"obj_id" 评论对象ID
+	ObjType       int64                  `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`     // @gotags: json:"obj_type" 评论对象类型
+	CommentID     int64                  `protobuf:"varint,3,opt,name=CommentID,proto3" json:"comment_id"` // @gotags: json:"comment_id" 评论ID
+	MemberID      int64                  `protobuf:"varint,4,opt,name=MemberID,proto3" json:"member_id"`   // @gotags: json:"member_id" 用户ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1229,28 +1236,28 @@ func (*AuditCommentRequest) Descriptor() ([]byte, []int) {
 	return file_rpc_comment_proto_rawDescGZIP(), []int{14}
 }
 
-func (x *AuditCommentRequest) GetObjID() uint64 {
+func (x *AuditCommentRequest) GetObjID() int64 {
 	if x != nil {
 		return x.ObjID
 	}
 	return 0
 }
 
-func (x *AuditCommentRequest) GetObjType() uint64 {
+func (x *AuditCommentRequest) GetObjType() int64 {
 	if x != nil {
 		return x.ObjType
 	}
 	return 0
 }
 
-func (x *AuditCommentRequest) GetCommentID() uint64 {
+func (x *AuditCommentRequest) GetCommentID() int64 {
 	if x != nil {
 		return x.CommentID
 	}
 	return 0
 }
 
-func (x *AuditCommentRequest) GetMemberID() uint64 {
+func (x *AuditCommentRequest) GetMemberID() int64 {
 	if x != nil {
 		return x.MemberID
 	}
@@ -1313,10 +1320,10 @@ func (x *AuditCommentResponse) GetMessage() string {
 // 评论取消审核请求
 type UnAuditCommentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ObjID         uint64                 `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`         // @gotags: json:"obj_id" 评论对象ID
-	ObjType       uint64                 `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`     // @gotags: json:"obj_type" 评论对象类型
-	CommentID     uint64                 `protobuf:"varint,3,opt,name=CommentID,proto3" json:"comment_id"` // @gotags: json:"comment_id" 评论ID
-	MemberID      uint64                 `protobuf:"varint,4,opt,name=MemberID,proto3" json:"member_id"`   // @gotags: json:"member_id" 用户ID
+	ObjID         int64                  `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`         // @gotags: json:"obj_id" 评论对象ID
+	ObjType       int64                  `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`     // @gotags: json:"obj_type" 评论对象类型
+	CommentID     int64                  `protobuf:"varint,3,opt,name=CommentID,proto3" json:"comment_id"` // @gotags: json:"comment_id" 评论ID
+	MemberID      int64                  `protobuf:"varint,4,opt,name=MemberID,proto3" json:"member_id"`   // @gotags: json:"member_id" 用户ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1351,28 +1358,28 @@ func (*UnAuditCommentRequest) Descriptor() ([]byte, []int) {
 	return file_rpc_comment_proto_rawDescGZIP(), []int{16}
 }
 
-func (x *UnAuditCommentRequest) GetObjID() uint64 {
+func (x *UnAuditCommentRequest) GetObjID() int64 {
 	if x != nil {
 		return x.ObjID
 	}
 	return 0
 }
 
-func (x *UnAuditCommentRequest) GetObjType() uint64 {
+func (x *UnAuditCommentRequest) GetObjType() int64 {
 	if x != nil {
 		return x.ObjType
 	}
 	return 0
 }
 
-func (x *UnAuditCommentRequest) GetCommentID() uint64 {
+func (x *UnAuditCommentRequest) GetCommentID() int64 {
 	if x != nil {
 		return x.CommentID
 	}
 	return 0
 }
 
-func (x *UnAuditCommentRequest) GetMemberID() uint64 {
+func (x *UnAuditCommentRequest) GetMemberID() int64 {
 	if x != nil {
 		return x.MemberID
 	}
@@ -1435,10 +1442,10 @@ func (x *UnAuditCommentResponse) GetMessage() string {
 // 评论置顶请求
 type SetCommentAttrsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ObjID         uint64                 `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`         // @gotags: json:"obj_id" 评论对象ID
-	ObjType       uint64                 `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`     // @gotags: json:"obj_type" 评论对象类型
-	CommentID     uint64                 `protobuf:"varint,3,opt,name=CommentID,proto3" json:"comment_id"` // @gotags: json:"comment_id" 评论ID
-	MemberID      uint64                 `protobuf:"varint,4,opt,name=MemberID,proto3" json:"member_id"`   // @gotags: json:"member_id" 用户ID
+	ObjID         int64                  `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`         // @gotags: json:"obj_id" 评论对象ID
+	ObjType       int64                  `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`     // @gotags: json:"obj_type" 评论对象类型
+	CommentID     int64                  `protobuf:"varint,3,opt,name=CommentID,proto3" json:"comment_id"` // @gotags: json:"comment_id" 评论ID
+	MemberID      int64                  `protobuf:"varint,4,opt,name=MemberID,proto3" json:"member_id"`   // @gotags: json:"member_id" 用户ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1473,28 +1480,28 @@ func (*SetCommentAttrsRequest) Descriptor() ([]byte, []int) {
 	return file_rpc_comment_proto_rawDescGZIP(), []int{18}
 }
 
-func (x *SetCommentAttrsRequest) GetObjID() uint64 {
+func (x *SetCommentAttrsRequest) GetObjID() int64 {
 	if x != nil {
 		return x.ObjID
 	}
 	return 0
 }
 
-func (x *SetCommentAttrsRequest) GetObjType() uint64 {
+func (x *SetCommentAttrsRequest) GetObjType() int64 {
 	if x != nil {
 		return x.ObjType
 	}
 	return 0
 }
 
-func (x *SetCommentAttrsRequest) GetCommentID() uint64 {
+func (x *SetCommentAttrsRequest) GetCommentID() int64 {
 	if x != nil {
 		return x.CommentID
 	}
 	return 0
 }
 
-func (x *SetCommentAttrsRequest) GetMemberID() uint64 {
+func (x *SetCommentAttrsRequest) GetMemberID() int64 {
 	if x != nil {
 		return x.MemberID
 	}
@@ -1557,10 +1564,10 @@ func (x *SetCommentAttrsResponse) GetMessage() string {
 // 评论取消置顶
 type UnSetCommentAttrsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ObjID         uint64                 `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`         // @gotags: json:"obj_id" 评论对象ID
-	ObjType       uint64                 `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`     // @gotags: json:"obj_type" 评论对象类型
-	CommentID     uint64                 `protobuf:"varint,3,opt,name=CommentID,proto3" json:"comment_id"` // @gotags: json:"comment_id" 评论ID
-	MemberID      uint64                 `protobuf:"varint,4,opt,name=MemberID,proto3" json:"member_id"`   // @gotags: json:"member_id" 用户ID
+	ObjID         int64                  `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`         // @gotags: json:"obj_id" 评论对象ID
+	ObjType       int64                  `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`     // @gotags: json:"obj_type" 评论对象类型
+	CommentID     int64                  `protobuf:"varint,3,opt,name=CommentID,proto3" json:"comment_id"` // @gotags: json:"comment_id" 评论ID
+	MemberID      int64                  `protobuf:"varint,4,opt,name=MemberID,proto3" json:"member_id"`   // @gotags: json:"member_id" 用户ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1595,28 +1602,28 @@ func (*UnSetCommentAttrsRequest) Descriptor() ([]byte, []int) {
 	return file_rpc_comment_proto_rawDescGZIP(), []int{20}
 }
 
-func (x *UnSetCommentAttrsRequest) GetObjID() uint64 {
+func (x *UnSetCommentAttrsRequest) GetObjID() int64 {
 	if x != nil {
 		return x.ObjID
 	}
 	return 0
 }
 
-func (x *UnSetCommentAttrsRequest) GetObjType() uint64 {
+func (x *UnSetCommentAttrsRequest) GetObjType() int64 {
 	if x != nil {
 		return x.ObjType
 	}
 	return 0
 }
 
-func (x *UnSetCommentAttrsRequest) GetCommentID() uint64 {
+func (x *UnSetCommentAttrsRequest) GetCommentID() int64 {
 	if x != nil {
 		return x.CommentID
 	}
 	return 0
 }
 
-func (x *UnSetCommentAttrsRequest) GetMemberID() uint64 {
+func (x *UnSetCommentAttrsRequest) GetMemberID() int64 {
 	if x != nil {
 		return x.MemberID
 	}
@@ -1681,131 +1688,132 @@ const file_rpc_comment_proto_rawDesc = "" +
 	"\n" +
 	"\x11rpc/comment.proto\x12\rcommentclient\"\xd6\x02\n" +
 	"\x0eCommentRequest\x12\x14\n" +
-	"\x05ObjID\x18\x01 \x01(\x04R\x05ObjID\x12\x18\n" +
-	"\aObjType\x18\x02 \x01(\x04R\aObjType\x12\x1a\n" +
-	"\bMemberID\x18\x03 \x01(\x04R\bMemberID\x12\x1c\n" +
-	"\tCommentID\x18\x04 \x01(\x04R\tCommentID\x12 \n" +
+	"\x05ObjID\x18\x01 \x01(\x03R\x05ObjID\x12\x18\n" +
+	"\aObjType\x18\x02 \x01(\x03R\aObjType\x12\x1a\n" +
+	"\bMemberID\x18\x03 \x01(\x03R\bMemberID\x12\x1c\n" +
+	"\tCommentID\x18\x04 \x01(\x03R\tCommentID\x12 \n" +
 	"\vAtMemberIDs\x18\x05 \x01(\tR\vAtMemberIDs\x12\x0e\n" +
 	"\x02Ip\x18\x06 \x01(\tR\x02Ip\x12\x1a\n" +
-	"\bPlatform\x18\a \x01(\x04R\bPlatform\x12\x16\n" +
+	"\bPlatform\x18\a \x01(\x03R\bPlatform\x12\x16\n" +
 	"\x06Device\x18\b \x01(\tR\x06Device\x12\x18\n" +
 	"\aMessage\x18\t \x01(\tR\aMessage\x12\x12\n" +
 	"\x04Meta\x18\n" +
 	" \x01(\tR\x04Meta\x12\x18\n" +
-	"\aReplyID\x18\v \x01(\x04R\aReplyID\x12\x14\n" +
-	"\x05State\x18\f \x01(\x04R\x05State\x12\x16\n" +
-	"\x06RootID\x18\r \x01(\x04R\x06RootID\"\xdd\x03\n" +
+	"\aReplyID\x18\v \x01(\x03R\aReplyID\x12\x14\n" +
+	"\x05State\x18\f \x01(\x03R\x05State\x12\x16\n" +
+	"\x06RootID\x18\r \x01(\x03R\x06RootID\"\xed\x03\n" +
 	"\x0fCommentResponse\x12\x14\n" +
-	"\x05ObjID\x18\x01 \x01(\x04R\x05ObjID\x12\x18\n" +
-	"\aObjType\x18\x02 \x01(\x04R\aObjType\x12\x1a\n" +
-	"\bMemberID\x18\x03 \x01(\x04R\bMemberID\x12\x1c\n" +
-	"\tCommentID\x18\x04 \x01(\x04R\tCommentID\x12 \n" +
+	"\x05ObjID\x18\x01 \x01(\x03R\x05ObjID\x12\x18\n" +
+	"\aObjType\x18\x02 \x01(\x03R\aObjType\x12\x1a\n" +
+	"\bMemberID\x18\x03 \x01(\x03R\bMemberID\x12\x1c\n" +
+	"\tCommentID\x18\x04 \x01(\x03R\tCommentID\x12 \n" +
 	"\vAtMemberIDs\x18\x05 \x01(\tR\vAtMemberIDs\x12\x0e\n" +
 	"\x02Ip\x18\x06 \x01(\tR\x02Ip\x12\x1a\n" +
-	"\bPlatform\x18\a \x01(\x04R\bPlatform\x12\x16\n" +
+	"\bPlatform\x18\a \x01(\x03R\bPlatform\x12\x16\n" +
 	"\x06Device\x18\b \x01(\tR\x06Device\x12\x18\n" +
 	"\aMessage\x18\t \x01(\tR\aMessage\x12\x12\n" +
 	"\x04Meta\x18\n" +
 	" \x01(\tR\x04Meta\x12\x18\n" +
-	"\aReplyID\x18\v \x01(\x04R\aReplyID\x12\x14\n" +
-	"\x05State\x18\f \x01(\x04R\x05State\x12\x16\n" +
-	"\x06RootID\x18\r \x01(\x04R\x06RootID\x12\x1c\n" +
-	"\tCreatedAt\x18\x0e \x01(\x04R\tCreatedAt\x12\x14\n" +
-	"\x05Floor\x18\x0f \x01(\x04R\x05Floor\x12\x1c\n" +
-	"\tLikeCount\x18\x10 \x01(\x04R\tLikeCount\x12\x1c\n" +
-	"\tHateCount\x18\x11 \x01(\x04R\tHateCount\x12\x14\n" +
-	"\x05Count\x18\x12 \x01(\x04R\x05Count\"\xbe\x03\n" +
+	"\aReplyID\x18\v \x01(\x03R\aReplyID\x12\x14\n" +
+	"\x05State\x18\f \x01(\x03R\x05State\x12\x16\n" +
+	"\x06RootID\x18\r \x01(\x03R\x06RootID\x12\x1c\n" +
+	"\tCreatedAt\x18\x0e \x01(\x03R\tCreatedAt\x12\x14\n" +
+	"\x05Floor\x18\x0f \x01(\x03R\x05Floor\x12\x1c\n" +
+	"\tLikeCount\x18\x10 \x01(\x03R\tLikeCount\x12\x1c\n" +
+	"\tHateCount\x18\x11 \x01(\x03R\tHateCount\x12\x14\n" +
+	"\x05Count\x18\x12 \x01(\x03R\x05Count\x12\x0e\n" +
+	"\x02ID\x18\x13 \x01(\x03R\x02ID\"\xbe\x03\n" +
 	"\x12CommentListRequest\x12\x14\n" +
-	"\x05ObjID\x18\x01 \x01(\x04R\x05ObjID\x12\x18\n" +
-	"\aObjType\x18\x02 \x01(\x04R\aObjType\x12\x1a\n" +
-	"\bMemberID\x18\x03 \x01(\x04R\bMemberID\x12\x16\n" +
-	"\x06Cursor\x18\x04 \x01(\x04R\x06Cursor\x12\x1a\n" +
-	"\bPageSize\x18\x05 \x01(\x04R\bPageSize\x12\x1a\n" +
-	"\bSortType\x18\x06 \x01(\x04R\bSortType\x12\x14\n" +
-	"\x05State\x18\a \x01(\x04R\x05State\x12\x16\n" +
-	"\x06RootID\x18\b \x01(\x04R\x06RootID\x12\x18\n" +
-	"\aReplyID\x18\v \x01(\x04R\aReplyID\x12 \n" +
-	"\vSortedField\x18\f \x01(\x04R\vSortedField\x12\x1c\n" +
-	"\tCreatedAt\x18\r \x01(\x04R\tCreatedAt\x12\x14\n" +
-	"\x05Floor\x18\x0e \x01(\x04R\x05Floor\x12\x1c\n" +
-	"\tLikeCount\x18\x0f \x01(\x04R\tLikeCount\x12\x1c\n" +
-	"\tHateCount\x18\x10 \x01(\x04R\tHateCount\x12\x14\n" +
-	"\x05Count\x18\x11 \x01(\x04R\x05Count\x12\x1c\n" +
-	"\tCommentID\x18\x12 \x01(\x04R\tCommentID\"\x97\x01\n" +
+	"\x05ObjID\x18\x01 \x01(\x03R\x05ObjID\x12\x18\n" +
+	"\aObjType\x18\x02 \x01(\x03R\aObjType\x12\x1a\n" +
+	"\bMemberID\x18\x03 \x01(\x03R\bMemberID\x12\x16\n" +
+	"\x06Cursor\x18\x04 \x01(\x03R\x06Cursor\x12\x1a\n" +
+	"\bPageSize\x18\x05 \x01(\x03R\bPageSize\x12\x1a\n" +
+	"\bSortType\x18\x06 \x01(\x03R\bSortType\x12\x14\n" +
+	"\x05State\x18\a \x01(\x03R\x05State\x12\x16\n" +
+	"\x06RootID\x18\b \x01(\x03R\x06RootID\x12\x18\n" +
+	"\aReplyID\x18\v \x01(\x03R\aReplyID\x12 \n" +
+	"\vSortedField\x18\f \x01(\x03R\vSortedField\x12\x1c\n" +
+	"\tCreatedAt\x18\r \x01(\x03R\tCreatedAt\x12\x14\n" +
+	"\x05Floor\x18\x0e \x01(\x03R\x05Floor\x12\x1c\n" +
+	"\tLikeCount\x18\x0f \x01(\x03R\tLikeCount\x12\x1c\n" +
+	"\tHateCount\x18\x10 \x01(\x03R\tHateCount\x12\x14\n" +
+	"\x05Count\x18\x11 \x01(\x03R\x05Count\x12\x1c\n" +
+	"\tCommentID\x18\x12 \x01(\x03R\tCommentID\"\x97\x01\n" +
 	"\x13CommentListResponse\x12:\n" +
 	"\bComments\x18\x01 \x03(\v2\x1e.commentclient.CommentResponseR\bComments\x12\x14\n" +
 	"\x05isEnd\x18\x02 \x01(\bR\x05isEnd\x12\x16\n" +
 	"\x06cursor\x18\x03 \x01(\x03R\x06cursor\x12\x16\n" +
 	"\x06lastID\x18\x04 \x01(\x03R\x06lastID\"\x80\x01\n" +
 	"\x14DeleteCommentRequest\x12\x14\n" +
-	"\x05ObjID\x18\x01 \x01(\x04R\x05ObjID\x12\x18\n" +
-	"\aObjType\x18\x02 \x01(\x04R\aObjType\x12\x1c\n" +
-	"\tCommentID\x18\x03 \x01(\x04R\tCommentID\x12\x1a\n" +
-	"\bMemberID\x18\x04 \x01(\x04R\bMemberID\"K\n" +
+	"\x05ObjID\x18\x01 \x01(\x03R\x05ObjID\x12\x18\n" +
+	"\aObjType\x18\x02 \x01(\x03R\aObjType\x12\x1c\n" +
+	"\tCommentID\x18\x03 \x01(\x03R\tCommentID\x12\x1a\n" +
+	"\bMemberID\x18\x04 \x01(\x03R\bMemberID\"K\n" +
 	"\x15DeleteCommentResponse\x12\x18\n" +
 	"\aSuccess\x18\x01 \x01(\bR\aSuccess\x12\x18\n" +
 	"\aMessage\x18\x02 \x01(\tR\aMessage\"~\n" +
 	"\x12LikeCommentRequest\x12\x14\n" +
-	"\x05ObjID\x18\x01 \x01(\x04R\x05ObjID\x12\x18\n" +
-	"\aObjType\x18\x02 \x01(\x04R\aObjType\x12\x1c\n" +
-	"\tCommentID\x18\x03 \x01(\x04R\tCommentID\x12\x1a\n" +
-	"\bMemberID\x18\x04 \x01(\x04R\bMemberID\"I\n" +
+	"\x05ObjID\x18\x01 \x01(\x03R\x05ObjID\x12\x18\n" +
+	"\aObjType\x18\x02 \x01(\x03R\aObjType\x12\x1c\n" +
+	"\tCommentID\x18\x03 \x01(\x03R\tCommentID\x12\x1a\n" +
+	"\bMemberID\x18\x04 \x01(\x03R\bMemberID\"I\n" +
 	"\x13LikeCommentResponse\x12\x18\n" +
 	"\aSuccess\x18\x01 \x01(\bR\aSuccess\x12\x18\n" +
 	"\aMessage\x18\x02 \x01(\tR\aMessage\"\x80\x01\n" +
 	"\x14UnLikeCommentRequest\x12\x14\n" +
-	"\x05ObjID\x18\x01 \x01(\x04R\x05ObjID\x12\x18\n" +
-	"\aObjType\x18\x02 \x01(\x04R\aObjType\x12\x1c\n" +
-	"\tCommentID\x18\x03 \x01(\x04R\tCommentID\x12\x1a\n" +
-	"\bMemberID\x18\x04 \x01(\x04R\bMemberID\"K\n" +
+	"\x05ObjID\x18\x01 \x01(\x03R\x05ObjID\x12\x18\n" +
+	"\aObjType\x18\x02 \x01(\x03R\aObjType\x12\x1c\n" +
+	"\tCommentID\x18\x03 \x01(\x03R\tCommentID\x12\x1a\n" +
+	"\bMemberID\x18\x04 \x01(\x03R\bMemberID\"K\n" +
 	"\x15UnLikeCommentResponse\x12\x18\n" +
 	"\aSuccess\x18\x01 \x01(\bR\aSuccess\x12\x18\n" +
 	"\aMessage\x18\x02 \x01(\tR\aMessage\"\x7f\n" +
 	"\x13BlockCommentRequest\x12\x14\n" +
-	"\x05ObjID\x18\x01 \x01(\x04R\x05ObjID\x12\x18\n" +
-	"\aObjType\x18\x02 \x01(\x04R\aObjType\x12\x1c\n" +
-	"\tCommentID\x18\x03 \x01(\x04R\tCommentID\x12\x1a\n" +
-	"\bMemberID\x18\x04 \x01(\x04R\bMemberID\"J\n" +
+	"\x05ObjID\x18\x01 \x01(\x03R\x05ObjID\x12\x18\n" +
+	"\aObjType\x18\x02 \x01(\x03R\aObjType\x12\x1c\n" +
+	"\tCommentID\x18\x03 \x01(\x03R\tCommentID\x12\x1a\n" +
+	"\bMemberID\x18\x04 \x01(\x03R\bMemberID\"J\n" +
 	"\x14BlockCommentResponse\x12\x18\n" +
 	"\aSuccess\x18\x01 \x01(\bR\aSuccess\x12\x18\n" +
 	"\aMessage\x18\x02 \x01(\tR\aMessage\"\x81\x01\n" +
 	"\x15UnBlockCommentRequest\x12\x14\n" +
-	"\x05ObjID\x18\x01 \x01(\x04R\x05ObjID\x12\x18\n" +
-	"\aObjType\x18\x02 \x01(\x04R\aObjType\x12\x1c\n" +
-	"\tCommentID\x18\x03 \x01(\x04R\tCommentID\x12\x1a\n" +
-	"\bMemberID\x18\x04 \x01(\x04R\bMemberID\"L\n" +
+	"\x05ObjID\x18\x01 \x01(\x03R\x05ObjID\x12\x18\n" +
+	"\aObjType\x18\x02 \x01(\x03R\aObjType\x12\x1c\n" +
+	"\tCommentID\x18\x03 \x01(\x03R\tCommentID\x12\x1a\n" +
+	"\bMemberID\x18\x04 \x01(\x03R\bMemberID\"L\n" +
 	"\x16UnBlockCommentResponse\x12\x18\n" +
 	"\aSuccess\x18\x01 \x01(\bR\aSuccess\x12\x18\n" +
 	"\aMessage\x18\x02 \x01(\tR\aMessage\"\x7f\n" +
 	"\x13AuditCommentRequest\x12\x14\n" +
-	"\x05ObjID\x18\x01 \x01(\x04R\x05ObjID\x12\x18\n" +
-	"\aObjType\x18\x02 \x01(\x04R\aObjType\x12\x1c\n" +
-	"\tCommentID\x18\x03 \x01(\x04R\tCommentID\x12\x1a\n" +
-	"\bMemberID\x18\x04 \x01(\x04R\bMemberID\"J\n" +
+	"\x05ObjID\x18\x01 \x01(\x03R\x05ObjID\x12\x18\n" +
+	"\aObjType\x18\x02 \x01(\x03R\aObjType\x12\x1c\n" +
+	"\tCommentID\x18\x03 \x01(\x03R\tCommentID\x12\x1a\n" +
+	"\bMemberID\x18\x04 \x01(\x03R\bMemberID\"J\n" +
 	"\x14AuditCommentResponse\x12\x18\n" +
 	"\aSuccess\x18\x01 \x01(\bR\aSuccess\x12\x18\n" +
 	"\aMessage\x18\x02 \x01(\tR\aMessage\"\x81\x01\n" +
 	"\x15UnAuditCommentRequest\x12\x14\n" +
-	"\x05ObjID\x18\x01 \x01(\x04R\x05ObjID\x12\x18\n" +
-	"\aObjType\x18\x02 \x01(\x04R\aObjType\x12\x1c\n" +
-	"\tCommentID\x18\x03 \x01(\x04R\tCommentID\x12\x1a\n" +
-	"\bMemberID\x18\x04 \x01(\x04R\bMemberID\"L\n" +
+	"\x05ObjID\x18\x01 \x01(\x03R\x05ObjID\x12\x18\n" +
+	"\aObjType\x18\x02 \x01(\x03R\aObjType\x12\x1c\n" +
+	"\tCommentID\x18\x03 \x01(\x03R\tCommentID\x12\x1a\n" +
+	"\bMemberID\x18\x04 \x01(\x03R\bMemberID\"L\n" +
 	"\x16UnAuditCommentResponse\x12\x18\n" +
 	"\aSuccess\x18\x01 \x01(\bR\aSuccess\x12\x18\n" +
 	"\aMessage\x18\x02 \x01(\tR\aMessage\"\x82\x01\n" +
 	"\x16SetCommentAttrsRequest\x12\x14\n" +
-	"\x05ObjID\x18\x01 \x01(\x04R\x05ObjID\x12\x18\n" +
-	"\aObjType\x18\x02 \x01(\x04R\aObjType\x12\x1c\n" +
-	"\tCommentID\x18\x03 \x01(\x04R\tCommentID\x12\x1a\n" +
-	"\bMemberID\x18\x04 \x01(\x04R\bMemberID\"M\n" +
+	"\x05ObjID\x18\x01 \x01(\x03R\x05ObjID\x12\x18\n" +
+	"\aObjType\x18\x02 \x01(\x03R\aObjType\x12\x1c\n" +
+	"\tCommentID\x18\x03 \x01(\x03R\tCommentID\x12\x1a\n" +
+	"\bMemberID\x18\x04 \x01(\x03R\bMemberID\"M\n" +
 	"\x17SetCommentAttrsResponse\x12\x18\n" +
 	"\aSuccess\x18\x01 \x01(\bR\aSuccess\x12\x18\n" +
 	"\aMessage\x18\x02 \x01(\tR\aMessage\"\x84\x01\n" +
 	"\x18UnSetCommentAttrsRequest\x12\x14\n" +
-	"\x05ObjID\x18\x01 \x01(\x04R\x05ObjID\x12\x18\n" +
-	"\aObjType\x18\x02 \x01(\x04R\aObjType\x12\x1c\n" +
-	"\tCommentID\x18\x03 \x01(\x04R\tCommentID\x12\x1a\n" +
-	"\bMemberID\x18\x04 \x01(\x04R\bMemberID\"O\n" +
+	"\x05ObjID\x18\x01 \x01(\x03R\x05ObjID\x12\x18\n" +
+	"\aObjType\x18\x02 \x01(\x03R\aObjType\x12\x1c\n" +
+	"\tCommentID\x18\x03 \x01(\x03R\tCommentID\x12\x1a\n" +
+	"\bMemberID\x18\x04 \x01(\x03R\bMemberID\"O\n" +
 	"\x19UnSetCommentAttrsResponse\x12\x18\n" +
 	"\aSuccess\x18\x01 \x01(\bR\aSuccess\x12\x18\n" +
 	"\aMessage\x18\x02 \x01(\tR\aMessage2\x94\a\n" +

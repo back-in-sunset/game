@@ -5,6 +5,7 @@ import (
 
 	"comment/api/internal/svc"
 	"comment/api/internal/types"
+	"comment/rpc/commentclient"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -25,6 +26,20 @@ func NewAddLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AddLogic {
 
 func (l *AddLogic) Add(req *types.CommentRequest) (resp *types.CommentResponse, err error) {
 	// todo: add your logic here and delete this line
-
+	l.svcCtx.CommentRpc.AddComment(l.ctx, &commentclient.CommentRequest{
+		ObjID:       0,
+		ObjType:     0,
+		MemberID:    0,
+		CommentID:   0,
+		AtMemberIDs: "",
+		Ip:          "",
+		Platform:    0,
+		Device:      "",
+		Message:     "",
+		Meta:        "",
+		ReplyID:     0,
+		State:       0,
+		RootID:      0,
+	})
 	return
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"runtime"
 
 	"comment/rpc/comment"
 	"comment/rpc/internal/config"

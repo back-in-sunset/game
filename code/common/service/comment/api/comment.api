@@ -35,9 +35,9 @@ type (
 		Count       uint64 `json:"count"` //
 	}
 	CommentListRequest {
-		ObjID    uint64 `form:"obj_id" json:"obj_id"` // 评论对象ID
-		ObjType  uint64 `form:"obj_type" json:"obj_type"` // 评论对象类型
-		PageSize uint64 `form:"page_size" json:"page_size"` // 页大小
+		ObjID    uint64 `form:"obj_id"` // 评论对象ID
+		ObjType  uint64 `form:"obj_type"` // 评论对象类型
+		PageSize uint64 `form:"page_size"` // 页大小
 	// MemberID    uint64 `form:"member_id" json:"member_id"` // 作者用户ID
 	// Cursor      uint64 `form:"cursor" json:"cursor"` // cursor游标 排序数据
 	// SortType    uint64 `form:"sort_type" json:"sort_type"` // 排序方式 0-默认, 1-点赞数, 2-评论时间

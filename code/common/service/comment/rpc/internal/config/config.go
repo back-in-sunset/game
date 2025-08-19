@@ -14,5 +14,11 @@ type (
 		}
 
 		CacheRedis cache.CacheConf
+
+		BizRedis struct {
+			Host string
+			Pass string
+			Type string
+		}
 	}
 )

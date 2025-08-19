@@ -30,9 +30,9 @@ var (
 type (
 	commentContentModel interface {
 		Insert(ctx context.Context, data *CommentContent) (sql.Result, error)
-		FindOne(ctx context.Context, commentId uint64) (*CommentContent, error)
+		FindOne(ctx context.Context, commentId int64) (*CommentContent, error)
 		Update(ctx context.Context, data *CommentContent) error
-		Delete(ctx context.Context, commentId uint64) error
+		Delete(ctx context.Context, commentId int64) error
 	}
 
 	defaultCommentContentModel struct {
@@ -41,11 +41,11 @@ type (
 	}
 
 	CommentContent struct {
-		CommentId   uint64    `db:"comment_id"`    // 同评论indx_id
-		ObjId       uint64    `db:"obj_id"`        // 评论对象ID使用唯一id的话不用type联合主键
+		CommentId   int64     `db:"comment_id"`    // 同评论indx_id
+		ObjId       int64     `db:"obj_id"`        // 评论对象ID使用唯一id的话不用type联合主键
 		AtMemberIds string    `db:"at_member_ids"` // at用户ID列表
 		Ip          string    `db:"ip"`            // 评论IP
-		Platform    uint64    `db:"platform"`      // 评论平台
+		Platform    int64     `db:"platform"`      // 评论平台
 		Device      string    `db:"device"`        // 评论设备
 		Message     string    `db:"message"`       // 评论内容
 		Meta        string    `db:"meta"`          // 评论元数据 背景 字体
@@ -61,7 +61,7 @@ func newCommentContentModel(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache.
 	}
 }
 
-func (m *defaultCommentContentModel) Delete(ctx context.Context, commentId uint64) error {
+func (m *defaultCommentContentModel) Delete(ctx context.Context, commentId int64) error {
 	commentContentCommentIdKey := fmt.Sprintf("%s%v", cacheCommentContentCommentIdPrefix, commentId)
 	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("delete from %s where `comment_id` = ?", m.table)
@@ -70,7 +70,7 @@ func (m *defaultCommentContentModel) Delete(ctx context.Context, commentId uint6
 	return err
 }
 
-func (m *defaultCommentContentModel) FindOne(ctx context.Context, commentId uint64) (*CommentContent, error) {
+func (m *defaultCommentContentModel) FindOne(ctx context.Context, commentId int64) (*CommentContent, error) {
 	commentContentCommentIdKey := fmt.Sprintf("%s%v", cacheCommentContentCommentIdPrefix, commentId)
 	var resp CommentContent
 	err := m.QueryRowCtx(ctx, &resp, commentContentCommentIdKey, func(ctx context.Context, conn sqlx.SqlConn, v any) error {
