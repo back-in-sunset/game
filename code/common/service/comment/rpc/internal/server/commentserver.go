@@ -44,7 +44,13 @@ func (s *CommentServer) GetComment(ctx context.Context, in *comment.CommentReque
 // 获取评论列表
 func (s *CommentServer) GetCommentList(ctx context.Context, in *comment.CommentListRequest) (*comment.CommentListResponse, error) {
 	l := logic.NewGetCommentListLogic(ctx, s.svcCtx)
-	return l.GetCommentList(in)
+	result, err, _ := s.svcCtx.SignleFlightGroup.Do("GetCommentList", func() (interface{}, error) {
+		return l.GetCommentList(in)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*comment.CommentListResponse), err
 }
 
 // 评论点赞

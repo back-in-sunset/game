@@ -9,12 +9,14 @@ import (
 
 	"github.com/jinzhu/copier"
 	"github.com/zeromicro/go-zero/core/logx"
+	"golang.org/x/sync/singleflight"
 )
 
 type ListLogic struct {
 	logx.Logger
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx          context.Context
+	svcCtx       *svc.ServiceContext
+	singleflight singleflight.Group
 }
 
 func NewListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListLogic {
