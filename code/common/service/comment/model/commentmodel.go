@@ -83,16 +83,16 @@ func NewCommentModel(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache.Option)
 
 // AddComment 添加评论
 func (m *customCommentModel) AddComment(ctx context.Context, data *CommentSubject, ci *CommentIndex, cc *CommentContent) (*CommentSchema, error) {
-	m.TransactCtx(ctx, func(ctx context.Context, s sqlx.Session) error {
-		cj, err := m.newCustomCommentSubjectModelFunc(data.ObjId).FindOneByStateObjIdObjType(ctx, 0, data.ObjId, data.ObjType)
+	err := m.TransactCtx(ctx, func(ctx context.Context, s sqlx.Session) error {
+		cj, err := m.newCustomCommentSubjectModelFunc(data.ObjID).FindOneByStateObjIDObjType(ctx, 0, data.ObjID, data.ObjType)
 		if err != nil && err != ErrNotFound {
 			return err
 		}
 		if err == ErrNotFound {
-			_, err := m.newCustomCommentSubjectModelFunc(data.ObjId).Insert(ctx, &CommentSubject{
-				ObjId:     data.ObjId,
+			_, err := m.newCustomCommentSubjectModelFunc(data.ObjID).Insert(ctx, &CommentSubject{
+				ObjID:     data.ObjID,
 				ObjType:   data.ObjType,
-				MemberId:  data.MemberId,
+				MemberID:  data.MemberID,
 				Count:     1,
 				RootCount: 1,
 				AllCount:  1,
@@ -104,9 +104,9 @@ func (m *customCommentModel) AddComment(ctx context.Context, data *CommentSubjec
 			}
 		} else {
 			// 缓存更新
-			err = m.newCustomCommentSubjectModelFunc(data.ObjId).Update(ctx, &CommentSubject{
+			err = m.newCustomCommentSubjectModelFunc(data.ObjID).Update(ctx, &CommentSubject{
 				ID:        cj.ID,
-				ObjId:     cj.ObjId,
+				ObjID:     cj.ObjID,
 				ObjType:   cj.ObjType,
 				Count:     cj.Count + 1,
 				RootCount: cj.RootCount + 1,
@@ -117,19 +117,19 @@ func (m *customCommentModel) AddComment(ctx context.Context, data *CommentSubjec
 			}
 		}
 
-		if ci.RootId > 0 {
-			oci, err := m.newCustomCommentIndexModelFunc(data.ObjId).FindOne(ctx, ci.RootId)
+		if ci.RootID > 0 {
+			oci, err := m.newCustomCommentIndexModelFunc(data.ObjID).FindOne(ctx, ci.RootID)
 			if err != nil {
 				return err
 			}
 			// 缓存更新
-			err = m.newCustomCommentIndexModelFunc(data.ObjId).Update(ctx, &CommentIndex{
-				ID:        ci.RootId,
-				ObjId:     data.ObjId,
+			err = m.newCustomCommentIndexModelFunc(data.ObjID).Update(ctx, &CommentIndex{
+				ID:        ci.RootID,
+				ObjID:     data.ObjID,
 				ObjType:   data.ObjType,
-				MemberId:  data.MemberId,
-				RootId:    ci.RootId,
-				ReplyId:   ci.ReplyId,
+				MemberID:  data.MemberID,
+				RootID:    ci.RootID,
+				ReplyID:   ci.ReplyID,
 				Floor:     oci.Floor + 1,
 				Count:     oci.Count + 1,
 				RootCount: oci.RootCount + 1,
@@ -141,12 +141,12 @@ func (m *customCommentModel) AddComment(ctx context.Context, data *CommentSubjec
 			}
 		}
 
-		cires, err := m.newCustomCommentIndexModelFunc(data.ObjId).Insert(ctx, &CommentIndex{
-			ObjId:     data.ObjId,
+		cires, err := m.newCustomCommentIndexModelFunc(data.ObjID).Insert(ctx, &CommentIndex{
+			ObjID:     data.ObjID,
 			ObjType:   data.ObjType,
-			MemberId:  data.MemberId,
-			RootId:    ci.RootId,
-			ReplyId:   ci.ReplyId,
+			MemberID:  data.MemberID,
+			RootID:    ci.RootID,
+			ReplyID:   ci.ReplyID,
 			Floor:     1,
 			Count:     1,
 			RootCount: 1,
@@ -162,14 +162,17 @@ func (m *customCommentModel) AddComment(ctx context.Context, data *CommentSubjec
 		ci.ID = commentID
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
 
-	cc.CommentId = ci.ID
-	_, err := m.newCustomCommentContentModelFunc(data.ObjId).Insert(ctx, cc)
+	cc.CommentID = ci.ID
+	_, err = m.newCustomCommentContentModelFunc(data.ObjID).Insert(ctx, cc)
 	if err != nil {
 		return nil, err
 	}
 	return &CommentSchema{
-		CommentID: cc.CommentId,
+		CommentID: cc.CommentID,
 	}, nil
 }
 
@@ -210,11 +213,11 @@ func (m *customCommentModel) FindOneByObjID(ctx context.Context, objID int64, id
 
 	return &Comment{
 		ID:          ci.ID,
-		ObjID:       ci.ObjId,
+		ObjID:       ci.ObjID,
 		ObjType:     ci.ObjType,
-		MemberID:    ci.MemberId,
-		RootID:      ci.RootId,
-		ReplyID:     ci.ReplyId,
+		MemberID:    ci.MemberID,
+		RootID:      ci.RootID,
+		ReplyID:     ci.ReplyID,
 		Floor:       ci.Floor,
 		Count:       ci.Count,
 		RootCount:   ci.RootCount,
@@ -222,7 +225,7 @@ func (m *customCommentModel) FindOneByObjID(ctx context.Context, objID int64, id
 		HateCount:   ci.HateCount,
 		State:       ci.State,
 		Attrs:       ci.Attrs,
-		AtMemberIDs: cc.AtMemberIds,
+		AtMemberIDs: cc.AtMemberIDs,
 		IP:          cc.Ip,
 		Platform:    cc.Platform,
 		Device:      cc.Device,

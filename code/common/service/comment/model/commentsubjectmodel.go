@@ -1,6 +1,8 @@
 package model
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/zeromicro/go-zero/core/stores/cache"
@@ -151,14 +153,23 @@ func newCustomCommentSubjectModel(conn sqlx.SqlConn, c cache.CacheConf, sharding
 // 	}
 // }
 
-// func (m *customCommentSubjectModel) Insert(ctx context.Context, data *CommentSubject) (sql.Result, error) {
-// 	commentSubjectIDKey := fmt.Sprintf("%s%s%v", cacheCommentSubjectIdPrefix, m.tableFn(data.ObjId), data.ID)
-// 	commentSubjectStateAttrsMemberIDKey := fmt.Sprintf("%s%s%v:%v", cacheCommentSubjectStateMemberIdPrefix, m.tableFn(data.ObjId), data.State, data.MemberId)
-// 	commentSubjectStateAttrsObjIDObjTypeKey := fmt.Sprintf("%s%s%v:%v:%v", cacheCommentSubjectStateObjIdObjTypePrefix, m.tableFn(data.ObjId), data.State, data.ObjId, data.ObjType)
+func (m *customCommentSubjectModel) Insert(ctx context.Context, data *CommentSubject) (sql.Result, error) {
+	commentSubjectIDKey := fmt.Sprintf("%s%v%v", cacheCommentSubjectIDPrefix, data.ObjID, data.ID)
+	commentSubjectStateAttrsObjIDObjTypeKey := fmt.Sprintf("%s%v:%v:%v", cacheCommentSubjectStateObjIDObjTypePrefix, data.State, data.ObjID, data.ObjType)
+	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?)", m.table, commentSubjectRowsExpectAutoSet)
+		return conn.ExecCtx(ctx, query, data.ObjID, data.ObjType, data.MemberID, data.Count, data.RootCount, data.AllCount, data.State, data.Attrs)
+	}, commentSubjectIDKey, commentSubjectStateAttrsObjIDObjTypeKey)
+	return ret, err
+}
+
+// func (m *defaultCommentSubjectModel) Insert(ctx context.Context, data *CommentSubject) (sql.Result, error) {
+// 	commentSubjectIdKey := fmt.Sprintf("%s%v", cacheCommentSubjectIdPrefix, data.ID)
+// 	commentSubjectStateObjIdObjTypeKey := fmt.Sprintf("%s%v:%v:%v", cacheCommentSubjectStateObjIdObjTypePrefix, data.State, data.ObjId, data.ObjType)
 // 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-// 		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?)", m.tableFn(data.ObjId), commentSubjectRowsExpectAutoSet)
+// 		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?)", m.table, commentSubjectRowsExpectAutoSet)
 // 		return conn.ExecCtx(ctx, query, data.ObjId, data.ObjType, data.MemberId, data.Count, data.RootCount, data.AllCount, data.State, data.Attrs)
-// 	}, commentSubjectIDKey, commentSubjectStateAttrsMemberIDKey, commentSubjectStateAttrsObjIDObjTypeKey)
+// 	}, commentSubjectIdKey, commentSubjectStateObjIdObjTypeKey)
 // 	return ret, err
 // }
 

@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"comment/errx"
+	"comment/internal/errx"
 	"comment/model"
 	"comment/rpc/comment"
 	"comment/rpc/internal/svc"

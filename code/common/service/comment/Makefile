@@ -30,8 +30,6 @@ rpc-tag: rpc
 
 model:
 	goctl model mysql ddl -s $(MODEL_DIR)/*.sql -d model -c 
-	find $(MODEL_DIR) -type f -name "*.go" -exec sed -i 's/\bId\b/ID/g' {} +
-
 build-docker-api:
 	docker build -t commentapi:0.0.1 --build-arg SERVICE=commentapi --build-arg SERVICE_PATH=${API_DIR} . 
 
