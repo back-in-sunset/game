@@ -1,8 +1,8 @@
 package svc
 
 import (
-	"comment/model"
 	"comment/rpc/internal/config"
+	"comment/rpc/model"
 
 	"golang.org/x/sync/singleflight"
 

@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"comment/internal/errx"
-	"comment/model"
 	"comment/rpc/comment"
 	"comment/rpc/internal/svc"
+	"comment/rpc/model"
 	"comment/rpc/types"
 
 	"github.com/jinzhu/copier"
@@ -20,7 +20,9 @@ import (
 )
 
 const (
-	prefixCommentIDs = "biz#commentids#objID:%d:objType:%d:sortType:%d"
+	prefixCommentIDs         = "biz#commentids#objID:%d:objType:%d:sortType:%d"
+	prefixCommentObjSortType = "biz#commentobj#sorttype#objID:%d:objType:%d:sortType:%d"
+
 	commentIDsExpire = 3600 * 24 * 2
 )
 
@@ -223,7 +225,7 @@ func (l *GetCommentListLogic) addComments(ctx context.Context, objID int64, objT
 	if len(comments) == 0 {
 		return nil
 	}
-	key := fmt.Sprintf(prefixCommentIDs, objID, objType, sortType)
+	key := fmt.Sprintf(prefixCommentObjSortType, objID, objType, sortType)
 	for _, c := range comments {
 		var score int64
 		if sortType == types.SortCreatedTime {

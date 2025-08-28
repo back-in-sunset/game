@@ -317,21 +317,3 @@ func (m *customCommentModel) CacheCommentsByIDs(ctx context.Context, objID int64
 	}
 	return comments, nil
 }
-
-func (m *customCommentModel) commentsKey(objID, sortType int64) string {
-	return fmt.Sprintf(PrefixCommentObjSortType, objID, sortType)
-}
-
-func (m *customCommentModel) AddCacheComments(ctx context.Context, objID int64, objType int64, sortType int64, comments []*Comment) error {
-	// 缓存评论ID
-	// if len(comments) == 0 {
-	// 	return nil
-	// }
-	// // 缓存评论ID
-	// commentIDs := make([]int64, 0, len(comments))
-	// for _, comment := range comments {
-	// 	commentIDs = append(commentIDs, comment.ID)
-	// }
-
-	panic("unimplemented")
-}

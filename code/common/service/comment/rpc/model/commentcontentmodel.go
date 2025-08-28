@@ -11,7 +11,7 @@ import (
 var _ CommentContentModel = (*customCommentContentModel)(nil)
 
 const (
-	cacheCommentContentObjIDCommentIDPrefix = "cache:commentContent:objId:commentId:"
+// cacheCommentContentObjIDCommentIDPrefix = "cache:commentContent:objId:commentId:"
 )
 
 type (
