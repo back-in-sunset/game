@@ -5,7 +5,7 @@ import (
 
 	"user/model"
 	"user/rpc/internal/svc"
-	"user/rpc/pb/user"
+	"user/rpc/user"
 	"user/utils/cryptx"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -34,7 +34,6 @@ func (l *RegisterLogic) Register(in *user.RegisterRequest) (*user.RegisterRespon
 	}
 
 	if err == model.ErrNotFound {
-
 		newUser := model.User{
 			Name:     in.Name,
 			Gender:   in.Gender,
@@ -43,17 +42,18 @@ func (l *RegisterLogic) Register(in *user.RegisterRequest) (*user.RegisterRespon
 		}
 
 		res, err := l.svcCtx.UserModel.Insert(l.ctx, &newUser)
+
 		if err != nil {
 			return nil, status.Error(500, err.Error())
 		}
 
-		insertId, err := res.LastInsertId()
+		insertID, err := res.LastInsertId()
 		if err != nil {
 			return nil, status.Error(500, err.Error())
 		}
 
 		return &user.RegisterResponse{
-			Id:     insertId,
+			ID:     insertID,
 			Name:   newUser.Name,
 			Gender: newUser.Gender,
 			Mobile: newUser.Mobile,

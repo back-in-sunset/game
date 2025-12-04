@@ -6,7 +6,7 @@ import (
 
 	"user/api/internal/svc"
 	"user/api/internal/types"
-	"user/rpc/userclient"
+	"user/api/userclient"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -26,16 +26,16 @@ func NewUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UserInfo
 }
 
 func (l *UserInfoLogic) UserInfo() (resp *types.UserInfoResponse, err error) {
-	uid, _ := l.ctx.Value("uid").(json.Number).Int64()
+	uid, _ := l.ctx.Value(types.UserIDKey).(json.Number).Int64()
 	res, err := l.svcCtx.UserRpc.UserInfo(l.ctx, &userclient.UserInfoRequest{
-		Id: uint64(uid),
+		ID: uid,
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	return &types.UserInfoResponse{
-		Id:     res.Id,
+		ID:     res.ID,
 		Name:   res.Name,
 		Gender: res.Gender,
 		Mobile: res.Mobile,

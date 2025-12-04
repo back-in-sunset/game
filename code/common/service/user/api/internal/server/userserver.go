@@ -7,8 +7,8 @@ package server
 import (
 	"context"
 
-	"user/rpc/internal/logic"
-	"user/rpc/internal/svc"
+	"user/api/internal/logic"
+	"user/api/internal/svc"
 	"user/rpc/user"
 )
 

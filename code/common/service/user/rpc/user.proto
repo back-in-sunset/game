@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package userclient;
 
-option go_package = "/user";
+option go_package = "/user" ;
 
 // 用户登录
 message LoginRequest {
@@ -10,7 +10,7 @@ message LoginRequest {
     string Password = 2;
 }
 message LoginResponse {
-    uint64 Id = 1;
+    int64 ID = 1;
     string Name = 2;
     int64 Gender = 3;
     string Mobile = 4;
@@ -25,7 +25,7 @@ message RegisterRequest {
     string Password = 4;
 }
 message RegisterResponse {
-    int64 Id = 1;
+    int64 ID = 1;
     string Name = 2;
     int64 Gender = 3;
     string Mobile = 4;
@@ -34,10 +34,10 @@ message RegisterResponse {
 
 // 用户信息
 message UserInfoRequest {
-    uint64 Id = 1;
+    int64 ID = 1;
 }
 message UserInfoResponse {
-    uint64 Id = 1;
+    int64 ID = 1;
     string Name = 2;
     int64 Gender = 3;
     string Mobile = 4;

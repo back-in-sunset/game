@@ -5,7 +5,7 @@ import (
 
 	"user/api/internal/svc"
 	"user/api/internal/types"
-	"user/rpc/userclient"
+	"user/api/userclient"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -36,7 +36,7 @@ func (l *RegisterLogic) Register(req *types.RegisterRequest) (resp *types.Regist
 	}
 
 	return &types.RegisterResponse{
-		Id:     res.Id,
+		ID:     res.ID,
 		Name:   res.Name,
 		Gender: res.Gender,
 		Mobile: res.Mobile,

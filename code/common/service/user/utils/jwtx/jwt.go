@@ -1,13 +1,34 @@
 package jwtx
 
-import "github.com/golang-jwt/jwt"
+import (
+	"crypto/rsa"
+	"fmt"
+	"time"
 
-func GetToken(secretKey string, iat, seconds int64, uid uint64) (string, error) {
+	"github.com/golang-jwt/jwt"
+)
+
+// GetToken 生成 token
+func GetToken(privateKey *rsa.PrivateKey, userID int64, expire int64) (string, error) {
+	now := time.Now().Unix()
+
 	claims := make(jwt.MapClaims)
-	claims["exp"] = iat + seconds
-	claims["iat"] = iat
-	claims["uid"] = uid
-	token := jwt.New(jwt.SigningMethodHS256)
-	token.Claims = claims
-	return token.SignedString([]byte(secretKey))
+	claims["exp"] = now + expire
+	claims["iat"] = now
+	claims["uid"] = userID
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+
+	return token.SignedString(privateKey)
+}
+
+// ParseToken 解析 token
+func ParseToken(tokenString string, publicKey *rsa.PublicKey) (*jwt.Token, error) {
+	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// 检查 alg
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("unexpected signing method")
+		}
+		return publicKey, nil
+	})
 }

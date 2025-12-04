@@ -8,6 +8,12 @@ import (
 type Config struct {
 	zrpc.RpcServerConf
 
+	Identity struct {
+		Timeout   int
+		PoolSize  int
+		BatchSize int
+	}
+
 	Mysql struct {
 		DataSource string
 	}

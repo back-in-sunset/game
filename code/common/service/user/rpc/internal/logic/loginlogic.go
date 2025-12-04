@@ -5,7 +5,7 @@ import (
 
 	"user/model"
 	"user/rpc/internal/svc"
-	"user/rpc/pb/user"
+	"user/rpc/user"
 	"user/utils/cryptx"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -43,7 +43,7 @@ func (l *LoginLogic) Login(in *user.LoginRequest) (*user.LoginResponse, error) {
 	}
 
 	return &user.LoginResponse{
-		Id:     res.Id,
+		ID:     res.ID,
 		Name:   res.Name,
 		Gender: res.Gender,
 		Mobile: res.Mobile,

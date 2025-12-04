@@ -7,11 +7,12 @@
 package comment
 
 import (
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
+
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -24,19 +25,19 @@ const (
 // 用户评论
 type CommentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ObjID         int64                  `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`            // @gotags: json:"obj_id" 评论对象ID
-	ObjType       int64                  `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`        // @gotags: json:"obj_type" 评论对象类型
-	MemberID      int64                  `protobuf:"varint,3,opt,name=MemberID,proto3" json:"member_id"`      // @gotags: json:"member_id" 作者用户ID
-	CommentID     int64                  `protobuf:"varint,4,opt,name=CommentID,proto3" json:"comment_id"`    // @gotags: json:"comment_id" 同评论indx_id
+	ObjID         int64                  `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`             // @gotags: json:"obj_id" 评论对象ID
+	ObjType       int64                  `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`         // @gotags: json:"obj_type" 评论对象类型
+	MemberID      int64                  `protobuf:"varint,3,opt,name=MemberID,proto3" json:"member_id"`       // @gotags: json:"member_id" 作者用户ID
+	CommentID     int64                  `protobuf:"varint,4,opt,name=CommentID,proto3" json:"comment_id"`     // @gotags: json:"comment_id" 同评论indx_id
 	AtMemberIDs   string                 `protobuf:"bytes,5,opt,name=AtMemberIDs,proto3" json:"at_member_ids"` // @gotags: json:"at_member_ids" at用户ID列表
-	Ip            string                 `protobuf:"bytes,6,opt,name=Ip,proto3" json:"ip"`                   // @gotags: json:"ip" 评论IP
-	Platform      int64                  `protobuf:"varint,7,opt,name=Platform,proto3" json:"platform"`      // @gotags: json:"platform" 评论平台
-	Device        string                 `protobuf:"bytes,8,opt,name=Device,proto3" json:"device"`           // @gotags: json:"device" 评论设备
-	Message       string                 `protobuf:"bytes,9,opt,name=Message,proto3" json:"message"`         // @gotags: json:"message" 评论内容
-	Meta          string                 `protobuf:"bytes,10,opt,name=Meta,proto3" json:"meta"`              // @gotags: json:"meta" 评论元数据 背景 字体
-	ReplyID       int64                  `protobuf:"varint,11,opt,name=ReplyID,proto3" json:"reply_id"`       // @gotags: json:"reply_id" 被回复的评论ID
-	State         int64                  `protobuf:"varint,12,opt,name=State,proto3" json:"state"`           // @gotags: json:"state" 评论状态 0-正常, 1-隐藏
-	RootID        int64                  `protobuf:"varint,13,opt,name=RootID,proto3" json:"root_id"`         // @gotags: json:"root_id" 根评论id 不为0则为回复一级评论
+	Ip            string                 `protobuf:"bytes,6,opt,name=Ip,proto3" json:"ip"`                     // @gotags: json:"ip" 评论IP
+	Platform      int64                  `protobuf:"varint,7,opt,name=Platform,proto3" json:"platform"`        // @gotags: json:"platform" 评论平台
+	Device        string                 `protobuf:"bytes,8,opt,name=Device,proto3" json:"device"`             // @gotags: json:"device" 评论设备
+	Message       string                 `protobuf:"bytes,9,opt,name=Message,proto3" json:"message"`           // @gotags: json:"message" 评论内容
+	Meta          string                 `protobuf:"bytes,10,opt,name=Meta,proto3" json:"meta"`                // @gotags: json:"meta" 评论元数据 背景 字体
+	ReplyID       int64                  `protobuf:"varint,11,opt,name=ReplyID,proto3" json:"reply_id"`        // @gotags: json:"reply_id" 被回复的评论ID
+	State         int64                  `protobuf:"varint,12,opt,name=State,proto3" json:"state"`             // @gotags: json:"state" 评论状态 0-正常, 1-隐藏
+	RootID        int64                  `protobuf:"varint,13,opt,name=RootID,proto3" json:"root_id"`          // @gotags: json:"root_id" 根评论id 不为0则为回复一级评论
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -357,18 +358,18 @@ type CommentListRequest struct {
 	ObjID         int64                  `protobuf:"varint,1,opt,name=ObjID,proto3" json:"obj_id"`              // @gotags: json:"obj_id" 评论对象ID
 	ObjType       int64                  `protobuf:"varint,2,opt,name=ObjType,proto3" json:"obj_type"`          // @gotags: json:"obj_type" 评论对象类型
 	MemberID      int64                  `protobuf:"varint,3,opt,name=MemberID,proto3" json:"member_id"`        // @gotags: json:"member_id" 作者用户ID
-	Cursor        int64                  `protobuf:"varint,4,opt,name=Cursor,proto3" json:"cursor"`            // @gotags: json:"cursor" cursor游标 排序数据游标
+	Cursor        int64                  `protobuf:"varint,4,opt,name=Cursor,proto3" json:"cursor"`             // @gotags: json:"cursor" cursor游标 排序数据游标
 	PageSize      int64                  `protobuf:"varint,5,opt,name=PageSize,proto3" json:"page_size"`        // @gotags: json:"page_size" 页大小
 	SortType      int64                  `protobuf:"varint,6,opt,name=SortType,proto3" json:"sort_type"`        // @gotags: json:"sort_type" 排序方式 0-默认, 1-点赞数, 2-评论时间
-	State         int64                  `protobuf:"varint,7,opt,name=State,proto3" json:"state"`              // @gotags: json:"state" 评论状态 0-正常, 1-隐藏
+	State         int64                  `protobuf:"varint,7,opt,name=State,proto3" json:"state"`               // @gotags: json:"state" 评论状态 0-正常, 1-隐藏
 	RootID        int64                  `protobuf:"varint,8,opt,name=RootID,proto3" json:"root_id"`            // @gotags: json:"root_id" 根评论ID 不为0则为回复一级评论
 	ReplyID       int64                  `protobuf:"varint,11,opt,name=ReplyID,proto3" json:"reply_id"`         // @gotags: json:"reply_id" 被回复的评论ID
 	SortedField   int64                  `protobuf:"varint,12,opt,name=SortedField,proto3" json:"sorted_field"` // @gotags: json:"sorted_field" 排序字段
 	CreatedAt     int64                  `protobuf:"varint,13,opt,name=CreatedAt,proto3" json:"created_at"`     // @gotags: json:"created_at" 创建时间
-	Floor         int64                  `protobuf:"varint,14,opt,name=Floor,proto3" json:"floor"`             // @gotags: json:"floor" 楼层
+	Floor         int64                  `protobuf:"varint,14,opt,name=Floor,proto3" json:"floor"`              // @gotags: json:"floor" 楼层
 	LikeCount     int64                  `protobuf:"varint,15,opt,name=LikeCount,proto3" json:"like_count"`     // @gotags: json:"like_count" 点赞数
 	HateCount     int64                  `protobuf:"varint,16,opt,name=HateCount,proto3" json:"hate_count"`     // @gotags: json:"hate_count" 踩数
-	Count         int64                  `protobuf:"varint,17,opt,name=Count,proto3" json:"count"`             // @gotags: json:"count" 评论数
+	Count         int64                  `protobuf:"varint,17,opt,name=Count,proto3" json:"count"`              // @gotags: json:"count" 评论数
 	CommentID     int64                  `protobuf:"varint,18,opt,name=CommentID,proto3" json:"comment_id"`     // @gotags: json:"comment_id" 评论ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -520,9 +521,9 @@ func (x *CommentListRequest) GetCommentID() int64 {
 type CommentListResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Comments      []*CommentResponse     `protobuf:"bytes,1,rep,name=Comments,proto3" json:"comments"` // @gotags: json:"comments" 评论列表
-	IsEnd         bool                   `protobuf:"varint,2,opt,name=isEnd,proto3" json:"is_end"`      // @gotags: json:"is_end" 是否结束
+	IsEnd         bool                   `protobuf:"varint,2,opt,name=isEnd,proto3" json:"is_end"`     // @gotags: json:"is_end" 是否结束
 	Cursor        int64                  `protobuf:"varint,3,opt,name=cursor,proto3" json:"cursor"`    // @gotags: json:"cursor" 游标
-	LastID        int64                  `protobuf:"varint,4,opt,name=lastID,proto3" json:"last_id"`    // @gotags: json:"last_id" 最后一条评论ID
+	LastID        int64                  `protobuf:"varint,4,opt,name=lastID,proto3" json:"last_id"`   // @gotags: json:"last_id" 最后一条评论ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

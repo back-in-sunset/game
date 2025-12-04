@@ -6,7 +6,7 @@ import (
 
 	"user/api/internal/svc"
 	"user/api/internal/types"
-	"user/rpc/userclient"
+	"user/api/userclient"
 	"user/utils/jwtx"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -38,7 +38,7 @@ func (l *LoginLogic) Login(req *types.LoginRequest) (resp *types.LoginResponse, 
 	now := time.Now().Unix()
 	accessExpire := l.svcCtx.Config.Auth.AccessExpire
 
-	accessToken, err := jwtx.GetToken(l.svcCtx.Config.Auth.AccessSecret, now, accessExpire, res.Id)
+	accessToken, err := jwtx.GetToken(l.svcCtx.PrivateKey, res.ID, accessExpire)
 	if err != nil {
 		return nil, err
 	}

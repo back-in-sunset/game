@@ -19,6 +19,7 @@ import (
 	"github.com/zeromicro/go-zero/core/threading"
 )
 
+// 只处理id缓存 内容缓存交给model
 const (
 	prefixCommentIDs         = "biz#commentids#objID:%d:objType:%d:sortType:%d"
 	prefixCommentObjSortType = "biz#commentobj#sorttype#objID:%d:objType:%d:sortType:%d"

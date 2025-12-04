@@ -1,9 +1,9 @@
 Name: User
 Host: 0.0.0.0
-Port: 8000
+Port: 8001
 
 Mysql:
-  DataSource: root:123456@tcp(mysql:3306)/mall?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
+  DataSource: root:123456@tcp(mysql:3306)/user?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
 
 CacheRedis:
   - Host: redis:6379
@@ -13,6 +13,10 @@ CacheRedis:
 Auth:
   AccessSecret: uOvKLmVfztaXGpNYd4Z0I1SiT7MweJhl
   AccessExpire: 86400
+   # 非对称密钥
+  PrivateKeyFile: "api/etc/private.key"
+  PublicKeyFile: "api/etc/public.key"
+  Method: "RS256"         # 支持：RS256 / RS384 / RS512 / ES256 / ES384 / ES512
 
 UserRpc:
   Etcd:

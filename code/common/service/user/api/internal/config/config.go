@@ -11,6 +11,10 @@ type Config struct {
 	Auth struct {
 		AccessSecret string
 		AccessExpire int64
+		// 非对称密钥路径
+		PrivateKeyFile string
+		PublicKeyFile  string
+		Method         string
 	}
 
 	UserRpc zrpc.RpcClientConf
