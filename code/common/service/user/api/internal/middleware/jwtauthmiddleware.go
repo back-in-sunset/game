@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/rsa"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"user/api/internal/types"
 	"user/utils/jwtx"
@@ -39,7 +38,7 @@ func (m *JwtAuthMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 		ctx := context.WithValue(
 			r.Context(),
 			types.UserIDKey,
-			json.Number(fmt.Sprintf("%v", parsedToken.Claims.(jwt.MapClaims)["uid"])),
+			parsedToken.Claims.(jwt.MapClaims)["uid"].(json.Number),
 		)
 		r = r.WithContext(ctx)
 

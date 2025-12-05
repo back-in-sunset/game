@@ -24,7 +24,8 @@ func GetToken(privateKey *rsa.PrivateKey, userID int64, expire int64) (string, e
 
 // ParseToken 解析 token
 func ParseToken(tokenString string, publicKey *rsa.PublicKey) (*jwt.Token, error) {
-	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	parser := jwt.Parser{UseJSONNumber: true}
+	return parser.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// 检查 alg
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("unexpected signing method")

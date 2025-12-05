@@ -26,7 +26,12 @@ func NewUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UserInfo
 }
 
 func (l *UserInfoLogic) UserInfo() (resp *types.UserInfoResponse, err error) {
-	uid, _ := l.ctx.Value(types.UserIDKey).(json.Number).Int64()
+	// 查询用户是否存在
+	uid, err := l.ctx.Value(types.UserIDKey).(json.Number).Int64()
+	if err != nil {
+		return nil, err
+	}
+	// 查询用户信息
 	res, err := l.svcCtx.UserRpc.UserInfo(l.ctx, &userclient.UserInfoRequest{
 		ID: uid,
 	})

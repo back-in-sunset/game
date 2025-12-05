@@ -35,6 +35,7 @@ func (l *RegisterLogic) Register(in *user.RegisterRequest) (*user.RegisterRespon
 
 	if err == model.ErrNotFound {
 		newUser := model.User{
+			UserID:   l.svcCtx.IdxGen.Next(),
 			Name:     in.Name,
 			Gender:   in.Gender,
 			Mobile:   in.Mobile,
@@ -42,7 +43,6 @@ func (l *RegisterLogic) Register(in *user.RegisterRequest) (*user.RegisterRespon
 		}
 
 		res, err := l.svcCtx.UserModel.Insert(l.ctx, &newUser)
-
 		if err != nil {
 			return nil, status.Error(500, err.Error())
 		}

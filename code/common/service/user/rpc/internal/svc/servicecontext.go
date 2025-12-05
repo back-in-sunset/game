@@ -1,13 +1,9 @@
 package svc
 
 import (
-	"log"
-	"time"
 	"user/model"
 	"user/rpc/internal/config"
 	"user/utils/idx"
-
-	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 
 type ServiceContext struct {
@@ -20,26 +16,12 @@ type ServiceContext struct {
 
 // NewServiceContext 创建 ServiceContext
 func NewServiceContext(c config.Config) *ServiceContext {
-	conn := sqlx.NewMysql(c.Mysql.DataSource)
-
-	// 分配节点 NodeID
-	nodeID, lease, cli, err := idx.AllocateNodeID(
-		c.Etcd.Hosts,
-		c.Identity.Timeout,
-	)
-	if err != nil {
-		log.Fatalf("allocate node id error: %v", err)
-	}
-
-	// 自动 keepalive
-	err = idx.KeepAlive(cli, lease)
-	if err != nil {
-		log.Fatalf("keepalive error: %v", err)
-	}
+	// conn := sqlx.NewMysql(c.Mysql.DataSource)
 
 	return &ServiceContext{
-		Config:    c,
-		UserModel: model.NewUserModel(conn, c.CacheRedis),
-		IdxGen:    idx.NewSnowflakeWithPool(nodeID, c.Identity.PoolSize, c.Identity.BatchSize, time.Now().UnixMilli),
+		Config: c,
+		// UserModel: model.NewUserModel(conn, c.CacheRedis),
+		UserModel: newCQLUserModel(c),
+		IdxGen:    newIdxGenerator(c),
 	}
 }

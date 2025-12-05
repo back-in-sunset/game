@@ -43,7 +43,7 @@ func (l *LoginLogic) Login(in *user.LoginRequest) (*user.LoginResponse, error) {
 	}
 
 	return &user.LoginResponse{
-		ID:     res.ID,
+		ID:     res.UserID,
 		Name:   res.Name,
 		Gender: res.Gender,
 		Mobile: res.Mobile,

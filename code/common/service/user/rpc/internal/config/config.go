@@ -21,4 +21,12 @@ type Config struct {
 	CacheRedis cache.CacheConf
 
 	Salt string
+
+	ScyllaDB struct {
+		Hosts             []string
+		Keyspace          string
+		Timeout           int
+		NumConns          int
+		ReconnectInterval int
+	}
 }

@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"log"
 	"user/model"
 	"user/rpc/internal/svc"
 	"user/rpc/user"
@@ -26,6 +27,8 @@ func NewUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UserInfo
 
 func (l *UserInfoLogic) UserInfo(in *user.UserInfoRequest) (*user.UserInfoResponse, error) {
 	// 查询用户是否存在
+	log.Println("--------------")
+	log.Println(in.ID)
 	res, err := l.svcCtx.UserModel.FindOne(l.ctx, in.ID)
 	if err != nil {
 		if err == model.ErrNotFound {
@@ -35,7 +38,7 @@ func (l *UserInfoLogic) UserInfo(in *user.UserInfoRequest) (*user.UserInfoRespon
 	}
 
 	return &user.UserInfoResponse{
-		ID:     res.ID,
+		ID:     res.UserID,
 		Name:   res.Name,
 		Gender: res.Gender,
 		Mobile: res.Mobile,

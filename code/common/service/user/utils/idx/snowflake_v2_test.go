@@ -7,7 +7,7 @@ import (
 )
 
 func BenchmarkSnowflake_NextBatch(b *testing.B) {
-	idg := idx.NewSnowflakeWithPool(1, 1000000, 5000, time.Now().UnixMilli)
+	idg := idx.NewSnowflakeWithPool(1, 5000000, 100000, time.Now().UnixMilli)
 	for i := 0; i < b.N; i++ {
 		idg.Next()
 	}
