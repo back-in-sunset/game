@@ -3,14 +3,16 @@ ListenOn: 0.0.0.0:9001
 
 Etcd:
   Hosts:
-    - localhost:2379
+    - 192.168.10.16:2379
+    - 192.168.10.16:12379
+    - 192.168.10.16:22379
   Key: user.rpc
 
 Mysql:
-  DataSource: root:123456@tcp(127.0.0.1:3306)/user?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
+  DataSource: root:123456@tcp(192.168.10.16:3306)/user?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
 
 CacheRedis:
-  - Host: 127.0.0.1:6379
+  - Host: 192.168.10.16:6379
     Type: node
     Pass: "123456"
 
@@ -18,15 +20,16 @@ Salt: DADSFHIASDFPTryzICwd7qnJa
 
 Identity:
   Timeout: 5
-  PoolSize: 1000000
-  BatchSize: 5000
+  PoolSize: 100000
+  BatchSize: 2000
 
 ScyllaDB:
   Hosts:
-    - 172.19.0.2
-    - 172.19.0.3
-    - 172.19.0.4
+    - 192.168.10.16
+    # - 172.19.0.3
+    # - 172.19.0.4
   Keyspace: user
   Timeout: 10
   NumConns: 51
   ReconnectInterval: 5
+  Consistency: 4

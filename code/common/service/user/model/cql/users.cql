@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     email text,
     password text,
     created_at timestamp,
+    updated_at timestamp,
     PRIMARY KEY (user_id)
 );
 

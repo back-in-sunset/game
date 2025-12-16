@@ -15,7 +15,7 @@ func newCQLUserModel(c config.Config) model.UserModel {
 	)
 
 	cluster.Keyspace = c.ScyllaDB.Keyspace
-	cluster.Consistency = gocql.Quorum
+	cluster.Consistency = gocql.Consistency(c.ScyllaDB.Consistency)
 	cluster.Timeout = time.Duration(c.ScyllaDB.Timeout) * time.Second
 	cluster.NumConns = c.ScyllaDB.NumConns // 高 QPS 建议 >10
 	cluster.ReconnectInterval = time.Duration(c.ScyllaDB.ReconnectInterval) * time.Second

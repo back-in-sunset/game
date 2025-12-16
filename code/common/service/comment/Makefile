@@ -30,8 +30,9 @@ rpc-tag: rpc
 
 model:
 	goctl model mysql ddl -s $(MODEL_DIR)/*.sql -d model -c 
+	
 build-docker-api:
-	docker build -t commentapi:0.0.1 --build-arg SERVICE=commentapi --build-arg SERVICE_PATH=${API_DIR} . 
+	docker build -t $(SERVER)api:0.0.1 --build-arg SERVICE=$(SERVER) --build-arg SERVICE_PATH=${API_DIR} .
 
 build-docker-rpc:
-	docker build -t commentrpc:0.0.1 --build-arg SERVICE=commentrpc --build-arg SERVICE_PATH=${RPC_DIR} . 
+	docker build -t $(SERVER)rpc:0.0.1 --build-arg SERVICE=$(SERVER) --build-arg SERVICE_PATH=${RPC_DIR} .

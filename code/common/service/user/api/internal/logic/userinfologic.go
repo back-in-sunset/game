@@ -3,12 +3,14 @@ package logic
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 
 	"user/api/internal/svc"
 	"user/api/internal/types"
 	"user/api/userclient"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc/metadata"
 )
 
 type UserInfoLogic struct {
@@ -31,6 +33,10 @@ func (l *UserInfoLogic) UserInfo() (resp *types.UserInfoResponse, err error) {
 	if err != nil {
 		return nil, err
 	}
+
+	md := metadata.Pairs("x-uid", strconv.FormatInt(uid, 10))
+	l.ctx = metadata.NewOutgoingContext(l.ctx, md)
+
 	// 查询用户信息
 	res, err := l.svcCtx.UserRpc.UserInfo(l.ctx, &userclient.UserInfoRequest{
 		ID: uid,

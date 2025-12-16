@@ -32,7 +32,7 @@ model:
 	goctl model mysql ddl -s $(MODEL_DIR)/*.sql -d model -c 
 
 build-docker-api:
-	docker build -t $(SERVER)api:0.0.1 --build-arg SERVICE=$(SERVER)api --build-arg SERVICE_PATH=${API_DIR} . 
+	docker build -t $(SERVER)api:0.0.1 --build-arg SERVICE=$(SERVER) --build-arg SERVICE_PATH=${API_DIR} .
 
 build-docker-rpc:
-	docker build -t $(SERVER)rpc:0.0.1 --build-arg SERVICE=$(SERVER)rpc --build-arg SERVICE_PATH=${RPC_DIR} . 
+	docker build -t $(SERVER)rpc:0.0.1 --build-arg SERVICE=$(SERVER) --build-arg SERVICE_PATH=${RPC_DIR} .

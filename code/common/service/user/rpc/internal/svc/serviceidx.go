@@ -23,5 +23,7 @@ func newIdxGenerator(c config.Config) *idx.Snowflake {
 		log.Fatalf("keepalive error: %v", err)
 	}
 
-	return idx.NewSnowflakeWithPool(nodeID, c.Identity.PoolSize, c.Identity.BatchSize, time.Now().UnixMilli)
+	return idx.NewSnowflakeWithPool(nodeID, c.Identity.PoolSize, c.Identity.BatchSize, func() int64 {
+		return time.Now().UnixMilli()
+	})
 }

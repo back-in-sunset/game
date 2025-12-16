@@ -28,5 +28,6 @@ type Config struct {
 		Timeout           int
 		NumConns          int
 		ReconnectInterval int
+		Consistency       uint16
 	}
 }

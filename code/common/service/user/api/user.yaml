@@ -1,0 +1,120 @@
+# ====== Deployment ======
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: userapi # 建议名称与镜像一致，更清晰
+  namespace: user
+  labels:
+    app: userapi
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: userapi # 与template.labels匹配
+  template:
+    metadata:
+      labels:
+        app: userapi
+    spec:
+      containers:
+      - name: userapi
+        image: userapi:0.0.1 # 【关键1】填入你的镜像名
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8001 # 【关键2】改为你的应用端口
+        readinessProbe:
+          tcpSocket:
+            port: 8001 # 【关键2】改为你的应用端口
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 8001 # 【关键2】改为你的应用端口
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources:
+          requests:
+            cpu: 100m # 建议：根据实际需求调整，可低于示例
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        volumeMounts:
+        - name: timezone
+          mountPath: /etc/localtime
+          readOnly: true
+        # 【关键4】添加配置文件挂载
+        - name: config-volume
+          mountPath: /app/etc # 必须与容器内期望的路径一致
+      volumes:
+      - name: timezone
+        hostPath:
+          path: /usr/share/zoneinfo/Asia/Shanghai
+      # 【关键4】添加配置卷。这里使用hostPath与你之前`-v`挂载方式一致。
+      - name: config-volume
+        hostPath:
+          path: /home/jerry/learnspace/go/src/game/server/code/common/service/user/api/etc # 你主机上的配置文件目录
+          type: DirectoryOrCreate
+
+---
+# ====== Service ======
+apiVersion: v1
+kind: Service
+metadata:
+  name: userapi-svc # 服务名建议与Deployment对应
+  namespace: user
+spec:
+  ports:
+  - port: 80 # Service对集群内暴露的端口
+    targetPort: 8001 # 【关键2】必须指向容器的8001端口
+    protocol: TCP
+    name: http
+  selector:
+    app: userapi # 必须与Deployment的selector.matchLabels匹配
+  type: ClusterIP # 默认类型，集群内访问
+
+---
+# ====== HPA for CPU ======
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: userapi-hpa-cpu
+  namespace: user
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: userapi # 指向你Deployment的名字
+  minReplicas: 2 # 根据你的需求调整
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60 # 阈值可根据监控观察调整
+
+---
+# ====== HPA for Memory ======
+# 注意：memory HPA需谨慎使用，因为内存压力通常不会随Pod副本增加而线性缓解。
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: userapi-hpa-mem
+  namespace: user
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: userapi
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 70 # 内存利用率目标

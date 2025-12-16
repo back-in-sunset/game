@@ -31,4 +31,4 @@ COPY --from=builder /app/${SERVICE} .
 RUN chmod +x ./${SERVICE}
 
 # 启动命令
-CMD ["./comment", "-f", "/app/etc/comment.yaml"]
+CMD ["./user", "-f", "/app/etc/user.yaml"]

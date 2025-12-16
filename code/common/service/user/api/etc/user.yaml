@@ -3,23 +3,25 @@ Host: 0.0.0.0
 Port: 8001
 
 Mysql:
-  DataSource: root:123456@tcp(mysql:3306)/user?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
+  DataSource: root:123456@tcp(192.168.10.16:3306)/user?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
 
 CacheRedis:
-  - Host: redis:6379
-    Pass:
+  - Host: 192.168.10.16:6379
+    Pass: "123456"
     Type: node
 
 Auth:
   AccessSecret: uOvKLmVfztaXGpNYd4Z0I1SiT7MweJhl
   AccessExpire: 86400
    # 非对称密钥
-  PrivateKeyFile: "api/etc/private.key"
-  PublicKeyFile: "api/etc/public.key"
+  PrivateKeyFile: "etc/private.key"
+  PublicKeyFile: "etc/public.key"
   Method: "RS256"         # 支持：RS256 / RS384 / RS512 / ES256 / ES384 / ES512
 
 UserRpc:
   Etcd:
     Hosts:
-      - localhost:2379
+      - 192.168.10.16:2379
+      - 192.168.10.16:12379
+      - 192.168.10.16:22379
     Key: user.rpc
