@@ -3,9 +3,9 @@ package logic
 import (
 	"context"
 
+	"comment/api/commentclient"
 	"comment/api/internal/svc"
 	"comment/api/internal/types"
-	"comment/rpc/comment"
 
 	"github.com/jinzhu/copier"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -29,7 +29,7 @@ func NewListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListLogic {
 
 // List retrieves a list of comments based on the request parameters.
 func (l *ListLogic) List(req *types.CommentListRequest) (resp *types.CommentListResponse, err error) {
-	var commentreq comment.CommentListRequest
+	var commentreq commentclient.CommentListRequest
 	copier.Copy(&commentreq, req)
 
 	commentListResp, err := l.svcCtx.CommentRpc.GetCommentList(l.ctx, &commentreq)

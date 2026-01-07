@@ -1,8 +1,8 @@
 package svc
 
 import (
+	"comment/api/commentclient"
 	"comment/api/internal/config"
-	"comment/rpc/commentclient"
 
 	"github.com/zeromicro/go-zero/zrpc"
 )

@@ -3,9 +3,9 @@ package logic
 import (
 	"context"
 
+	"comment/api/commentclient"
 	"comment/api/internal/svc"
 	"comment/api/internal/types"
-	"comment/rpc/commentclient"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
