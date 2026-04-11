@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package device_shadowclient;
+
+option go_package = "/device_shadow";
+
+message ShadowState {
+    map<string, string> desired = 1;
+    map<string, string> reported = 2;
+    map<string, string> delta = 3;
+    int64 version = 4;
+}
+
+message GetShadowRequest {
+    int64 device_id = 1;
+}
+
+message GetShadowResponse {
+    int64 device_id = 1;
+    string device_name = 2;
+    ShadowState state = 3;
+    int64 created_at = 4;
+    int64 updated_at = 5;
+}
+
+message UpdateShadowRequest {
+    int64 device_id = 1;
+    map<string, string> desired = 2;
+    int64 desired_version = 3;
+}
+
+message UpdateShadowResponse {
+    bool success = 1;
+    ShadowState state = 2;
+}
+
+message ReportStateRequest {
+    int64 device_id = 1;
+    map<string, string> reported = 2;
+    int64 reported_version = 3;
+}
+
+message ReportStateResponse {
+    bool success = 1;
+    ShadowState state = 2;
+}
+
+message DeleteShadowRequest {
+    int64 device_id = 1;
+}
+
+message DeleteShadowResponse {
+    bool success = 1;
+}
+
+message GetDeltaRequest {
+    int64 device_id = 1;
+}
+
+message GetDeltaResponse {
+    int64 device_id = 1;
+    map<string, string> delta = 2;
+    int64 desired_version = 3;
+    int64 reported_version = 4;
+}
+
+service DeviceShadow {
+    rpc GetShadow(GetShadowRequest) returns(GetShadowResponse);
+    rpc UpdateShadow(UpdateShadowRequest) returns(UpdateShadowResponse);
+    rpc ReportState(ReportStateRequest) returns(ReportStateResponse);
+    rpc DeleteShadow(DeleteShadowRequest) returns(DeleteShadowResponse);
+    rpc GetDelta(GetDeltaRequest) returns(GetDeltaResponse);
+}

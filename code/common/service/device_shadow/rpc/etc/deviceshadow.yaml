@@ -1,0 +1,14 @@
+Name: deviceshadow.rpc
+ListenOn: 0.0.0.0:8080
+Etcd:
+  Hosts:
+  - 127.0.0.1:2379
+  Key: deviceshadow.rpc
+
+Mysql:
+  DataSource: root:password@tcp(localhost:3306)/device_shadow?charset=utf8mb4&parseTime=true&loc=Asia/Shanghai
+
+CacheRedis:
+  - Host: localhost:6379
+    Pass: ""
+    Type: node
