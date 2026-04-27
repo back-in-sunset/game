@@ -1,0 +1,36 @@
+services:
+  prometheus:
+    build:
+      context: ./prometheus
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ./prometheus/prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml
+    ports:
+      - "${PROMETHEUS_PORT}:9090"
+    networks:
+      - backend
+    restart: always
+
+  grafana:
+    build:
+      context: ./grafana
+    environment:
+      - TZ=${TZ}
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    networks:
+      - backend
+    restart: always
+
+  jaeger:
+    build:
+      context: ./jaeger
+    environment:
+      - TZ=${TZ}
+    ports:
+      - "${JAEGER_PORT}:16686"
+      - "14268:14268"
+    networks:
+      - backend
+    restart: always

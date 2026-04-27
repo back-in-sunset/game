@@ -1,0 +1,5 @@
+# 多文件 compose 组合时，必须先使用仓库根目录下的基础文件，
+# 否则相对路径会被错误解析到 deploy/docker 目录。
+networks:
+  backend:
+    driver: ${NETWORKS_DRIVER}
