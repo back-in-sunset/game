@@ -1,0 +1,54 @@
+package logic
+
+import (
+	"context"
+	"encoding/json"
+	"strconv"
+
+	"user/api/internal/svc"
+	"user/api/internal/types"
+	"user/api/userclient"
+
+	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc/metadata"
+)
+
+type UserInfoLogic struct {
+	logx.Logger
+	ctx    context.Context
+	svcCtx *svc.ServiceContext
+}
+
+func NewUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UserInfoLogic {
+	return &UserInfoLogic{
+		Logger: logx.WithContext(ctx),
+		ctx:    ctx,
+		svcCtx: svcCtx,
+	}
+}
+
+func (l *UserInfoLogic) UserInfo() (resp *types.UserInfoResponse, err error) {
+	// 查询用户是否存在
+	uid, err := l.ctx.Value(types.UserIDKey).(json.Number).Int64()
+	if err != nil {
+		return nil, err
+	}
+
+	md := metadata.Pairs("x-uid", strconv.FormatInt(uid, 10))
+	l.ctx = metadata.NewOutgoingContext(l.ctx, md)
+
+	// 查询用户信息
+	res, err := l.svcCtx.UserRpc.UserInfo(l.ctx, &userclient.UserInfoRequest{
+		ID: uid,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.UserInfoResponse{
+		ID:     res.ID,
+		Name:   res.Name,
+		Gender: res.Gender,
+		Mobile: res.Mobile,
+	}, nil
+}

@@ -1,0 +1,17 @@
+services:
+  dtm:
+    build:
+      context: ./dtm
+    environment:
+      - TZ=${TZ}
+    entrypoint:
+      - "/app/dtm/dtm"
+      - "-c=/app/dtm/configs/config.yaml"
+    volumes:
+      - ./dtm/config.yml:/app/dtm/configs/config.yaml
+    ports:
+      - "${DTM_HTTP_PORT}:36789"
+      - "${DTM_GRPC_PORT}:36790"
+    networks:
+      - backend
+    restart: always
