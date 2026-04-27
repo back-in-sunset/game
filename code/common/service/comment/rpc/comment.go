@@ -23,10 +23,12 @@ func main() {
 
 	var c config.Config
 	conf.MustLoad(*configFile, &c)
-	ctx := svc.NewServiceContext(c)
+	svcCtx := svc.NewServiceContext(c)
+	svcCtx.Start()
+	defer svcCtx.Stop()
 
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
-		comment.RegisterCommentServer(grpcServer, server.NewCommentServer(ctx))
+		comment.RegisterCommentServer(grpcServer, server.NewCommentServer(svcCtx))
 
 		if c.Mode == service.DevMode || c.Mode == service.TestMode {
 			reflection.Register(grpcServer)

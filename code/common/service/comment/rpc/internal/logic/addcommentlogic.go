@@ -86,6 +86,9 @@ func (l *AddCommentLogic) AddComment(in *comment.CommentRequest) (*comment.Comme
 	if err != nil {
 		return nil, status.Error(500, err.Error())
 	}
+	if err = syncCommentScores(l.ctx, l.svcCtx, commentData); err != nil {
+		return nil, status.Error(500, err.Error())
+	}
 
 	return toCommentResponse(commentData), nil
 }

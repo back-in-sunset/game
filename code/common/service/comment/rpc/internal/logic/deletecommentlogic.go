@@ -44,6 +44,9 @@ func (l *DeleteCommentLogic) DeleteComment(in *comment.CommentRequest) (*comment
 		}
 		return nil, status.Error(500, err.Error())
 	}
+	if err = removeCommentScores(l.ctx, l.svcCtx, res.ObjID, res.ObjType, res.RootID, res.ID); err != nil {
+		return nil, status.Error(500, err.Error())
+	}
 
 	return toCommentResponse(res), nil
 }

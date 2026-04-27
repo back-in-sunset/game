@@ -1,10 +1,7 @@
 package logic
 
 import (
-	"cmp"
 	"context"
-	"fmt"
-	"slices"
 	"strconv"
 	"time"
 
@@ -20,8 +17,8 @@ import (
 
 // 只处理id缓存 内容缓存交给model
 const (
-	prefixCommentIDs         = "biz#commentids#objID:%d:objType:%d:sortType:%d"
-	prefixCommentObjSortType = "biz#commentobj#sorttype#objID:%d:objType:%d:sortType:%d"
+	prefixCommentIDs         = "biz#commentids#objID:%d:objType:%d:rootID:%d:sortType:%d"
+	prefixCommentObjSortType = "biz#commentobj#sorttype#objID:%d:objType:%d:rootID:%d:sortType:%d"
 
 	commentIDsExpire = 3600 * 24 * 2
 )
@@ -78,7 +75,7 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 		pageSize = types.DefaultPageSize
 	}
 
-	commentIDs, _ := l.cacheCommentIDs(in.ObjID, in.ObjType, cursor, pageSize, in.SortType)
+	commentIDs, _ := l.cacheCommentIDs(in.ObjID, in.ObjType, in.RootID, cursor, pageSize, in.SortType)
 	if len(commentIDs) > 0 {
 		isCache = true
 		if commentIDs[len(commentIDs)-1] == -1 {
@@ -90,30 +87,22 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 			return nil, err
 		}
 
-		// 排序
-		var cmpfunc func(a, b *model.Comment) int
-		switch in.SortType {
-		case types.SortLikeCount:
-			// 按点赞数排序
-			cmpfunc = func(a, b *model.Comment) int {
-				return cmp.Compare(b.LikeCount, a.LikeCount)
-			}
-		case types.SortCreatedTime:
-			// 按创建时间排序
-			cmpfunc = func(a, b *model.Comment) int {
-				return cmp.Compare(b.CreatedAt.Unix(), a.CreatedAt.Unix())
-			}
-		}
-		slices.SortFunc(comments, cmpfunc)
-
+		commentMap := make(map[int64]*model.Comment, len(comments))
 		for _, c := range comments {
+			commentMap[c.ID] = c
+		}
+		for _, id := range commentIDs {
+			c, ok := commentMap[id]
+			if !ok {
+				continue
+			}
 			curPage = append(curPage, toCommentResponse(c))
 		}
 
 	} else {
 		// 从数据库查询
 		v, err, _ := l.svcCtx.SignleFlightGroup.Do("commentsByObjID", func() (any, error) {
-			return l.svcCtx.CommentModel.CommentListByObjID(l.ctx, in.ObjID, in.ObjType, sortFiled, types.DefaultLimit)
+			return l.svcCtx.CommentModel.CommentListByObjID(l.ctx, in.ObjID, in.ObjType, in.RootID, in.ReplyID, sortFiled, types.DefaultLimit)
 		})
 		if err != nil {
 			return nil, err
@@ -173,7 +162,7 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 			if len(comments) < types.DefaultLimit && len(comments) > 0 {
 				comments = append(comments, &model.Comment{ID: -1})
 			}
-			err = l.addComments(context.Background(), in.ObjID, in.ObjType, in.SortType, comments)
+			err = l.addComments(context.Background(), in.ObjID, in.ObjType, in.RootID, in.SortType, comments)
 			if err != nil {
 				l.Logger.Errorf("addComments error: %v", err)
 			}
@@ -184,8 +173,12 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 	return ret, nil
 }
 
-func (l *GetCommentListLogic) cacheCommentIDs(objID int64, objType int64, cursor int64, pageSize int64, sortType int64) ([]int64, error) {
-	key := fmt.Sprintf(prefixCommentIDs, objID, objType, sortType)
+func (l *GetCommentListLogic) cacheCommentIDs(objID int64, objType int64, rootID int64, cursor int64, pageSize int64, sortType int64) ([]int64, error) {
+	if l.svcCtx == nil || l.svcCtx.BizRedis == nil {
+		return nil, nil
+	}
+
+	key := formatCommentIDsKey(objID, objType, rootID, sortType)
 
 	ok, err := l.svcCtx.BizRedis.ExistsCtx(l.ctx, key)
 	if err != nil {
@@ -217,29 +210,43 @@ func (l *GetCommentListLogic) cacheCommentIDs(objID int64, objType int64, cursor
 	return ids, nil
 }
 
-func (l *GetCommentListLogic) addComments(ctx context.Context, objID int64, objType int64, sortType int64, comments []*model.Comment) error {
+func (l *GetCommentListLogic) addComments(ctx context.Context, objID int64, objType int64, rootID int64, sortType int64, comments []*model.Comment) error {
+	if l.svcCtx == nil || l.svcCtx.BizRedis == nil {
+		return nil
+	}
+
 	if len(comments) == 0 {
 		return nil
 	}
-	key := fmt.Sprintf(prefixCommentObjSortType, objID, objType, sortType)
+	keyPrimary := formatCommentIDsKey(objID, objType, rootID, sortType)
+	keyCompat := formatCommentObjSortTypeKey(objID, objType, rootID, sortType)
 	for _, c := range comments {
-		var score int64
+		var baseScore int64
 		if sortType == types.SortCreatedTime {
-			score = c.CreatedAt.Unix()
+			baseScore = c.CreatedAt.Unix()
 		} else {
-			score = c.LikeCount
+			baseScore = c.LikeCount
 		}
 
-		if score <= 0 {
+		score := buildCompositeScore(c.Attrs, baseScore)
+		if score < 0 {
 			score = 0
 		}
 
-		_, err := l.svcCtx.BizRedis.ZaddCtx(ctx, key, score, strconv.FormatInt(c.ID, 10))
+		_, err := l.svcCtx.BizRedis.ZaddCtx(ctx, keyPrimary, score, strconv.FormatInt(c.ID, 10))
+		if err != nil {
+			l.Logger.Errorf("addComments error: %v", err)
+			return err
+		}
+		_, err = l.svcCtx.BizRedis.ZaddCtx(ctx, keyCompat, score, strconv.FormatInt(c.ID, 10))
 		if err != nil {
 			l.Logger.Errorf("addComments error: %v", err)
 			return err
 		}
 	}
 
-	return l.svcCtx.BizRedis.ExpireCtx(ctx, key, commentIDsExpire)
+	if err := l.svcCtx.BizRedis.ExpireCtx(ctx, keyPrimary, commentIDsExpire); err != nil {
+		return err
+	}
+	return l.svcCtx.BizRedis.ExpireCtx(ctx, keyCompat, commentIDsExpire)
 }

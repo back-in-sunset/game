@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+	"net"
 	"reflect"
 	"testing"
 	"time"
@@ -13,6 +14,13 @@ import (
 )
 
 func Test_customCommentModel_AddComment(t *testing.T) {
+	if !portReachable("127.0.0.1:3306") {
+		t.Skip("skip integration test: mysql is unavailable at 127.0.0.1:3306")
+	}
+	if !portReachable("127.0.0.1:6379") {
+		t.Skip("skip integration test: redis is unavailable at 127.0.0.1:6379")
+	}
+
 	conn := sqlx.NewMysql("root:123456@tcp(127.0.0.1:3306)/game")
 	c := cache.CacheConf{
 		{
@@ -124,4 +132,13 @@ func Test_customCommentModel_AddComment(t *testing.T) {
 			}
 		})
 	}
+}
+
+func portReachable(addr string) bool {
+	conn, err := net.DialTimeout("tcp", addr, 500*time.Millisecond)
+	if err != nil {
+		return false
+	}
+	_ = conn.Close()
+	return true
 }

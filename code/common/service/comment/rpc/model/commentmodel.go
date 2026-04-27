@@ -17,9 +17,12 @@ type (
 	CommentModel interface {
 		AddComment(ctx context.Context, data *CommentSubject, ci *CommentIndex, cc *CommentContent) (*CommentSchema, error)
 		DeleteComment(ctx context.Context, objID int64, commentID int64, memberID int64) (*Comment, error)
-		CommentListByObjID(ctx context.Context, objID int64, objType int64, sortField string, limit int64) ([]*Comment, error)
+		CommentListByObjID(ctx context.Context, objID int64, objType int64, rootID int64, replyID int64, sortField string, limit int64) ([]*Comment, error)
 		FindOneByObjID(ctx context.Context, objID int64, id int64) (*Comment, error)
 		CacheCommentsByIDs(ctx context.Context, objID int64, ids []int64) ([]*Comment, error)
+		AdjustCommentLikeCount(ctx context.Context, objID int64, commentID int64, delta int64) (int64, error)
+		SetCommentState(ctx context.Context, objID int64, commentID int64, state int64) (*Comment, error)
+		SetCommentAttrs(ctx context.Context, objID int64, commentID int64, attrs int64) (*Comment, error)
 	}
 
 	customCommentModel struct {
@@ -270,25 +273,35 @@ type CommentIndexID struct {
 }
 
 // CommentListByObjID 查询评论
-func (m *customCommentModel) CommentListByObjID(ctx context.Context, objID int64, objType int64, sortField string, limit int64) ([]*Comment, error) {
+func (m *customCommentModel) CommentListByObjID(ctx context.Context, objID int64, objType int64, rootID int64, replyID int64, sortField string, limit int64) ([]*Comment, error) {
 	var (
-		err error
-		sql string
-		// anyField any
+		err             error
+		sql             string
 		commentIndexIDs []*CommentIndexID
+		args            []any
 	)
 
-	if sortField == "like_count" {
-		// anyField := sortLikeCount
-		sql = fmt.Sprintf("select " + " id " + " from " + m.newCustomCommentIndexModelFunc(objID).table +
-			" where obj_id=? and obj_type=? order by like_count desc limit ?")
+	where := " where obj_id=? and obj_type=? and state=0"
+	args = append(args, objID, objType)
+	if rootID > 0 {
+		where += " and root_id=?"
+		args = append(args, rootID)
 	} else {
-		// anyField := sortPublishTime
-		sql = fmt.Sprintf("select " + " id " + " from " + m.newCustomCommentIndexModelFunc(objID).table +
-			" where obj_id=? and obj_type=? order by created_at desc limit ?")
+		where += " and root_id=0"
+	}
+	if replyID > 0 {
+		where += " and reply_id=?"
+		args = append(args, replyID)
 	}
 
-	err = m.newCustomCommentIndexModelFunc(objID).QueryRowsNoCacheCtx(ctx, &commentIndexIDs, sql, objID, objType, limit)
+	if sortField == "like_count" {
+		sql = fmt.Sprintf("select id from %s%s order by like_count desc, id desc limit ?", m.newCustomCommentIndexModelFunc(objID).table, where)
+	} else {
+		sql = fmt.Sprintf("select id from %s%s order by created_at desc, id desc limit ?", m.newCustomCommentIndexModelFunc(objID).table, where)
+	}
+	args = append(args, limit)
+
+	err = m.newCustomCommentIndexModelFunc(objID).QueryRowsNoCacheCtx(ctx, &commentIndexIDs, sql, args...)
 	if err != nil {
 		logx.Error("QueryRowNoCacheCtx commentIndexs err:", err)
 		return nil, err
@@ -345,4 +358,55 @@ func (m *customCommentModel) CacheCommentsByIDs(ctx context.Context, objID int64
 		return nil, fmt.Errorf("failed to get comments by IDs: %w", err)
 	}
 	return comments, nil
+}
+
+func (m *customCommentModel) SetCommentState(ctx context.Context, objID int64, commentID int64, state int64) (*Comment, error) {
+	commentIndexModel := m.newCustomCommentIndexModelFunc(objID)
+	indexData, err := commentIndexModel.FindOne(ctx, commentID)
+	if err != nil {
+		return nil, err
+	}
+
+	indexData.State = state
+	if err = commentIndexModel.Update(ctx, indexData); err != nil {
+		return nil, err
+	}
+
+	return m.FindOneByObjID(ctx, objID, commentID)
+}
+
+func (m *customCommentModel) SetCommentAttrs(ctx context.Context, objID int64, commentID int64, attrs int64) (*Comment, error) {
+	commentIndexModel := m.newCustomCommentIndexModelFunc(objID)
+	indexData, err := commentIndexModel.FindOne(ctx, commentID)
+	if err != nil {
+		return nil, err
+	}
+
+	indexData.Attrs = attrs
+	if err = commentIndexModel.Update(ctx, indexData); err != nil {
+		return nil, err
+	}
+
+	return m.FindOneByObjID(ctx, objID, commentID)
+}
+
+// AdjustCommentLikeCount adjusts like_count by delta and returns the latest value.
+// Negative results are clamped to zero.
+func (m *customCommentModel) AdjustCommentLikeCount(ctx context.Context, objID int64, commentID int64, delta int64) (int64, error) {
+	commentIndexModel := m.newCustomCommentIndexModelFunc(objID)
+	indexData, err := commentIndexModel.FindOne(ctx, commentID)
+	if err != nil {
+		return 0, err
+	}
+
+	nextLikeCount := indexData.LikeCount + delta
+	if nextLikeCount < 0 {
+		nextLikeCount = 0
+	}
+	indexData.LikeCount = nextLikeCount
+	if err = commentIndexModel.Update(ctx, indexData); err != nil {
+		return 0, err
+	}
+
+	return nextLikeCount, nil
 }

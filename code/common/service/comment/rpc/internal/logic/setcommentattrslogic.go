@@ -5,8 +5,10 @@ import (
 
 	"comment/rpc/comment"
 	"comment/rpc/internal/svc"
+	"comment/rpc/model"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc/status"
 )
 
 type SetCommentAttrsLogic struct {
@@ -25,7 +27,35 @@ func NewSetCommentAttrsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *S
 
 // 评论置顶
 func (l *SetCommentAttrsLogic) SetCommentAttrs(in *comment.SetCommentAttrsRequest) (*comment.SetCommentAttrsResponse, error) {
-	// todo: add your logic here and delete this line
+	if in.ObjID <= 0 {
+		return nil, status.Error(400, "obj_id不能为空")
+	}
+	if in.CommentID <= 0 {
+		return nil, status.Error(400, "comment_id不能为空")
+	}
 
-	return &comment.SetCommentAttrsResponse{}, nil
+	c, err := l.svcCtx.CommentModel.FindOneByObjID(l.ctx, in.ObjID, in.CommentID)
+	if err != nil {
+		if err == model.ErrNotFound {
+			return nil, status.Error(404, "评论不存在")
+		}
+		return nil, status.Error(500, err.Error())
+	}
+
+	nextAttrs := c.Attrs | attrsPinnedBit
+	c, err = l.svcCtx.CommentModel.SetCommentAttrs(l.ctx, in.ObjID, in.CommentID, nextAttrs)
+	if err != nil {
+		if err == model.ErrNotFound {
+			return nil, status.Error(404, "评论不存在")
+		}
+		return nil, status.Error(500, err.Error())
+	}
+	if err = syncCommentScores(l.ctx, l.svcCtx, c); err != nil {
+		return nil, status.Error(500, err.Error())
+	}
+
+	return &comment.SetCommentAttrsResponse{
+		Success: true,
+		Message: "ok",
+	}, nil
 }
