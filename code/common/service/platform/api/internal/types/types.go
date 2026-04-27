@@ -40,6 +40,14 @@ type CreateTenantResp struct {
 	Slug string `json:"slug"`
 }
 
+type DeleteTenantReq struct {
+	TenantId string `json:"tenantId"`
+}
+
+type DeleteTenantResp struct {
+	Success bool `json:"success"`
+}
+
 type EnvironmentItem struct {
 	Id          string `json:"id"`
 	ProjectId   string `json:"projectId"`
@@ -73,9 +81,35 @@ type ListProjectsResp struct {
 	Items []ProjectItem `json:"items"`
 }
 
+type MyTenantItem struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+	Slug string `json:"slug"`
+}
+
+type MyTenantsReq struct {
+	MemberId string `header:"x-uid"`
+}
+
+type MyTenantsResp struct {
+	Items []MyTenantItem `json:"items"`
+}
+
 type ProjectItem struct {
 	Id       string `json:"id"`
 	TenantId string `json:"tenantId"`
 	Name     string `json:"name"`
 	Key      string `json:"key"`
+}
+
+type UpdateTenantReq struct {
+	TenantId string `json:"tenantId"`
+	Name     string `json:"name"`
+	Slug     string `json:"slug"`
+}
+
+type UpdateTenantResp struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+	Slug string `json:"slug"`
 }

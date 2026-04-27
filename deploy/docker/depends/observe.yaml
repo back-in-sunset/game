@@ -1,11 +1,11 @@
 services:
   prometheus:
     build:
-      context: ./prometheus
+      context: ./deploy/docker/prometheus
     environment:
       - TZ=${TZ}
     volumes:
-      - ./prometheus/prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml
+      - ./deploy/docker/prometheus/prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml
     ports:
       - "${PROMETHEUS_PORT}:9090"
     networks:
@@ -14,7 +14,7 @@ services:
 
   grafana:
     build:
-      context: ./grafana
+      context: ./deploy/docker/grafana
     environment:
       - TZ=${TZ}
     ports:
@@ -25,7 +25,7 @@ services:
 
   jaeger:
     build:
-      context: ./jaeger
+      context: ./deploy/docker/jaeger
     environment:
       - TZ=${TZ}
     ports:

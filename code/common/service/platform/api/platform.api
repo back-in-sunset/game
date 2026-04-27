@@ -16,6 +16,33 @@ type (
 		Name string `json:"name"`
 		Slug string `json:"slug"`
 	}
+	UpdateTenantReq {
+		TenantId string `json:"tenantId"`
+		Name     string `json:"name"`
+		Slug     string `json:"slug"`
+	}
+	UpdateTenantResp {
+		Id   string `json:"id"`
+		Name string `json:"name"`
+		Slug string `json:"slug"`
+	}
+	DeleteTenantReq {
+		TenantId string `json:"tenantId"`
+	}
+	DeleteTenantResp {
+		Success bool `json:"success"`
+	}
+	MyTenantsReq {
+		MemberId string `header:"x-uid"`
+	}
+	MyTenantItem {
+		Id   string `json:"id"`
+		Name string `json:"name"`
+		Slug string `json:"slug"`
+	}
+	MyTenantsResp {
+		Items []MyTenantItem `json:"items"`
+	}
 	CreateProjectReq {
 		TenantId string `json:"tenantId"`
 		Name     string `json:"name"`
@@ -71,6 +98,15 @@ service Platform {
 	@handler GetTenant
 	get /api/platform/tenant/:tenantId returns (GetTenantResp)
 
+	@handler UpdateTenant
+	post /api/platform/tenant/update (UpdateTenantReq) returns (UpdateTenantResp)
+
+	@handler DeleteTenant
+	post /api/platform/tenant/delete (DeleteTenantReq) returns (DeleteTenantResp)
+
+	@handler MyTenants
+	get /api/platform/tenant/my (MyTenantsReq) returns (MyTenantsResp)
+
 	@handler CreateProject
 	post /api/platform/project/create (CreateProjectReq) returns (CreateProjectResp)
 
@@ -83,4 +119,3 @@ service Platform {
 	@handler ListEnvironments
 	get /api/platform/environment/list (ListEnvironmentsReq) returns (ListEnvironmentsResp)
 }
-

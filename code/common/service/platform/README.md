@@ -27,6 +27,7 @@
 ## API 列表
 
 - `POST /api/platform/tenant/create`
+- `GET /api/platform/tenant/my`（需要登录态，基于 JWT `uid`）
 - `GET /api/platform/tenant/:tenantId`
 - `POST /api/platform/project/create`
 - `GET /api/platform/project/list?tenantId=...`
@@ -42,6 +43,7 @@ API 定义文件：`api/platform.api`
 关键配置项：
 
 - `Host` / `Port`：API 启动监听地址
+- `Auth.PublicKeyFile`：JWT 公钥文件（用于解析 `Authorization`）
 - `Mysql.DataSource`：MySQL 连接串
 - `CacheRedis`：go-zero model 缓存配置
 
@@ -58,6 +60,25 @@ rtk go run ./api -f api/etc/platform.yaml
 ```bash
 rtk go test ./...
 ```
+
+## 集成测试（testcontainers-go）
+
+为避免污染主模块依赖，Docker 集成测试放在独立子模块：
+
+- `integration/`
+
+运行方式：
+
+```bash
+cd code/common/service/platform/integration
+GOMODCACHE=/tmp/go-mod-platform-int GOCACHE=/tmp/go-build-platform-int rtk proxy go test -v . -count=1
+```
+
+说明：
+
+- 测试使用 `testcontainers-go` 启动 MySQL 容器，并用 `miniredis` 提供缓存节点
+- 通用测试启动逻辑已抽到 `core/testkit`（可供其他服务复用）
+- 当前机器无 Docker socket 权限时，测试会自动 `skip`
 
 ## 数据库初始化
 

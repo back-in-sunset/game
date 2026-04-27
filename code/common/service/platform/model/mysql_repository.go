@@ -11,16 +11,18 @@ import (
 )
 
 type MySQLRepository struct {
-	tenantModel      PlatformTenantModel
-	projectModel     PlatformProjectModel
-	environmentModel PlatformEnvironmentModel
+	tenantModel       PlatformTenantModel
+	projectModel      PlatformProjectModel
+	environmentModel  PlatformEnvironmentModel
+	tenantMemberModel PlatformTenantMemberModel
 }
 
 func NewMySQLRepository(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache.Option) *MySQLRepository {
 	return &MySQLRepository{
-		tenantModel:      NewPlatformTenantModel(conn, c, opts...),
-		projectModel:     NewPlatformProjectModel(conn, c, opts...),
-		environmentModel: NewPlatformEnvironmentModel(conn, c, opts...),
+		tenantModel:       NewPlatformTenantModel(conn, c, opts...),
+		projectModel:      NewPlatformProjectModel(conn, c, opts...),
+		environmentModel:  NewPlatformEnvironmentModel(conn, c, opts...),
+		tenantMemberModel: NewPlatformTenantMemberModel(conn, c, opts...),
 	}
 }
 
@@ -28,11 +30,13 @@ func NewMySQLRepositoryWithModels(
 	tenantModel PlatformTenantModel,
 	projectModel PlatformProjectModel,
 	environmentModel PlatformEnvironmentModel,
+	tenantMemberModel PlatformTenantMemberModel,
 ) *MySQLRepository {
 	return &MySQLRepository{
-		tenantModel:      tenantModel,
-		projectModel:     projectModel,
-		environmentModel: environmentModel,
+		tenantModel:       tenantModel,
+		projectModel:      projectModel,
+		environmentModel:  environmentModel,
+		tenantMemberModel: tenantMemberModel,
 	}
 }
 
@@ -44,6 +48,32 @@ func (r *MySQLRepository) SaveTenant(ctx context.Context, tenant *domain.Tenant)
 		Status:   "active",
 	})
 	return translateSQLError(err)
+}
+
+func (r *MySQLRepository) UpdateTenant(ctx context.Context, tenant *domain.Tenant) error {
+	existing, err := r.tenantModel.FindOne(ctx, tenant.ID)
+	if err != nil {
+		if err == ErrNotFound {
+			return domain.ErrTenantNotFound
+		}
+		return err
+	}
+
+	err = r.tenantModel.Update(ctx, &PlatformTenant{
+		TenantId: tenant.ID,
+		Name:     tenant.Name,
+		Slug:     tenant.Slug,
+		Status:   existing.Status,
+	})
+	return translateSQLError(err)
+}
+
+func (r *MySQLRepository) DeleteTenant(ctx context.Context, tenantID string) error {
+	err := r.tenantModel.Delete(ctx, tenantID)
+	if err == ErrNotFound {
+		return domain.ErrTenantNotFound
+	}
+	return err
 }
 
 func (r *MySQLRepository) SaveProject(ctx context.Context, project *domain.Project) error {
@@ -142,6 +172,30 @@ func (r *MySQLRepository) ListEnvironmentsByProjectID(ctx context.Context, proje
 			ProjectID:   environment.ProjectId,
 			Name:        environment.Name,
 			DisplayName: environment.DisplayName,
+		})
+	}
+	return resp, nil
+}
+
+func (r *MySQLRepository) ListTenantsByMemberID(ctx context.Context, memberID string) ([]*domain.Tenant, error) {
+	members, err := r.tenantMemberModel.ListActiveByMemberID(ctx, memberID)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := make([]*domain.Tenant, 0, len(members))
+	for _, member := range members {
+		tenant, findErr := r.tenantModel.FindOne(ctx, member.TenantId)
+		if findErr != nil {
+			if findErr == ErrNotFound {
+				continue
+			}
+			return nil, findErr
+		}
+		resp = append(resp, &domain.Tenant{
+			ID:   tenant.TenantId,
+			Name: tenant.Name,
+			Slug: tenant.Slug,
 		})
 	}
 	return resp, nil

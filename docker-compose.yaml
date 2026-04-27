@@ -7,7 +7,7 @@ networks:
 services:
   # golang: # 自定义容器名称
   #   build:
-  #     context: ./golang # 指定构建使用的 Dockerfile 文件
+  #     context: ./deploy/docker/golang # 指定构建使用的 Dockerfile 文件
   #   environment: # 设置环境变量
   #     - TZ=${TZ}
   #   volumes: # 设置挂载目录
@@ -29,7 +29,7 @@ services:
 
   etcd1: # 自定义容器名称
     build:
-      context: ./etcd # 指定构建使用的 Dockerfile 文件
+      context: ./deploy/docker/etcd # 指定构建使用的 Dockerfile 文件
     container_name: etcd1
     environment:
       - TZ=Asia/Shanghai
@@ -49,7 +49,7 @@ services:
 
   etcd2:
     build:
-      context: ./etcd # 指定构建使用的 Dockerfile 文件
+      context: ./deploy/docker/etcd # 指定构建使用的 Dockerfile 文件
     container_name: etcd2
     environment:
       - TZ=Asia/Shanghai
@@ -69,7 +69,7 @@ services:
 
   etcd3:
     build:
-      context: ./etcd # 指定构建使用的 Dockerfile 文件
+      context: ./deploy/docker/etcd # 指定构建使用的 Dockerfile 文件
     container_name: etcd3
     environment:
       - TZ=Asia/Shanghai
@@ -89,7 +89,7 @@ services:
 
   mysql:
     build:
-      context: ./mysql
+      context: ./deploy/docker/mysql
     environment:
       - TZ=${TZ}
       - MYSQL_USER=${MYSQL_USERNAME} # 设置 Mysql 用户名称
@@ -105,7 +105,7 @@ services:
 
   redis:
     build:
-      context: ./redis
+      context: ./deploy/docker/redis
     environment:
       - TZ=${TZ}
     volumes:
@@ -118,7 +118,7 @@ services:
 
   mysql-manage:
     build:
-      context: ./mysql-manage
+      context: ./deploy/docker/mysql-manage
     environment:
       - TZ=${TZ}
       - PMA_ARBITRARY=1
@@ -137,7 +137,7 @@ services:
 
   redis-manage:
     build:
-      context: ./redis-manage
+      context: ./deploy/docker/redis-manage
     environment:
       - TZ=${TZ}
       - ADMIN_USER=${REDIS_MANAGE_USERNAME} # 设置 Redis 可视化管理的用户名称
@@ -154,11 +154,11 @@ services:
 
   prometheus:
     build:
-      context: ./prometheus
+      context: ./deploy/docker/prometheus
     environment:
       - TZ=${TZ}
     volumes:
-      - ./prometheus/prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml # 将 prometheus 配置文件挂载到容器里
+      - ./deploy/docker/prometheus/prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml # 将 prometheus 配置文件挂载到容器里
     ports:
       - "${PROMETHEUS_PORT}:9090" # 设置容器9090端口映射指定宿主机端口，用于宿主机访问可视化web
     networks:
@@ -167,7 +167,7 @@ services:
 
   grafana:
     build:
-      context: ./grafana
+      context: ./deploy/docker/grafana
     environment:
       - TZ=${TZ}
     ports:
@@ -178,7 +178,7 @@ services:
 
   jaeger:
     build:
-      context: ./jaeger
+      context: ./deploy/docker/jaeger
     environment:
       - TZ=${TZ}
     ports:
@@ -190,14 +190,14 @@ services:
 
   dtm:
     build:
-      context: ./dtm
+      context: ./deploy/docker/dtm
     environment:
       - TZ=${TZ}
     entrypoint:
       - "/app/dtm/dtm"
       - "-c=/app/dtm/configs/config.yaml"
     volumes:
-      - ./dtm/config.yml:/app/dtm/configs/config.yaml # 将 dtm 配置文件挂载到容器里
+      - ./deploy/docker/dtm/config.yml:/app/dtm/configs/config.yaml # 将 dtm 配置文件挂载到容器里
     ports:
       - "${DTM_HTTP_PORT}:36789"
       - "${DTM_GRPC_PORT}:36790"

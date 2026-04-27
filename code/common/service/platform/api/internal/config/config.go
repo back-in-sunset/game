@@ -10,6 +10,9 @@ import (
 
 type Config struct {
 	rest.RestConf
+	Auth struct {
+		PublicKeyFile string
+	}
 	Mysql struct {
 		DataSource string
 	}

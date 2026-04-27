@@ -35,15 +35,38 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Handler: ListProjectsHandler(serverCtx),
 			},
 			{
-				Method:  http.MethodGet,
-				Path:    "/api/platform/tenant/:tenantId",
-				Handler: GetTenantHandler(serverCtx),
-			},
-			{
 				Method:  http.MethodPost,
 				Path:    "/api/platform/tenant/create",
 				Handler: CreateTenantHandler(serverCtx),
 			},
 		},
+	)
+
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.JwtAuth},
+			[]rest.Route{
+				{
+					Method:  http.MethodPost,
+					Path:    "/api/platform/tenant/delete",
+					Handler: DeleteTenantHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/api/platform/tenant/my",
+					Handler: MyTenantsHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/api/platform/tenant/update",
+					Handler: UpdateTenantHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/api/platform/tenant/:tenantId",
+					Handler: GetTenantHandler(serverCtx),
+				},
+			}...,
+		),
 	)
 }

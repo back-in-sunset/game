@@ -1,7 +1,7 @@
 services:
   etcd1:
     build:
-      context: ./etcd
+      context: ./deploy/docker/etcd
     container_name: etcd1
     environment:
       - TZ=Asia/Shanghai
@@ -21,7 +21,7 @@ services:
 
   etcd2:
     build:
-      context: ./etcd
+      context: ./deploy/docker/etcd
     container_name: etcd2
     environment:
       - TZ=Asia/Shanghai
@@ -41,7 +41,7 @@ services:
 
   etcd3:
     build:
-      context: ./etcd
+      context: ./deploy/docker/etcd
     container_name: etcd3
     environment:
       - TZ=Asia/Shanghai
@@ -61,7 +61,7 @@ services:
 
   mysql:
     build:
-      context: ./mysql
+      context: ./deploy/docker/mysql
     environment:
       - TZ=${TZ}
       - MYSQL_USER=${MYSQL_USERNAME}
@@ -77,7 +77,7 @@ services:
 
   redis:
     build:
-      context: ./redis
+      context: ./deploy/docker/redis
     environment:
       - TZ=${TZ}
     volumes:

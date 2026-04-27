@@ -1,7 +1,7 @@
 services:
   mysql-manage:
     build:
-      context: ./mysql-manage
+      context: ./deploy/docker/mysql-manage
     environment:
       - TZ=${TZ}
       - PMA_ARBITRARY=1
@@ -20,7 +20,7 @@ services:
 
   redis-manage:
     build:
-      context: ./redis-manage
+      context: ./deploy/docker/redis-manage
     environment:
       - TZ=${TZ}
       - ADMIN_USER=${REDIS_MANAGE_USERNAME}
