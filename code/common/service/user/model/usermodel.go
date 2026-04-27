@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/zeromicro/go-zero/core/stores/cache"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
@@ -34,7 +35,13 @@ func (m *customUserModel) FindOneByMobile(ctx context.Context, mobile string) (*
 }
 
 func (m *customUserModel) Insert(ctx context.Context, data *User) (sql.Result, error) {
-	return m.defaultUserModel.Insert(ctx, data)
+	userMobileKey := fmt.Sprintf("%s%v", cacheUserMobilePrefix, data.Mobile)
+	userUserIDKey := fmt.Sprintf("%s%v", cacheUserUserIDPrefix, data.UserID)
+
+	return m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (sql.Result, error) {
+		query := fmt.Sprintf("insert into %s (`user_id`, `name`, `gender`, `mobile`, `email`, `password`) values (?, ?, ?, ?, ?, ?)", m.tableName())
+		return conn.ExecCtx(ctx, query, data.UserID, data.Name, data.Gender, data.Mobile, data.Email, data.Password)
+	}, userMobileKey, userUserIDKey)
 }
 func (m *customUserModel) FindOne(ctx context.Context, iD int64) (*User, error) {
 	return m.defaultUserModel.FindOne(ctx, iD)

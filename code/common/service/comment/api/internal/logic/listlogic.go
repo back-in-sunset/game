@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"errors"
 
 	"comment/api/commentclient"
 	"comment/api/internal/svc"
@@ -29,6 +30,13 @@ func NewListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListLogic {
 
 // List retrieves a list of comments based on the request parameters.
 func (l *ListLogic) List(req *types.CommentListRequest) (resp *types.CommentListResponse, err error) {
+	if req.ObjID <= 0 {
+		return nil, errors.New("obj_id is required")
+	}
+	if req.ObjType <= 0 {
+		return nil, errors.New("obj_type is required")
+	}
+
 	var commentreq commentclient.CommentListRequest
 	copier.Copy(&commentreq, req)
 

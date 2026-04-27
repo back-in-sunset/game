@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"strings"
 
 	"user/model"
 	"user/rpc/internal/svc"
@@ -27,6 +28,18 @@ func NewRegisterLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Register
 }
 
 func (l *RegisterLogic) Register(in *user.RegisterRequest) (*user.RegisterResponse, error) {
+	in.Name = strings.TrimSpace(in.Name)
+	in.Mobile = strings.TrimSpace(in.Mobile)
+	if in.Name == "" {
+		return nil, status.Error(400, "用户名不能为空")
+	}
+	if in.Mobile == "" {
+		return nil, status.Error(400, "手机号不能为空")
+	}
+	if in.Password == "" {
+		return nil, status.Error(400, "密码不能为空")
+	}
+
 	// 判断手机号是否已经注册
 	_, err := l.svcCtx.UserModel.FindOneByMobile(l.ctx, in.Mobile)
 	if err == nil {
@@ -47,13 +60,12 @@ func (l *RegisterLogic) Register(in *user.RegisterRequest) (*user.RegisterRespon
 			return nil, status.Error(500, err.Error())
 		}
 
-		insertID, err := res.LastInsertId()
-		if err != nil {
+		if _, err = res.RowsAffected(); err != nil {
 			return nil, status.Error(500, err.Error())
 		}
 
 		return &user.RegisterResponse{
-			ID:     insertID,
+			ID:     newUser.UserID,
 			Name:   newUser.Name,
 			Gender: newUser.Gender,
 			Mobile: newUser.Mobile,
@@ -61,5 +73,5 @@ func (l *RegisterLogic) Register(in *user.RegisterRequest) (*user.RegisterRespon
 
 	}
 
-	return &user.RegisterResponse{}, nil
+	return nil, status.Error(500, err.Error())
 }

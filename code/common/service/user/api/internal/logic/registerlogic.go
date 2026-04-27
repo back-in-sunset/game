@@ -2,6 +2,8 @@ package logic
 
 import (
 	"context"
+	"errors"
+	"strings"
 
 	"user/api/internal/svc"
 	"user/api/internal/types"
@@ -25,6 +27,18 @@ func NewRegisterLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Register
 }
 
 func (l *RegisterLogic) Register(req *types.RegisterRequest) (resp *types.RegisterResponse, err error) {
+	req.Name = strings.TrimSpace(req.Name)
+	req.Mobile = strings.TrimSpace(req.Mobile)
+	if req.Name == "" {
+		return nil, errors.New("name is required")
+	}
+	if req.Mobile == "" {
+		return nil, errors.New("mobile is required")
+	}
+	if req.Password == "" {
+		return nil, errors.New("password is required")
+	}
+
 	res, err := l.svcCtx.UserRpc.Register(l.ctx, &userclient.RegisterRequest{
 		Name:     req.Name,
 		Gender:   req.Gender,

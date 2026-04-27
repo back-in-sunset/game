@@ -14,7 +14,6 @@ import (
 	"comment/rpc/model"
 	"comment/rpc/types"
 
-	"github.com/jinzhu/copier"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/threading"
 )
@@ -108,9 +107,7 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 		slices.SortFunc(comments, cmpfunc)
 
 		for _, c := range comments {
-			var commentResponse comment.CommentResponse
-			copier.Copy(&commentResponse, c)
-			curPage = append(curPage, &commentResponse)
+			curPage = append(curPage, toCommentResponse(c))
 		}
 
 	} else {
@@ -131,9 +128,7 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 		}
 
 		for _, c := range firstPageComments {
-			var comment comment.CommentResponse
-			copier.Copy(&comment, c)
-			curPage = append(curPage, &comment)
+			curPage = append(curPage, toCommentResponse(c))
 		}
 	}
 

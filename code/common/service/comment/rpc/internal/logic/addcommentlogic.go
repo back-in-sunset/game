@@ -2,12 +2,14 @@ package logic
 
 import (
 	"context"
+	"strings"
 
 	"comment/rpc/comment"
 	"comment/rpc/internal/svc"
 	"comment/rpc/model"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc/status"
 )
 
 type AddCommentLogic struct {
@@ -26,8 +28,21 @@ func NewAddCommentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AddCom
 
 // 添加评论
 func (l *AddCommentLogic) AddComment(in *comment.CommentRequest) (*comment.CommentResponse, error) {
-	// todo: add your logic here and delete this line
-	l.svcCtx.CommentModel.AddComment(l.ctx,
+	in.Message = strings.TrimSpace(in.Message)
+	if in.ObjID <= 0 {
+		return nil, status.Error(400, "obj_id不能为空")
+	}
+	if in.ObjType <= 0 {
+		return nil, status.Error(400, "obj_type不能为空")
+	}
+	if in.MemberID <= 0 {
+		return nil, status.Error(400, "member_id不能为空")
+	}
+	if in.Message == "" {
+		return nil, status.Error(400, "message不能为空")
+	}
+
+	res, err := l.svcCtx.CommentModel.AddComment(l.ctx,
 		&model.CommentSubject{
 			ObjID:    in.ObjID,
 			ObjType:  in.ObjType,
@@ -63,6 +78,14 @@ func (l *AddCommentLogic) AddComment(in *comment.CommentRequest) (*comment.Comme
 			// UpdatedAt:   time.Time{},
 		},
 	)
+	if err != nil {
+		return nil, status.Error(500, err.Error())
+	}
 
-	return &comment.CommentResponse{}, nil
+	commentData, err := l.svcCtx.CommentModel.FindOneByObjID(l.ctx, in.ObjID, res.CommentID)
+	if err != nil {
+		return nil, status.Error(500, err.Error())
+	}
+
+	return toCommentResponse(commentData), nil
 }

@@ -2,7 +2,6 @@ package logic
 
 import (
 	"context"
-	"log"
 	"strconv"
 	"user/model"
 	"user/rpc/internal/svc"
@@ -42,7 +41,12 @@ func (l *UserInfoLogic) UserInfo(in *user.UserInfoRequest) (*user.UserInfoRespon
 		return nil, status.Error(100, "x-uid invalid")
 	}
 
-	log.Printf("UserInfo uid: %d, id: %d", uid, in.ID)
+	if in.ID <= 0 {
+		return nil, status.Error(400, "用户ID不能为空")
+	}
+	if uid != in.ID {
+		return nil, status.Error(403, "无权访问该用户信息")
+	}
 
 	// 查询用户是否存在
 	res, err := l.svcCtx.UserModel.FindOne(l.ctx, in.ID)

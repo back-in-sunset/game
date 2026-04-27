@@ -21,22 +21,23 @@ type CommentListResponse struct {
 }
 
 type CommentRequest struct {
-	ObjID       int64  `json:"obj_id" form:"obj_id"`               // 评论对象ID
-	ObjType     int64  `json:"obj_type" form:"obj_type"`           // 评论对象类型
-	MemberID    int64  `json:"member_id" form:"member_id"`         // 作者用户ID
-	CommentID   int64  `json:"comment_id" form:"comment_id"`       // 同评论indx_id
-	AtMemberIDs string `json:"at_member_ids" form:"at_member_ids"` // at用户ID列表
-	Ip          string `json:"ip" form:"ip"`                       // 评论IP
-	Platform    int64  `json:"platform" form:"platform"`           // 评论平台
-	Device      string `json:"device" form:"device"`               // 评论设备
-	Message     string `json:"message" form:"message"`             // 评论内容
-	Meta        string `json:"meta" form:"meta"`                   // 评论元数据 背景 字体
-	ReplyID     int64  `json:"reply_id" form:"reply_id"`           // 被回复的评论ID
-	State       int64  `json:"state" form:"state"`                 // 评论状态 0-正常, 1-隐藏
-	RootID      int64  `json:"root_id" form:"root_id"`             // 根评论id 不为0则为回复一级评论
+	ObjID       int64  `json:"obj_id" form:"obj_id"`                   // 评论对象ID
+	ObjType     int64  `json:"obj_type" form:"obj_type"`               // 评论对象类型
+	MemberID    int64  `json:"member_id" form:"member_id"`             // 作者用户ID
+	CommentID   int64  `json:"comment_id" form:"comment_id" path:"id"` // 同评论indx_id
+	AtMemberIDs string `json:"at_member_ids" form:"at_member_ids"`     // at用户ID列表
+	Ip          string `json:"ip" form:"ip"`                           // 评论IP
+	Platform    int64  `json:"platform" form:"platform"`               // 评论平台
+	Device      string `json:"device" form:"device"`                   // 评论设备
+	Message     string `json:"message" form:"message"`                 // 评论内容
+	Meta        string `json:"meta" form:"meta"`                       // 评论元数据 背景 字体
+	ReplyID     int64  `json:"reply_id" form:"reply_id"`               // 被回复的评论ID
+	State       int64  `json:"state" form:"state"`                     // 评论状态 0-正常, 1-隐藏
+	RootID      int64  `json:"root_id" form:"root_id"`                 // 根评论id 不为0则为回复一级评论
 }
 
 type CommentResponse struct {
+	ID          int64  `json:"id"`
 	ObjID       int64  `json:"obj_id"`        // 评论对象ID
 	ObjType     int64  `json:"obj_type"`      // 评论对象类型
 	MemberID    int64  `json:"member_id"`     // 作者用户ID

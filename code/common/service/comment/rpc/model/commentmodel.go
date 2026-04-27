@@ -16,6 +16,7 @@ type (
 	// CommentModel 评论模型
 	CommentModel interface {
 		AddComment(ctx context.Context, data *CommentSubject, ci *CommentIndex, cc *CommentContent) (*CommentSchema, error)
+		DeleteComment(ctx context.Context, objID int64, commentID int64, memberID int64) (*Comment, error)
 		CommentListByObjID(ctx context.Context, objID int64, objType int64, sortField string, limit int64) ([]*Comment, error)
 		FindOneByObjID(ctx context.Context, objID int64, id int64) (*Comment, error)
 		CacheCommentsByIDs(ctx context.Context, objID int64, ids []int64) ([]*Comment, error)
@@ -174,6 +175,34 @@ func (m *customCommentModel) AddComment(ctx context.Context, data *CommentSubjec
 	return &CommentSchema{
 		CommentID: cc.CommentID,
 	}, nil
+}
+
+// DeleteComment 逻辑删除评论，仅更新索引状态。
+func (m *customCommentModel) DeleteComment(ctx context.Context, objID int64, commentID int64, memberID int64) (*Comment, error) {
+	commentData, err := m.FindOneByObjID(ctx, objID, commentID)
+	if err != nil {
+		return nil, err
+	}
+	if memberID > 0 && commentData.MemberID != memberID {
+		return nil, ErrNotFound
+	}
+	if commentData.State == 1 {
+		return commentData, nil
+	}
+
+	commentIndexModel := m.newCustomCommentIndexModelFunc(objID)
+	indexData, err := commentIndexModel.FindOne(ctx, commentID)
+	if err != nil {
+		return nil, err
+	}
+
+	indexData.State = 1
+	if err = commentIndexModel.Update(ctx, indexData); err != nil {
+		return nil, err
+	}
+
+	commentData.State = 1
+	return commentData, nil
 }
 
 // FindOneByObjID 查询评论

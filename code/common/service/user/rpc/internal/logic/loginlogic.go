@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"strings"
 
 	"user/model"
 	"user/rpc/internal/svc"
@@ -27,6 +28,14 @@ func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginLogic 
 }
 
 func (l *LoginLogic) Login(in *user.LoginRequest) (*user.LoginResponse, error) {
+	in.Mobile = strings.TrimSpace(in.Mobile)
+	if in.Mobile == "" {
+		return nil, status.Error(400, "手机号不能为空")
+	}
+	if in.Password == "" {
+		return nil, status.Error(400, "密码不能为空")
+	}
+
 	// 查询用户是否存在
 	res, err := l.svcCtx.UserModel.FindOneByMobile(l.ctx, in.Mobile)
 	if err != nil {

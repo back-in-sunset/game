@@ -2,6 +2,8 @@ package logic
 
 import (
 	"context"
+	"errors"
+	"strings"
 	"time"
 
 	"user/api/internal/svc"
@@ -27,6 +29,14 @@ func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginLogic 
 }
 
 func (l *LoginLogic) Login(req *types.LoginRequest) (resp *types.LoginResponse, err error) {
+	req.Mobile = strings.TrimSpace(req.Mobile)
+	if req.Mobile == "" {
+		return nil, errors.New("mobile is required")
+	}
+	if req.Password == "" {
+		return nil, errors.New("password is required")
+	}
+
 	res, err := l.svcCtx.UserRpc.Login(l.ctx, &userclient.LoginRequest{
 		Mobile:   req.Mobile,
 		Password: req.Password,
