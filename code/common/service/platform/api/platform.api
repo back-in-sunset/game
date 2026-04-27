@@ -1,0 +1,86 @@
+type (
+	CreateTenantReq {
+		Name string `json:"name"`
+		Slug string `json:"slug"`
+	}
+	CreateTenantResp {
+		Id   string `json:"id"`
+		Name string `json:"name"`
+		Slug string `json:"slug"`
+	}
+	GetTenantReq {
+		TenantId string `path:"tenantId"`
+	}
+	GetTenantResp {
+		Id   string `json:"id"`
+		Name string `json:"name"`
+		Slug string `json:"slug"`
+	}
+	CreateProjectReq {
+		TenantId string `json:"tenantId"`
+		Name     string `json:"name"`
+		Key      string `json:"key"`
+	}
+	CreateProjectResp {
+		Id       string `json:"id"`
+		TenantId string `json:"tenantId"`
+		Name     string `json:"name"`
+		Key      string `json:"key"`
+	}
+	ListProjectsReq {
+		TenantId string `form:"tenantId"`
+	}
+	ProjectItem {
+		Id       string `json:"id"`
+		TenantId string `json:"tenantId"`
+		Name     string `json:"name"`
+		Key      string `json:"key"`
+	}
+	ListProjectsResp {
+		Items []ProjectItem `json:"items"`
+	}
+	CreateEnvironmentReq {
+		ProjectId   string `json:"projectId"`
+		Name        string `json:"name"`
+		DisplayName string `json:"displayName"`
+	}
+	CreateEnvironmentResp {
+		Id          string `json:"id"`
+		ProjectId   string `json:"projectId"`
+		Name        string `json:"name"`
+		DisplayName string `json:"displayName"`
+	}
+	ListEnvironmentsReq {
+		ProjectId string `form:"projectId"`
+	}
+	EnvironmentItem {
+		Id          string `json:"id"`
+		ProjectId   string `json:"projectId"`
+		Name        string `json:"name"`
+		DisplayName string `json:"displayName"`
+	}
+	ListEnvironmentsResp {
+		Items []EnvironmentItem `json:"items"`
+	}
+)
+
+service Platform {
+	@handler CreateTenant
+	post /api/platform/tenant/create (CreateTenantReq) returns (CreateTenantResp)
+
+	@handler GetTenant
+	get /api/platform/tenant/:tenantId returns (GetTenantResp)
+
+	@handler CreateProject
+	post /api/platform/project/create (CreateProjectReq) returns (CreateProjectResp)
+
+	@handler ListProjects
+	get /api/platform/project/list (ListProjectsReq) returns (ListProjectsResp)
+
+	@handler CreateEnvironment
+	post /api/platform/environment/create (CreateEnvironmentReq) returns (CreateEnvironmentResp)
+
+	@handler ListEnvironments
+	get /api/platform/environment/list (ListEnvironmentsReq) returns (ListEnvironmentsResp)
+}
+
