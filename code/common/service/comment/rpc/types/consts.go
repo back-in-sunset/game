@@ -12,6 +12,8 @@ const (
 	DefaultPageSize = 20
 	// DefaultLimit 默认限制
 	DefaultLimit = 200
+	// MaxCommentLength 评论最大长度
+	MaxCommentLength = 1000
 	// DefaultSortLikeCursor 默认点赞数游标
 	DefaultSortLikeCursor = 1 << 30
 )

@@ -7,6 +7,7 @@ import (
 	"comment/rpc/comment"
 	"comment/rpc/internal/svc"
 	"comment/rpc/model"
+	"comment/rpc/types"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"google.golang.org/grpc/status"
@@ -40,6 +41,9 @@ func (l *AddCommentLogic) AddComment(in *comment.CommentRequest) (*comment.Comme
 	}
 	if in.Message == "" {
 		return nil, status.Error(400, "message不能为空")
+	}
+	if len([]rune(in.Message)) > types.MaxCommentLength {
+		return nil, status.Error(400, "message长度不能超过1000")
 	}
 
 	res, err := l.svcCtx.CommentModel.AddComment(l.ctx,

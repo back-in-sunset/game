@@ -9,6 +9,8 @@ import (
 	"comment/rpc/internal/svc"
 	"comment/rpc/model"
 	"comment/rpc/types"
+
+	"google.golang.org/grpc/status"
 )
 
 type listCommentStubModel struct {
@@ -132,6 +134,105 @@ func TestGetCommentListLogic_LevelLists(t *testing.T) {
 			}
 			if resp.Comments[0].RootID != tt.wantRootID {
 				t.Fatalf("resp rootID=%d want=%d", resp.Comments[0].RootID, tt.wantRootID)
+			}
+		})
+	}
+}
+
+func TestGetCommentListLogic_InvalidParams(t *testing.T) {
+	l := NewGetCommentListLogic(context.Background(), &svc.ServiceContext{
+		CommentModel: &listCommentStubModel{},
+	})
+
+	_, err := l.GetCommentList(&comment.CommentListRequest{
+		ObjID:    0,
+		ObjType:  1,
+		SortType: types.SortCreatedTime,
+		PageSize: 10,
+	})
+	if err == nil {
+		t.Fatalf("expected error for empty obj_id")
+	}
+	if got := int(status.Code(err)); got != 400 {
+		t.Fatalf("status code=%d want=400", got)
+	}
+
+	_, err = l.GetCommentList(&comment.CommentListRequest{
+		ObjID:    1001,
+		ObjType:  0,
+		SortType: types.SortCreatedTime,
+		PageSize: 10,
+	})
+	if err == nil {
+		t.Fatalf("expected error for empty obj_type")
+	}
+	if got := int(status.Code(err)); got != 400 {
+		t.Fatalf("status code=%d want=400", got)
+	}
+}
+
+func TestGetCommentListLogic_IsEndOnLastPage(t *testing.T) {
+	now := time.Now()
+	stub := &listCommentStubModel{
+		listResp: []*model.Comment{
+			{ID: 11, ObjID: 1001, ObjType: 1, MemberID: 3001, Message: "c1", CreatedAt: now},
+			{ID: 12, ObjID: 1001, ObjType: 1, MemberID: 3002, Message: "c2", CreatedAt: now},
+		},
+	}
+	l := NewGetCommentListLogic(context.Background(), &svc.ServiceContext{
+		CommentModel: stub,
+	})
+
+	resp, err := l.GetCommentList(&comment.CommentListRequest{
+		ObjID:    1001,
+		ObjType:  1,
+		SortType: types.SortCreatedTime,
+		PageSize: 10,
+	})
+	if err != nil {
+		t.Fatalf("GetCommentList() error=%v", err)
+	}
+	if !resp.IsEnd {
+		t.Fatalf("resp.IsEnd=false want=true")
+	}
+	if len(resp.Comments) != 2 {
+		t.Fatalf("len(resp.Comments)=%d want=2", len(resp.Comments))
+	}
+}
+
+func TestGetCommentListLogic_SortSwitch(t *testing.T) {
+	now := time.Now()
+	tests := []struct {
+		name     string
+		sortType int64
+		wantSort string
+	}{
+		{name: "sort by time", sortType: types.SortCreatedTime, wantSort: "created_at"},
+		{name: "sort by like", sortType: types.SortLikeCount, wantSort: "like_count"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			stub := &listCommentStubModel{
+				listResp: []*model.Comment{
+					{ID: 21, ObjID: 1002, ObjType: 1, MemberID: 3001, Message: "ok", CreatedAt: now},
+				},
+			}
+			l := NewGetCommentListLogic(context.Background(), &svc.ServiceContext{
+				CommentModel: stub,
+			})
+
+			_, err := l.GetCommentList(&comment.CommentListRequest{
+				ObjID:    1002,
+				ObjType:  1,
+				SortType: tt.sortType,
+				PageSize: 10,
+			})
+			if err != nil {
+				t.Fatalf("GetCommentList() error=%v", err)
+			}
+			if stub.gotSort != tt.wantSort {
+				t.Fatalf("got sort=%s want=%s", stub.gotSort, tt.wantSort)
 			}
 		})
 	}

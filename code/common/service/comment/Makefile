@@ -1,4 +1,4 @@
-.PHONY: start rpc api gen model rpc-tag
+.PHONY: start rpc api gen model rpc-tag test test-logic test-integration
  
 API_DIR=./api
 RPC_DIR=./rpc
@@ -36,3 +36,12 @@ build-docker-api:
 
 build-docker-rpc:
 	docker build -t $(SERVER)rpc:0.0.1 --build-arg SERVICE=$(SERVER) --build-arg SERVICE_PATH=${RPC_DIR} .
+
+test:
+	go test ./...
+
+test-logic:
+	go test ./rpc/internal/logic
+
+test-integration:
+	GOCACHE=/tmp/go-build-comment-integration GOTMPDIR=/tmp go test -tags=integration ./rpc/integration -run TestNestedCommentFlow_JSONTableDriven_Integration -v

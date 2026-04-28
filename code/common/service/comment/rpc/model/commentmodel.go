@@ -187,7 +187,7 @@ func (m *customCommentModel) DeleteComment(ctx context.Context, objID int64, com
 		return nil, err
 	}
 	if memberID > 0 && commentData.MemberID != memberID {
-		return nil, ErrNotFound
+		return nil, ErrPermissionDenied
 	}
 	if commentData.State == 1 {
 		return commentData, nil

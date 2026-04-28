@@ -2,12 +2,16 @@ package logic
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
 
 	"comment/rpc/comment"
 	"comment/rpc/internal/svc"
 	"comment/rpc/model"
+	"comment/rpc/types"
+
+	"google.golang.org/grpc/status"
 )
 
 type addCommentStubModel struct {
@@ -147,5 +151,38 @@ func TestAddCommentLogic_LevelCases(t *testing.T) {
 				t.Fatalf("resp ReplyID=%d want=%d", resp.ReplyID, tt.wantReply)
 			}
 		})
+	}
+}
+
+func TestAddCommentLogic_ValidateMessage(t *testing.T) {
+	stub := &addCommentStubModel{}
+	l := NewAddCommentLogic(context.Background(), &svc.ServiceContext{
+		CommentModel: stub,
+	})
+
+	_, err := l.AddComment(&comment.CommentRequest{
+		ObjID:    1001,
+		ObjType:  1,
+		MemberID: 2001,
+		Message:  "   ",
+	})
+	if err == nil {
+		t.Fatalf("expected error for empty message")
+	}
+	if got := int(status.Code(err)); got != 400 {
+		t.Fatalf("status code=%d want=400", got)
+	}
+
+	_, err = l.AddComment(&comment.CommentRequest{
+		ObjID:    1001,
+		ObjType:  1,
+		MemberID: 2001,
+		Message:  strings.Repeat("a", types.MaxCommentLength+1),
+	})
+	if err == nil {
+		t.Fatalf("expected error for too long message")
+	}
+	if got := int(status.Code(err)); got != 400 {
+		t.Fatalf("status code=%d want=400", got)
 	}
 }

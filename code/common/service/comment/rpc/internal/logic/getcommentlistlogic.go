@@ -13,6 +13,7 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/threading"
+	"google.golang.org/grpc/status"
 )
 
 // 只处理id缓存 内容缓存交给model
@@ -47,6 +48,13 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 		comments       []*model.Comment
 		sortFiled      string
 	)
+
+	if in.ObjID <= 0 {
+		return nil, status.Error(400, "obj_id不能为空")
+	}
+	if in.ObjType <= 0 {
+		return nil, status.Error(400, "obj_type不能为空")
+	}
 
 	cursor := in.Cursor
 

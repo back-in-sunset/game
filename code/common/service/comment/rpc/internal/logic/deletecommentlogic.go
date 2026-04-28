@@ -42,6 +42,9 @@ func (l *DeleteCommentLogic) DeleteComment(in *comment.CommentRequest) (*comment
 		if err == model.ErrNotFound {
 			return nil, status.Error(404, "评论不存在")
 		}
+		if err == model.ErrPermissionDenied {
+			return nil, status.Error(403, "无权限删除该评论")
+		}
 		return nil, status.Error(500, err.Error())
 	}
 	if err = removeCommentScores(l.ctx, l.svcCtx, res.ObjID, res.ObjType, res.RootID, res.ID); err != nil {
