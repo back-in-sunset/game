@@ -2,9 +2,10 @@ package logic
 
 import (
 	"context"
-	"errors"
+	"net/http"
 	"strings"
 
+	"user/api/internal/errx"
 	"user/api/internal/svc"
 	"user/api/internal/types"
 	"user/api/userclient"
@@ -30,13 +31,13 @@ func (l *RegisterLogic) Register(req *types.RegisterRequest) (resp *types.Regist
 	req.Name = strings.TrimSpace(req.Name)
 	req.Mobile = strings.TrimSpace(req.Mobile)
 	if req.Name == "" {
-		return nil, errors.New("name is required")
+		return nil, errx.New(http.StatusBadRequest, errx.CodeNameRequired, "name is required")
 	}
 	if req.Mobile == "" {
-		return nil, errors.New("mobile is required")
+		return nil, errx.New(http.StatusBadRequest, errx.CodeMobileRequired, "mobile is required")
 	}
 	if req.Password == "" {
-		return nil, errors.New("password is required")
+		return nil, errx.New(http.StatusBadRequest, errx.CodePasswordRequired, "password is required")
 	}
 
 	res, err := l.svcCtx.UserRpc.Register(l.ctx, &userclient.RegisterRequest{

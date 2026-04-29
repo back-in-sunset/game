@@ -2,10 +2,11 @@ package logic
 
 import (
 	"context"
-	"errors"
+	"net/http"
 	"strings"
 	"time"
 
+	"user/api/internal/errx"
 	"user/api/internal/svc"
 	"user/api/internal/types"
 	"user/api/userclient"
@@ -31,10 +32,10 @@ func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginLogic 
 func (l *LoginLogic) Login(req *types.LoginRequest) (resp *types.LoginResponse, err error) {
 	req.Mobile = strings.TrimSpace(req.Mobile)
 	if req.Mobile == "" {
-		return nil, errors.New("mobile is required")
+		return nil, errx.New(http.StatusBadRequest, errx.CodeMobileRequired, "mobile is required")
 	}
 	if req.Password == "" {
-		return nil, errors.New("password is required")
+		return nil, errx.New(http.StatusBadRequest, errx.CodePasswordRequired, "password is required")
 	}
 
 	res, err := l.svcCtx.UserRpc.Login(l.ctx, &userclient.LoginRequest{
@@ -50,7 +51,7 @@ func (l *LoginLogic) Login(req *types.LoginRequest) (resp *types.LoginResponse, 
 
 	accessToken, err := jwtx.GetToken(l.svcCtx.PrivateKey, res.ID, accessExpire)
 	if err != nil {
-		return nil, err
+		return nil, errx.New(http.StatusInternalServerError, errx.CodeLoginFailed, err.Error())
 	}
 
 	return &types.LoginResponse{

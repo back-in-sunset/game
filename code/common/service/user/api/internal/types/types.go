@@ -28,8 +28,69 @@ type RegisterResponse struct {
 }
 
 type UserInfoResponse struct {
-	ID     int64  `json:"id"`
-	Name   string `json:"name"`
-	Gender int64  `json:"gender"`
+	ID       int64  `json:"id"`
+	Name     string `json:"name"`
+	Gender   int64  `json:"gender"`
+	Mobile   string `json:"mobile"`
+	Avatar   string `json:"avatar,omitempty"`
+	Bio      string `json:"bio,omitempty"`
+	Birthday string `json:"birthday,omitempty"`
+	Location string `json:"location,omitempty"`
+	Extra    string `json:"extra,omitempty"`
+}
+
+type UpdateProfileRequest struct {
+	Avatar   string `json:"avatar"`
+	Bio      string `json:"bio"`
+	Birthday string `json:"birthday"`
+	Location string `json:"location"`
+	Extra    string `json:"extra"`
+}
+
+type UpdateProfileResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
+type ChangePasswordRequest struct {
+	OldPassword string `json:"oldPassword"`
+	NewPassword string `json:"newPassword"`
+}
+
+type ChangePasswordResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
+type ChangeMobileRequest struct {
+	NewMobile  string `json:"newMobile"`
+	VerifyCode string `json:"verifyCode"`
+}
+
+type ChangeMobileResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
+type SendMobileCodeRequest struct {
 	Mobile string `json:"mobile"`
+}
+
+type SendEmailCodeRequest struct {
+	Email string `json:"email"`
+}
+
+type SendCodeResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
+type BindEmailRequest struct {
+	Email      string `json:"email"`
+	VerifyCode string `json:"verifyCode"`
+}
+
+type BindEmailResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
 }

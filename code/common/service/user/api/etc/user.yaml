@@ -10,6 +10,22 @@ CacheRedis:
     Pass: "123456"
     Type: node
 
+Salt: DADSFHIASDFPTryzICwd7qnJa
+
+Verify:
+  CodeTTLSeconds: 300
+  SendCooldownSeconds: 60
+  DailyLimit: 20
+  Email:
+    Host: ""
+    Port: 25
+    Username: ""
+    Password: ""
+    From: ""
+    Subject: "Your Verification Code"
+  SmsMock:
+    FixedCode: "123456"
+
 Auth:
   AccessSecret: uOvKLmVfztaXGpNYd4Z0I1SiT7MweJhl
   AccessExpire: 86400

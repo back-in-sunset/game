@@ -3,11 +3,14 @@ package logic
 import (
 	"context"
 	"encoding/json"
+	"net/http"
 	"strconv"
 
+	"user/api/internal/errx"
 	"user/api/internal/svc"
 	"user/api/internal/types"
 	"user/api/userclient"
+	"user/model"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"google.golang.org/grpc/metadata"
@@ -29,7 +32,7 @@ func NewUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UserInfo
 
 func (l *UserInfoLogic) UserInfo() (resp *types.UserInfoResponse, err error) {
 	// 查询用户是否存在
-	uid, err := l.ctx.Value(types.UserIDKey).(json.Number).Int64()
+	uid, err := extractUID(l.ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -45,10 +48,41 @@ func (l *UserInfoLogic) UserInfo() (resp *types.UserInfoResponse, err error) {
 		return nil, err
 	}
 
-	return &types.UserInfoResponse{
+	out := &types.UserInfoResponse{
 		ID:     res.ID,
 		Name:   res.Name,
 		Gender: res.Gender,
 		Mobile: res.Mobile,
-	}, nil
+	}
+
+	if l.svcCtx.UserProfileModel != nil {
+		profile, pErr := l.svcCtx.UserProfileModel.FindOne(l.ctx, uid)
+		if pErr == nil {
+			out.Avatar = profile.Avatar
+			out.Bio = profile.Bio
+			if profile.Birthday.Valid {
+				out.Birthday = profile.Birthday.Time.Format("2006-01-02")
+			}
+			out.Location = profile.Location
+			if profile.Extra.Valid {
+				out.Extra = profile.Extra.String
+			}
+		} else if pErr != nil && pErr != model.ErrNotFound {
+			logx.WithContext(l.ctx).Errorf("load user profile failed, uid=%d err=%v", uid, pErr)
+		}
+	}
+	return out, nil
+}
+
+func extractUID(ctx context.Context) (int64, error) {
+	v := ctx.Value(types.UserIDKey)
+	n, ok := v.(json.Number)
+	if !ok {
+		return 0, errx.New(http.StatusBadRequest, errx.CodeUIDInvalid, "uid invalid")
+	}
+	uid, err := n.Int64()
+	if err != nil {
+		return 0, errx.New(http.StatusBadRequest, errx.CodeUIDInvalid, "uid invalid")
+	}
+	return uid, nil
 }

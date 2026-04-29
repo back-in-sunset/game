@@ -11,16 +11,16 @@ import (
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
-func LoginHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+func BindEmailHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req types.LoginRequest
+		var req types.BindEmailRequest
 		if err := httpx.Parse(r, &req); err != nil {
 			errx.WriteHTTPError(r.Context(), w, err)
 			return
 		}
 
-		l := logic.NewLoginLogic(r.Context(), svcCtx)
-		resp, err := l.Login(&req)
+		l := logic.NewBindEmailLogic(r.Context(), svcCtx)
+		resp, err := l.BindEmail(&req)
 		if err != nil {
 			errx.WriteHTTPError(r.Context(), w, err)
 		} else {

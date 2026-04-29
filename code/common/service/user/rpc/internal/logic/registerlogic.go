@@ -63,6 +63,13 @@ func (l *RegisterLogic) Register(in *user.RegisterRequest) (*user.RegisterRespon
 		if _, err = res.RowsAffected(); err != nil {
 			return nil, status.Error(500, err.Error())
 		}
+		if l.svcCtx.UserProfileModel != nil {
+			if err = l.svcCtx.UserProfileModel.Upsert(l.ctx, &model.UserProfile{
+				UserID: newUser.UserID,
+			}); err != nil {
+				return nil, status.Error(500, err.Error())
+			}
+		}
 
 		return &user.RegisterResponse{
 			ID:     newUser.UserID,

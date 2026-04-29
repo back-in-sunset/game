@@ -36,6 +36,36 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Path:    "/api/user/userinfo",
 					Handler: UserInfoHandler(serverCtx),
 				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/api/user/profile/update",
+					Handler: UpdateProfileHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/api/user/password/change",
+					Handler: ChangePasswordHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/api/user/mobile/change",
+					Handler: ChangeMobileHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/api/user/code/send/mobile",
+					Handler: SendMobileCodeHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/api/user/code/send/email",
+					Handler: SendEmailCodeHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/api/user/email/bind",
+					Handler: BindEmailHandler(serverCtx),
+				},
 			}...,
 		),
 	)

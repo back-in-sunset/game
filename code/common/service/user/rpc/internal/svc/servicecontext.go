@@ -13,7 +13,8 @@ type ServiceContext struct {
 	Config config.Config
 	IdxGen *idx.Snowflake
 
-	UserModel model.UserModel
+	UserModel        model.UserModel
+	UserProfileModel model.UserProfileModel
 }
 
 // NewServiceContext 创建 ServiceContext
@@ -21,8 +22,9 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	conn := sqlx.NewMysql(c.Mysql.DataSource)
 
 	return &ServiceContext{
-		Config:    c,
-		UserModel: model.NewUserModel(conn, c.CacheRedis),
+		Config:           c,
+		UserModel:        model.NewUserModel(conn, c.CacheRedis),
+		UserProfileModel: model.NewUserProfileModel(conn, c.CacheRedis),
 		// UserModel: newCQLUserModel(c),
 		IdxGen: newIdxGenerator(c),
 	}

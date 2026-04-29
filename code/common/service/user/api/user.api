@@ -29,6 +29,56 @@ type (
 		Name   string `json:"name"`
 		Gender int64  `json:"gender"`
 		Mobile string `json:"mobile"`
+		Avatar   string `json:"avatar,optional"`
+		Bio      string `json:"bio,optional"`
+		Birthday string `json:"birthday,optional"`
+		Location string `json:"location,optional"`
+		Extra    string `json:"extra,optional"`
+	}
+	UpdateProfileRequest {
+		Avatar   string `json:"avatar,optional"`
+		Bio      string `json:"bio,optional"`
+		Birthday string `json:"birthday,optional"`
+		Location string `json:"location,optional"`
+		Extra    string `json:"extra,optional"`
+	}
+	UpdateProfileResponse {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}
+	ChangePasswordRequest {
+		OldPassword string `json:"oldPassword"`
+		NewPassword string `json:"newPassword"`
+	}
+	ChangePasswordResponse {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}
+	ChangeMobileRequest {
+		NewMobile  string `json:"newMobile"`
+		VerifyCode string `json:"verifyCode,optional"`
+	}
+	ChangeMobileResponse {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}
+	SendMobileCodeRequest {
+		Mobile string `json:"mobile"`
+	}
+	SendEmailCodeRequest {
+		Email string `json:"email"`
+	}
+	SendCodeResponse {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}
+	BindEmailRequest {
+		Email      string `json:"email"`
+		VerifyCode string `json:"verifyCode"`
+	}
+	BindEmailResponse {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
 	}
 // 用户信息
 )
@@ -48,5 +98,16 @@ service User {
 service User {
 	@handler UserInfo
 	post /api/user/userinfo returns (UserInfoResponse)
+	@handler UpdateProfile
+	post /api/user/profile/update (UpdateProfileRequest) returns (UpdateProfileResponse)
+	@handler ChangePassword
+	post /api/user/password/change (ChangePasswordRequest) returns (ChangePasswordResponse)
+	@handler ChangeMobile
+	post /api/user/mobile/change (ChangeMobileRequest) returns (ChangeMobileResponse)
+	@handler SendMobileCode
+	post /api/user/code/send/mobile (SendMobileCodeRequest) returns (SendCodeResponse)
+	@handler SendEmailCode
+	post /api/user/code/send/email (SendEmailCodeRequest) returns (SendCodeResponse)
+	@handler BindEmail
+	post /api/user/email/bind (BindEmailRequest) returns (BindEmailResponse)
 }
-
