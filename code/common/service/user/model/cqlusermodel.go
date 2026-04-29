@@ -64,7 +64,7 @@ type (
 )
 
 // NewCQLUserModel returns a model for the database table.
-func NewCQLUserModel(session *gocql.Session, cacheConf cache.CacheConf, opts ...cache.Option) CQLUserModel {
+func NewCQLUserModel(session *gocql.Session, cacheConf cache.CacheConf, opts ...cache.Option) UserModel {
 	return &customCQLUserModel{
 		// defaultUserModel: newDefaultUserModel(conn, cacheConf),
 		cache:   cache.New(cacheConf, singleFlights, stats, gocql.ErrNotFound, opts...),
@@ -188,6 +188,44 @@ func (u *customCQLUserModel) FindOneByMobile(ctx context.Context, mobile string)
 		}
 		resp.Gender = user.Gender
 		resp.Email = user.Email
+		resp.Name = user.Name
+		resp.CreatedAt = user.CreatedAt
+		resp.Password = user.Password
+		resp.UpdatedAt = user.UpdatedAt
+		return nil
+	})
+	switch err {
+	case nil:
+		return &resp, nil
+	case gocql.ErrNotFound:
+		return nil, ErrNotFound
+	default:
+		log.Println(err)
+		return nil, err
+	}
+}
+
+func (u *customCQLUserModel) FindOneByEmail(ctx context.Context, email string) (*User, error) {
+	userEmailKey := fmt.Sprintf("%s%v", cacheUserEmailPrefix, email)
+	var resp User
+
+	query := fmt.Sprintf(`select %s from %s where email=?`, buildFileds(&UsersByEmail{}), UsersByEmail{}.TableName())
+	err := u.cache.TakeCtx(ctx, &resp, userEmailKey, func(v any) error {
+		err := u.Session.Query(query, email).Scan(
+			&resp.UserID,
+			&resp.Email,
+			&resp.CreatedAt,
+		)
+		if err != nil {
+			return err
+		}
+
+		user, err := u.FindOne(ctx, resp.UserID)
+		if err != nil {
+			return err
+		}
+		resp.Gender = user.Gender
+		resp.Mobile = user.Mobile
 		resp.Name = user.Name
 		resp.CreatedAt = user.CreatedAt
 		resp.Password = user.Password
