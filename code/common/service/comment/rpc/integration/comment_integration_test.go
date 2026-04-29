@@ -56,6 +56,7 @@ type jsonStep struct {
 	CommentAlias     string `json:"comment_alias,omitempty"`
 	ExpectTopAlias   string `json:"expect_top_alias,omitempty"`
 	LikeMemberID     int64  `json:"like_member_id,omitempty"`
+	ExpectError      string `json:"expect_error,omitempty"`
 }
 
 const nestedCommentJSONCases = `
@@ -180,6 +181,27 @@ const nestedCommentJSONCases = `
         "expect_top_alias": "c2"
       }
     ]
+  },
+  {
+    "name": "reject_reply_without_root",
+    "obj_id": 131841,
+    "steps": [
+      {
+        "op": "add",
+        "alias": "root",
+        "obj_type": 1,
+        "member_id": 2301,
+        "message": "root for invalid reply"
+      },
+      {
+        "op": "add",
+        "obj_type": 1,
+        "member_id": 2302,
+        "message": "invalid reply without root",
+        "reply_alias": "root",
+        "expect_error": "invalid reply relation"
+      }
+    ]
   }
 ]
 `
@@ -212,6 +234,7 @@ func TestNestedCommentFlow_JSONTableDriven_Integration(t *testing.T) {
 
 	commentModel := model.NewCommentModel(sqlx.NewMysql(dsn), cache.CacheConf{
 		{
+			Weight: 100,
 			RedisConf: redis.RedisConf{
 				Host: redisAddr,
 				Type: "node",
@@ -249,6 +272,15 @@ func TestNestedCommentFlow_JSONTableDriven_Integration(t *testing.T) {
 						RootID:   rootID,
 						ReplyID:  replyID,
 					})
+					if step.ExpectError != "" {
+						if addErr == nil {
+							t.Fatalf("step[%d] add error=nil want contains=%q", i, step.ExpectError)
+						}
+						if !strings.Contains(addErr.Error(), step.ExpectError) {
+							t.Fatalf("step[%d] add error=%v want contains=%q", i, addErr, step.ExpectError)
+						}
+						continue
+					}
 					if addErr != nil {
 						t.Fatalf("step[%d] add error=%v", i, addErr)
 					}

@@ -2,13 +2,14 @@ package logic
 
 import (
 	"context"
+	"net/http"
 
+	"comment/internal/errx"
 	"comment/rpc/comment"
 	"comment/rpc/internal/svc"
 	"comment/rpc/model"
 
 	"github.com/zeromicro/go-zero/core/logx"
-	"google.golang.org/grpc/status"
 )
 
 type UnBlockCommentLogic struct {
@@ -28,21 +29,21 @@ func NewUnBlockCommentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Un
 // 评论取消屏蔽
 func (l *UnBlockCommentLogic) UnBlockComment(in *comment.UnBlockCommentRequest) (*comment.UnBlockCommentResponse, error) {
 	if in.ObjID <= 0 {
-		return nil, status.Error(400, "obj_id不能为空")
+		return nil, errx.RPCError(http.StatusBadRequest, errx.CodeObjIDRequired, "obj_id is required")
 	}
 	if in.CommentID <= 0 {
-		return nil, status.Error(400, "comment_id不能为空")
+		return nil, errx.RPCError(http.StatusBadRequest, errx.CodeCommentIDRequired, "comment_id is required")
 	}
 
 	c, err := l.svcCtx.CommentModel.SetCommentState(l.ctx, in.ObjID, in.CommentID, 0)
 	if err != nil {
 		if err == model.ErrNotFound {
-			return nil, status.Error(404, "评论不存在")
+			return nil, errx.RPCError(http.StatusNotFound, errx.CodeCommentNotFound, "comment not found")
 		}
-		return nil, status.Error(500, err.Error())
+		return nil, errx.RPCError(http.StatusInternalServerError, errx.CodeInternalDefault, err.Error())
 	}
 	if err = syncCommentScores(l.ctx, l.svcCtx, c); err != nil {
-		return nil, status.Error(500, err.Error())
+		return nil, errx.RPCError(http.StatusInternalServerError, errx.CodeInternalDefault, err.Error())
 	}
 
 	return &comment.UnBlockCommentResponse{

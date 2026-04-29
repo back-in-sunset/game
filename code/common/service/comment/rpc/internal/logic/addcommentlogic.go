@@ -2,15 +2,17 @@ package logic
 
 import (
 	"context"
+	"errors"
+	"net/http"
 	"strings"
 
+	"comment/internal/errx"
 	"comment/rpc/comment"
 	"comment/rpc/internal/svc"
 	"comment/rpc/model"
 	"comment/rpc/types"
 
 	"github.com/zeromicro/go-zero/core/logx"
-	"google.golang.org/grpc/status"
 )
 
 type AddCommentLogic struct {
@@ -31,19 +33,19 @@ func NewAddCommentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AddCom
 func (l *AddCommentLogic) AddComment(in *comment.CommentRequest) (*comment.CommentResponse, error) {
 	in.Message = strings.TrimSpace(in.Message)
 	if in.ObjID <= 0 {
-		return nil, status.Error(400, "obj_id不能为空")
+		return nil, errx.RPCError(http.StatusBadRequest, errx.CodeObjIDRequired, "obj_id is required")
 	}
 	if in.ObjType <= 0 {
-		return nil, status.Error(400, "obj_type不能为空")
+		return nil, errx.RPCError(http.StatusBadRequest, errx.CodeObjTypeRequired, "obj_type is required")
 	}
 	if in.MemberID <= 0 {
-		return nil, status.Error(400, "member_id不能为空")
+		return nil, errx.RPCError(http.StatusBadRequest, errx.CodeMemberIDRequired, "member_id is required")
 	}
 	if in.Message == "" {
-		return nil, status.Error(400, "message不能为空")
+		return nil, errx.RPCError(http.StatusBadRequest, errx.CodeMessageRequired, "message is required")
 	}
 	if len([]rune(in.Message)) > types.MaxCommentLength {
-		return nil, status.Error(400, "message长度不能超过1000")
+		return nil, errx.RPCError(http.StatusBadRequest, errx.CodeMessageTooLong, "message length must be <= 1000")
 	}
 
 	res, err := l.svcCtx.CommentModel.AddComment(l.ctx,
@@ -83,15 +85,18 @@ func (l *AddCommentLogic) AddComment(in *comment.CommentRequest) (*comment.Comme
 		},
 	)
 	if err != nil {
-		return nil, status.Error(500, err.Error())
+		if errors.Is(err, model.ErrInvalidReply) {
+			return nil, errx.RPCError(http.StatusBadRequest, errx.CodeInvalidReply, "invalid reply relation")
+		}
+		return nil, errx.RPCError(http.StatusInternalServerError, errx.CodeInternalDefault, err.Error())
 	}
 
 	commentData, err := l.svcCtx.CommentModel.FindOneByObjID(l.ctx, in.ObjID, res.CommentID)
 	if err != nil {
-		return nil, status.Error(500, err.Error())
+		return nil, errx.RPCError(http.StatusInternalServerError, errx.CodeInternalDefault, err.Error())
 	}
 	if err = syncCommentScores(l.ctx, l.svcCtx, commentData); err != nil {
-		return nil, status.Error(500, err.Error())
+		return nil, errx.RPCError(http.StatusInternalServerError, errx.CodeInternalDefault, err.Error())
 	}
 
 	return toCommentResponse(commentData), nil

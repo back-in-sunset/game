@@ -53,7 +53,20 @@ type (
 	// Count       int64 `form:"count" json:"count"` //
 	}
 	CommentListResponse {
-		List []CommentResponse
+		List   []CommentResponse `json:"list"`
+		IsEnd  bool              `json:"is_end"`
+		Cursor int64             `json:"cursor"`
+		LastID int64             `json:"last_id"`
+	}
+	CommentActionRequest {
+		ObjID     int64 `json:"obj_id" form:"obj_id"` // 评论对象ID
+		ObjType   int64 `json:"obj_type" form:"obj_type"` // 评论对象类型
+		CommentID int64 `json:"comment_id" form:"comment_id" path:"id"` // 评论ID
+		MemberID  int64 `json:"member_id" form:"member_id"` // 用户ID
+	}
+	CommentActionResponse {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
 	}
 )
 
@@ -73,5 +86,28 @@ service Comment {
 	// 获取评论列表
 	@handler list
 	get /api/comments (CommentListRequest) returns (CommentListResponse)
-}
 
+	// 评论点赞
+	@handler Like
+	post /api/comments/:id/like (CommentActionRequest) returns (CommentActionResponse)
+
+	// 评论取消点赞
+	@handler Unlike
+	delete /api/comments/:id/like (CommentActionRequest) returns (CommentActionResponse)
+
+	// 评论屏蔽
+	@handler Block
+	post /api/comments/:id/block (CommentActionRequest) returns (CommentActionResponse)
+
+	// 评论取消屏蔽
+	@handler Unblock
+	delete /api/comments/:id/block (CommentActionRequest) returns (CommentActionResponse)
+
+	// 评论置顶
+	@handler Pin
+	post /api/comments/:id/pin (CommentActionRequest) returns (CommentActionResponse)
+
+	// 评论取消置顶
+	@handler Unpin
+	delete /api/comments/:id/pin (CommentActionRequest) returns (CommentActionResponse)
+}

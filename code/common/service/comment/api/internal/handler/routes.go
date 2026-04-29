@@ -34,6 +34,36 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Path:    "/api/comments/:id",
 				Handler: GetHandler(serverCtx),
 			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/api/comments/:id/like",
+				Handler: LikeHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodDelete,
+				Path:    "/api/comments/:id/like",
+				Handler: UnlikeHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/api/comments/:id/block",
+				Handler: BlockHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodDelete,
+				Path:    "/api/comments/:id/block",
+				Handler: UnblockHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/api/comments/:id/pin",
+				Handler: PinHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodDelete,
+				Path:    "/api/comments/:id/pin",
+				Handler: UnpinHandler(serverCtx),
+			},
 		},
 	)
 }

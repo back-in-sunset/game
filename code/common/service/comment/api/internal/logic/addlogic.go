@@ -2,12 +2,13 @@ package logic
 
 import (
 	"context"
-	"errors"
+	"net/http"
 	"strings"
 
 	"comment/api/commentclient"
 	"comment/api/internal/svc"
 	"comment/api/internal/types"
+	"comment/internal/errx"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -29,16 +30,16 @@ func NewAddLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AddLogic {
 func (l *AddLogic) Add(req *types.CommentRequest) (resp *types.CommentResponse, err error) {
 	req.Message = strings.TrimSpace(req.Message)
 	if req.ObjID <= 0 {
-		return nil, errors.New("obj_id is required")
+		return nil, errx.New(http.StatusBadRequest, errx.CodeObjIDRequired, "obj_id is required")
 	}
 	if req.ObjType <= 0 {
-		return nil, errors.New("obj_type is required")
+		return nil, errx.New(http.StatusBadRequest, errx.CodeObjTypeRequired, "obj_type is required")
 	}
 	if req.MemberID <= 0 {
-		return nil, errors.New("member_id is required")
+		return nil, errx.New(http.StatusBadRequest, errx.CodeMemberIDRequired, "member_id is required")
 	}
 	if req.Message == "" {
-		return nil, errors.New("message is required")
+		return nil, errx.New(http.StatusBadRequest, errx.CodeMessageRequired, "message is required")
 	}
 
 	res, err := l.svcCtx.CommentRpc.AddComment(l.ctx, &commentclient.CommentRequest{

@@ -2,6 +2,8 @@ package logic
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 
@@ -13,7 +15,6 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/threading"
-	"google.golang.org/grpc/status"
 )
 
 // 只处理id缓存 内容缓存交给model
@@ -50,10 +51,10 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 	)
 
 	if in.ObjID <= 0 {
-		return nil, status.Error(400, "obj_id不能为空")
+		return nil, errx.RPCError(http.StatusBadRequest, errx.CodeObjIDRequired, "obj_id is required")
 	}
 	if in.ObjType <= 0 {
-		return nil, status.Error(400, "obj_type不能为空")
+		return nil, errx.RPCError(http.StatusBadRequest, errx.CodeObjTypeRequired, "obj_type is required")
 	}
 
 	cursor := in.Cursor
@@ -100,6 +101,9 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 			commentMap[c.ID] = c
 		}
 		for _, id := range commentIDs {
+			if id <= 0 {
+				continue
+			}
 			c, ok := commentMap[id]
 			if !ok {
 				continue
@@ -109,7 +113,8 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 
 	} else {
 		// 从数据库查询
-		v, err, _ := l.svcCtx.SignleFlightGroup.Do("commentsByObjID", func() (any, error) {
+		sfKey := fmt.Sprintf("commentsByObjID:%d:%d:%d:%d:%s", in.ObjID, in.ObjType, in.RootID, in.ReplyID, sortFiled)
+		v, err, _ := l.svcCtx.SignleFlightGroup.Do(sfKey, func() (any, error) {
 			return l.svcCtx.CommentModel.CommentListByObjID(l.ctx, in.ObjID, in.ObjType, in.RootID, in.ReplyID, sortFiled, types.DefaultLimit)
 		})
 		if err != nil {
@@ -117,8 +122,8 @@ func (l *GetCommentListLogic) GetCommentList(in *comment.CommentListRequest) (*c
 		}
 		comments = v.([]*model.Comment)
 		var firstPageComments []*model.Comment
-		if len(comments) > int(in.PageSize) {
-			firstPageComments = comments[:in.PageSize]
+		if len(comments) > int(pageSize) {
+			firstPageComments = comments[:pageSize]
 		} else {
 			firstPageComments = comments
 			isEnd = true

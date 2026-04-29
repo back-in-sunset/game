@@ -13,3 +13,6 @@ var ErrNotFound = sqlx.ErrNotFound
 
 // ErrPermissionDenied 表示无权限操作评论
 var ErrPermissionDenied = errors.New("permission denied")
+
+// ErrInvalidReply 表示回复关系不合法。
+var ErrInvalidReply = errors.New("invalid reply relation")

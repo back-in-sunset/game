@@ -12,23 +12,26 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-type DeleteLogic struct {
+type UnlikeLogic struct {
 	logx.Logger
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 }
 
-func NewDeleteLogic(ctx context.Context, svcCtx *svc.ServiceContext) *DeleteLogic {
-	return &DeleteLogic{
+func NewUnlikeLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UnlikeLogic {
+	return &UnlikeLogic{
 		Logger: logx.WithContext(ctx),
 		ctx:    ctx,
 		svcCtx: svcCtx,
 	}
 }
 
-func (l *DeleteLogic) Delete(req *types.CommentRequest) (resp *types.CommentResponse, err error) {
+func (l *UnlikeLogic) Unlike(req *types.CommentActionRequest) (*types.CommentActionResponse, error) {
 	if req.ObjID <= 0 {
 		return nil, errx.New(http.StatusBadRequest, errx.CodeObjIDRequired, "obj_id is required")
+	}
+	if req.ObjType <= 0 {
+		return nil, errx.New(http.StatusBadRequest, errx.CodeObjTypeRequired, "obj_type is required")
 	}
 	if req.CommentID <= 0 {
 		return nil, errx.New(http.StatusBadRequest, errx.CodeCommentIDRequired, "comment_id is required")
@@ -37,29 +40,18 @@ func (l *DeleteLogic) Delete(req *types.CommentRequest) (resp *types.CommentResp
 		return nil, errx.New(http.StatusBadRequest, errx.CodeMemberIDRequired, "member_id is required")
 	}
 
-	res, err := l.svcCtx.CommentRpc.DeleteComment(l.ctx, &commentclient.CommentRequest{
+	res, err := l.svcCtx.CommentRpc.UnLikeComment(l.ctx, &commentclient.UnLikeCommentRequest{
 		ObjID:     req.ObjID,
 		ObjType:   req.ObjType,
-		MemberID:  req.MemberID,
 		CommentID: req.CommentID,
+		MemberID:  req.MemberID,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.CommentResponse{
-		ID:        res.ID,
-		ObjID:     res.ObjID,
-		ObjType:   res.ObjType,
-		MemberID:  res.MemberID,
-		CommentID: res.CommentID,
-		State:     res.State,
-		ReplyID:   res.ReplyID,
-		RootID:    res.RootID,
-		CreatedAt: res.CreatedAt,
-		Floor:     res.Floor,
-		LikeCount: res.LikeCount,
-		HateCount: res.HateCount,
-		Count:     res.Count,
+	return &types.CommentActionResponse{
+		Success: res.Success,
+		Message: res.Message,
 	}, nil
 }

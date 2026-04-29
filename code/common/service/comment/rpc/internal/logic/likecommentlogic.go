@@ -2,9 +2,10 @@ package logic
 
 import (
 	"context"
-	"errors"
+	"net/http"
 	"time"
 
+	"comment/internal/errx"
 	"comment/rpc/comment"
 	"comment/rpc/internal/eventbus"
 	"comment/rpc/internal/svc"
@@ -30,7 +31,7 @@ func NewLikeCommentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LikeC
 // 评论点赞
 func (l *LikeCommentLogic) LikeComment(in *comment.LikeCommentRequest) (*comment.LikeCommentResponse, error) {
 	if in.ObjID <= 0 || in.ObjType <= 0 || in.CommentID <= 0 || in.MemberID <= 0 {
-		return nil, errors.New("obj_id, obj_type, comment_id, member_id are required")
+		return nil, errx.RPCError(http.StatusBadRequest, errx.CodeBadRequestDefault, "obj_id, obj_type, comment_id, member_id are required")
 	}
 	c, err := l.svcCtx.CommentModel.FindOneByObjID(l.ctx, in.ObjID, in.CommentID)
 	if err != nil {

@@ -88,17 +88,22 @@ func NewCommentModel(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache.Option)
 // AddComment 添加评论
 func (m *customCommentModel) AddComment(ctx context.Context, data *CommentSubject, ci *CommentIndex, cc *CommentContent) (*CommentSchema, error) {
 	err := m.TransactCtx(ctx, func(ctx context.Context, s sqlx.Session) error {
+		isReply := ci.RootID > 0
 		cj, err := m.newCustomCommentSubjectModelFunc(data.ObjID).FindOneByStateObjIDObjType(ctx, 0, data.ObjID, data.ObjType)
 		if err != nil && err != ErrNotFound {
 			return err
 		}
 		if err == ErrNotFound {
+			rootCount := int64(1)
+			if isReply {
+				rootCount = 0
+			}
 			_, err := m.newCustomCommentSubjectModelFunc(data.ObjID).Insert(ctx, &CommentSubject{
 				ObjID:     data.ObjID,
 				ObjType:   data.ObjType,
 				MemberID:  data.MemberID,
 				Count:     1,
-				RootCount: 1,
+				RootCount: rootCount,
 				AllCount:  1,
 				State:     data.State,
 				Attrs:     data.Attrs,
@@ -107,14 +112,20 @@ func (m *customCommentModel) AddComment(ctx context.Context, data *CommentSubjec
 				return err
 			}
 		} else {
-			// 缓存更新
+			nextRootCount := cj.RootCount
+			if !isReply {
+				nextRootCount++
+			}
 			err = m.newCustomCommentSubjectModelFunc(data.ObjID).Update(ctx, &CommentSubject{
 				ID:        cj.ID,
 				ObjID:     cj.ObjID,
 				ObjType:   cj.ObjType,
+				MemberID:  cj.MemberID,
 				Count:     cj.Count + 1,
-				RootCount: cj.RootCount + 1,
+				RootCount: nextRootCount,
 				AllCount:  cj.AllCount + 1,
+				State:     cj.State,
+				Attrs:     cj.Attrs,
 			})
 			if err != nil {
 				return err
@@ -126,23 +137,41 @@ func (m *customCommentModel) AddComment(ctx context.Context, data *CommentSubjec
 			if err != nil {
 				return err
 			}
-			// 缓存更新
+			if oci.ObjID != data.ObjID || oci.ObjType != data.ObjType || oci.RootID != 0 || oci.State != 0 {
+				return ErrInvalidReply
+			}
+			if ci.ReplyID > 0 {
+				replyTo, err := m.newCustomCommentIndexModelFunc(data.ObjID).FindOne(ctx, ci.ReplyID)
+				if err != nil {
+					return err
+				}
+				if replyTo.ObjID != data.ObjID || replyTo.ObjType != data.ObjType || replyTo.State != 0 {
+					return ErrInvalidReply
+				}
+				if replyTo.ID != ci.RootID && replyTo.RootID != ci.RootID {
+					return ErrInvalidReply
+				}
+			}
 			err = m.newCustomCommentIndexModelFunc(data.ObjID).Update(ctx, &CommentIndex{
 				ID:        ci.RootID,
-				ObjID:     data.ObjID,
-				ObjType:   data.ObjType,
-				MemberID:  data.MemberID,
-				RootID:    ci.RootID,
-				ReplyID:   ci.ReplyID,
+				ObjID:     oci.ObjID,
+				ObjType:   oci.ObjType,
+				MemberID:  oci.MemberID,
+				RootID:    oci.RootID,
+				ReplyID:   oci.ReplyID,
 				Floor:     oci.Floor + 1,
 				Count:     oci.Count + 1,
 				RootCount: oci.RootCount + 1,
 				LikeCount: oci.LikeCount,
 				HateCount: oci.HateCount,
+				State:     oci.State,
+				Attrs:     oci.Attrs,
 			})
 			if err != nil {
 				return err
 			}
+		} else if ci.ReplyID > 0 {
+			return ErrInvalidReply
 		}
 
 		cires, err := m.newCustomCommentIndexModelFunc(data.ObjID).Insert(ctx, &CommentIndex{
@@ -164,23 +193,22 @@ func (m *customCommentModel) AddComment(ctx context.Context, data *CommentSubjec
 		}
 		commentID, _ := cires.LastInsertId()
 		ci.ID = commentID
+		cc.CommentID = commentID
+		if _, err = m.newCustomCommentContentModelFunc(data.ObjID).Insert(ctx, cc); err != nil {
+			return err
+		}
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	cc.CommentID = ci.ID
-	_, err = m.newCustomCommentContentModelFunc(data.ObjID).Insert(ctx, cc)
-	if err != nil {
-		return nil, err
-	}
 	return &CommentSchema{
 		CommentID: cc.CommentID,
 	}, nil
 }
 
-// DeleteComment 逻辑删除评论，仅更新索引状态。
+// DeleteComment 逻辑删除评论，并同步扣减主题与根评论统计。
 func (m *customCommentModel) DeleteComment(ctx context.Context, objID int64, commentID int64, memberID int64) (*Comment, error) {
 	commentData, err := m.FindOneByObjID(ctx, objID, commentID)
 	if err != nil {
@@ -194,18 +222,72 @@ func (m *customCommentModel) DeleteComment(ctx context.Context, objID int64, com
 	}
 
 	commentIndexModel := m.newCustomCommentIndexModelFunc(objID)
-	indexData, err := commentIndexModel.FindOne(ctx, commentID)
-	if err != nil {
-		return nil, err
-	}
+	err = m.TransactCtx(ctx, func(ctx context.Context, s sqlx.Session) error {
+		indexData, err := commentIndexModel.FindOne(ctx, commentID)
+		if err != nil {
+			return err
+		}
+		if indexData.State == 1 {
+			return nil
+		}
 
-	indexData.State = 1
-	if err = commentIndexModel.Update(ctx, indexData); err != nil {
+		indexData.State = 1
+		if err = commentIndexModel.Update(ctx, indexData); err != nil {
+			return err
+		}
+
+		subjectModel := m.newCustomCommentSubjectModelFunc(objID)
+		subject, err := subjectModel.FindOneByStateObjIDObjType(ctx, 0, objID, indexData.ObjType)
+		if err != nil && err != ErrNotFound {
+			return err
+		}
+		if err == nil {
+			nextRootCount := subject.RootCount
+			if indexData.RootID == 0 {
+				nextRootCount = decrementNonNegative(nextRootCount)
+			}
+			if err = subjectModel.Update(ctx, &CommentSubject{
+				ID:        subject.ID,
+				ObjID:     subject.ObjID,
+				ObjType:   subject.ObjType,
+				MemberID:  subject.MemberID,
+				Count:     decrementNonNegative(subject.Count),
+				RootCount: nextRootCount,
+				AllCount:  decrementNonNegative(subject.AllCount),
+				State:     subject.State,
+				Attrs:     subject.Attrs,
+			}); err != nil {
+				return err
+			}
+		}
+
+		if indexData.RootID > 0 {
+			rootData, err := commentIndexModel.FindOne(ctx, indexData.RootID)
+			if err != nil {
+				return err
+			}
+			rootData.Count = decrementNonNegative(rootData.Count)
+			rootData.RootCount = decrementNonNegative(rootData.RootCount)
+			if err = commentIndexModel.Update(ctx, rootData); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
 		return nil, err
 	}
 
 	commentData.State = 1
 	return commentData, nil
+}
+
+func decrementNonNegative(v int64) int64 {
+	if v <= 0 {
+		return 0
+	}
+	return v - 1
 }
 
 // FindOneByObjID 查询评论

@@ -17,7 +17,22 @@ type CommentListRequest struct {
 }
 
 type CommentListResponse struct {
-	List []CommentResponse
+	List   []CommentResponse `json:"list"`
+	IsEnd  bool              `json:"is_end"`
+	Cursor int64             `json:"cursor"`
+	LastID int64             `json:"last_id"`
+}
+
+type CommentActionRequest struct {
+	ObjID     int64 `json:"obj_id" form:"obj_id"`                   // 评论对象ID
+	ObjType   int64 `json:"obj_type" form:"obj_type"`               // 评论对象类型
+	CommentID int64 `json:"comment_id" form:"comment_id" path:"id"` // 评论ID
+	MemberID  int64 `json:"member_id" form:"member_id"`             // 用户ID
+}
+
+type CommentActionResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
 }
 
 type CommentRequest struct {

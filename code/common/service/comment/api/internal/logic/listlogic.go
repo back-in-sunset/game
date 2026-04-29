@@ -2,11 +2,12 @@ package logic
 
 import (
 	"context"
-	"errors"
+	"net/http"
 
 	"comment/api/commentclient"
 	"comment/api/internal/svc"
 	"comment/api/internal/types"
+	"comment/internal/errx"
 
 	"github.com/jinzhu/copier"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -31,10 +32,10 @@ func NewListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListLogic {
 // List retrieves a list of comments based on the request parameters.
 func (l *ListLogic) List(req *types.CommentListRequest) (resp *types.CommentListResponse, err error) {
 	if req.ObjID <= 0 {
-		return nil, errors.New("obj_id is required")
+		return nil, errx.New(http.StatusBadRequest, errx.CodeObjIDRequired, "obj_id is required")
 	}
 	if req.ObjType <= 0 {
-		return nil, errors.New("obj_type is required")
+		return nil, errx.New(http.StatusBadRequest, errx.CodeObjTypeRequired, "obj_type is required")
 	}
 
 	var commentreq commentclient.CommentListRequest
@@ -45,7 +46,10 @@ func (l *ListLogic) List(req *types.CommentListRequest) (resp *types.CommentList
 		return nil, err
 	}
 	resp = &types.CommentListResponse{
-		List: make([]types.CommentResponse, 0, 100),
+		List:   make([]types.CommentResponse, 0, 100),
+		IsEnd:  commentListResp.IsEnd,
+		Cursor: commentListResp.Cursor,
+		LastID: commentListResp.LastID,
 	}
 	copier.Copy(&resp.List, commentListResp.Comments)
 	return
