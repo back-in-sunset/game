@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package historyclient;
+
+option go_package = "/history";
+
+message RecordHistoryRequest {
+    int64 UserID = 1;
+    int64 MediaType = 2;
+    int64 MediaID = 3;
+    string Title = 4;
+    string Cover = 5;
+    int64 AuthorID = 6;
+    int64 ProgressMs = 7;
+    int64 DurationMs = 8;
+    bool Finished = 9;
+    int64 Source = 10;
+    string Device = 11;
+    string Meta = 12;
+}
+
+message HistoryRecord {
+    int64 ID = 1;
+    int64 UserID = 2;
+    int64 MediaType = 3;
+    int64 MediaID = 4;
+    string Title = 5;
+    string Cover = 6;
+    int64 AuthorID = 7;
+    int64 ProgressMs = 8;
+    int64 DurationMs = 9;
+    bool Finished = 10;
+    int64 Source = 11;
+    string Device = 12;
+    string Meta = 13;
+    int64 FirstSeenAt = 14;
+    int64 LastSeenAt = 15;
+}
+
+message RecordHistoryResponse {
+    HistoryRecord Record = 1;
+}
+
+message ListHistoryRequest {
+    int64 UserID = 1;
+    int64 MediaType = 2;
+    int64 Cursor = 3;
+    int64 LastID = 4;
+    int64 PageSize = 5;
+}
+
+message ListHistoryResponse {
+    repeated HistoryRecord List = 1;
+    bool IsEnd = 2;
+    int64 Cursor = 3;
+    int64 LastID = 4;
+}
+
+message DeleteHistoryItemRequest {
+    int64 UserID = 1;
+    int64 MediaType = 2;
+    int64 MediaID = 3;
+}
+
+message ClearHistoryByTypeRequest {
+    int64 UserID = 1;
+    int64 MediaType = 2;
+}
+
+message ClearHistoryAllRequest {
+    int64 UserID = 1;
+}
+
+message ActionResponse {
+    bool Success = 1;
+    string Message = 2;
+}
+
+service History {
+    rpc RecordHistory(RecordHistoryRequest) returns (RecordHistoryResponse);
+    rpc ListHistory(ListHistoryRequest) returns (ListHistoryResponse);
+    rpc DeleteHistoryItem(DeleteHistoryItemRequest) returns (ActionResponse);
+    rpc ClearHistoryByType(ClearHistoryByTypeRequest) returns (ActionResponse);
+    rpc ClearHistoryAll(ClearHistoryAllRequest) returns (ActionResponse);
+}

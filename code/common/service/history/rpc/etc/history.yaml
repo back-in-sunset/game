@@ -1,0 +1,8 @@
+Name: history.rpc
+ListenOn: 0.0.0.0:9003
+
+Mysql:
+  DataSource: root:123456@tcp(127.0.0.1:3306)/game?parseTime=true&loc=Local
+
+Log:
+  Level: debug

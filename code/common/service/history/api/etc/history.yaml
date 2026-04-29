@@ -1,0 +1,16 @@
+Name: History
+Host: 0.0.0.0
+Port: 8003
+
+Log:
+  Level: debug
+
+Mysql:
+  DataSource: root:123456@tcp(127.0.0.1:3306)/game?parseTime=true&loc=Local
+
+HistoryRPC:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: history.rpc
+  NonBlock: true
