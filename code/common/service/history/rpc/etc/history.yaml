@@ -4,5 +4,20 @@ ListenOn: 0.0.0.0:9003
 Mysql:
   DataSource: root:123456@tcp(127.0.0.1:3306)/game?parseTime=true&loc=Local
 
+CacheRedis:
+  - Host: 127.0.0.1:6379
+    Type: node
+
+HistoryCache:
+  ListTTLSeconds: 604800
+  DetailTTLSeconds: 604800
+  FlushIntervalSeconds: 60
+  FlushBatchUsers: 100
+  FlushBatchItems: 200
+  DirtyTTLSeconds: 3600
+  DeleteMarkerTTL: 3600
+  ReadFallbackToDB: true
+  WriteBackEnabled: true
+
 Log:
   Level: debug

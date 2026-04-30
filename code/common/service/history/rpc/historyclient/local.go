@@ -6,17 +6,18 @@ import (
 	"net/http"
 
 	"history/internal/errx"
+	"history/internal/historycache"
 	"history/model"
 
 	"google.golang.org/grpc"
 )
 
 type localHistory struct {
-	model model.HistoryModel
+	manager *historycache.Manager
 }
 
-func NewLocalHistory(model model.HistoryModel) History {
-	return &localHistory{model: model}
+func NewLocalHistory(manager *historycache.Manager) History {
+	return &localHistory{manager: manager}
 }
 
 func (h *localHistory) RecordHistory(ctx context.Context, in *RecordHistoryRequest, _ ...grpc.CallOption) (*RecordHistoryResponse, error) {
@@ -30,7 +31,7 @@ func (h *localHistory) RecordHistory(ctx context.Context, in *RecordHistoryReque
 	if in.Finished {
 		finished = 1
 	}
-	record, err := h.model.UpsertRecord(ctx, &model.HistoryRecord{
+	record, err := h.manager.Record(ctx, &model.HistoryRecord{
 		UserID:     in.UserID,
 		MediaType:  in.MediaType,
 		MediaID:    in.MediaID,
@@ -66,23 +67,18 @@ func (h *localHistory) ListHistory(ctx context.Context, in *ListHistoryRequest, 
 	if pageSize <= 0 {
 		pageSize = model.DefaultPageSize
 	}
-	records, err := h.model.ListByUser(ctx, in.UserID, in.MediaType, in.Cursor, in.LastID, pageSize+1)
+	result, err := h.manager.List(ctx, in.UserID, in.MediaType, in.Cursor, in.LastID, pageSize)
 	if err != nil {
 		return nil, mapModelError(err)
 	}
-	isEnd := true
-	if len(records) > int(pageSize) {
-		isEnd = false
-		records = records[:pageSize]
+	out := &ListHistoryResponse{
+		List:   make([]*HistoryRecord, 0, len(result.Records)),
+		IsEnd:  result.IsEnd,
+		Cursor: result.Cursor,
+		LastID: result.LastID,
 	}
-	out := &ListHistoryResponse{List: make([]*HistoryRecord, 0, len(records)), IsEnd: isEnd}
-	for _, record := range records {
+	for _, record := range result.Records {
 		out.List = append(out.List, toClientRecord(record))
-	}
-	if len(out.List) > 0 {
-		last := out.List[len(out.List)-1]
-		out.Cursor = last.LastSeenAt
-		out.LastID = last.ID
 	}
 	return out, nil
 }
@@ -94,7 +90,7 @@ func (h *localHistory) DeleteHistoryItem(ctx context.Context, in *DeleteHistoryI
 	if err := validateMedia(in.MediaType, in.MediaID); err != nil {
 		return nil, err
 	}
-	if err := h.model.SoftDeleteItem(ctx, in.UserID, in.MediaType, in.MediaID); err != nil {
+	if err := h.manager.DeleteItem(ctx, in.UserID, in.MediaType, in.MediaID); err != nil {
 		return nil, mapModelError(err)
 	}
 	return &ActionResponse{Success: true, Message: "ok"}, nil
@@ -107,7 +103,7 @@ func (h *localHistory) ClearHistoryByType(ctx context.Context, in *ClearHistoryB
 	if err := validateMedia(in.MediaType, 1); err != nil {
 		return nil, err
 	}
-	if err := h.model.SoftDeleteByType(ctx, in.UserID, in.MediaType); err != nil {
+	if err := h.manager.ClearByType(ctx, in.UserID, in.MediaType); err != nil {
 		return nil, mapModelError(err)
 	}
 	return &ActionResponse{Success: true, Message: "ok"}, nil
@@ -117,7 +113,7 @@ func (h *localHistory) ClearHistoryAll(ctx context.Context, in *ClearHistoryAllR
 	if err := validateUserID(in.UserID); err != nil {
 		return nil, err
 	}
-	if err := h.model.SoftDeleteAll(ctx, in.UserID); err != nil {
+	if err := h.manager.ClearAll(ctx, in.UserID); err != nil {
 		return nil, mapModelError(err)
 	}
 	return &ActionResponse{Success: true, Message: "ok"}, nil

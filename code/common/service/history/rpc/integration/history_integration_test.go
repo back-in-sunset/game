@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"game/server/core/testkit"
+	"history/internal/historycache"
 	"history/model"
 	"history/rpc/historyclient"
 	logicpkg "history/rpc/internal/logic"
@@ -73,7 +74,7 @@ func TestHistoryFlow_JSONTableDriven_Integration(t *testing.T) {
 	mustCreateHistoryTable(t, db)
 
 	svcCtx := &svc.ServiceContext{
-		HistoryModel: model.NewHistoryModel(sqlx.NewMysql(dsn)),
+		HistoryModel: historycache.NewManager(model.NewHistoryModel(sqlx.NewMysql(dsn)), nil, historycache.Config{}),
 	}
 
 	for _, tc := range cases {
@@ -169,6 +170,7 @@ CREATE TABLE history_record (
   updated_at timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   UNIQUE KEY uk_user_media_active (user_id, media_type, media_id, deleted),
+  KEY idx_last_seen (last_seen_at),
   KEY idx_user_last_seen (user_id, deleted, last_seen_at, id),
   KEY idx_user_type_last_seen (user_id, media_type, deleted, last_seen_at, id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`

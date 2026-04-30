@@ -19,6 +19,7 @@ CREATE TABLE `history_record` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_user_media_active` (`user_id`, `media_type`, `media_id`, `deleted`),
+  KEY `idx_last_seen` (`last_seen_at`),
   KEY `idx_user_last_seen` (`user_id`, `deleted`, `last_seen_at`, `id`),
   KEY `idx_user_type_last_seen` (`user_id`, `media_type`, `deleted`, `last_seen_at`, `id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户历史记录';

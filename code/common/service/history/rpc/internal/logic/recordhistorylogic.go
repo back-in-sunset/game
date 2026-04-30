@@ -31,7 +31,7 @@ func (l *RecordHistoryLogic) RecordHistory(in *historyclient.RecordHistoryReques
 	if in.Finished {
 		finished = 1
 	}
-	record, err := l.svcCtx.HistoryModel.UpsertRecord(l.ctx, &model.HistoryRecord{
+	record, err := l.svcCtx.HistoryModel.Record(l.ctx, &model.HistoryRecord{
 		UserID:     in.UserID,
 		MediaType:  in.MediaType,
 		MediaID:    in.MediaID,

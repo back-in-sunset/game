@@ -24,6 +24,8 @@ func main() {
 	var c config.Config
 	conf.MustLoad(*configFile, &c)
 	ctx := svc.NewServiceContext(c)
+	ctx.Start()
+	defer ctx.Stop()
 
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
 		history.RegisterHistoryServer(grpcServer, server.NewHistoryServer(ctx))

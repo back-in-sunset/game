@@ -38,23 +38,18 @@ func (l *ListHistoryLogic) ListHistory(in *historyclient.ListHistoryRequest) (*h
 	if pageSize <= 0 {
 		pageSize = model.DefaultPageSize
 	}
-	records, err := l.svcCtx.HistoryModel.ListByUser(l.ctx, in.UserID, in.MediaType, in.Cursor, in.LastID, pageSize+1)
+	result, err := l.svcCtx.HistoryModel.List(l.ctx, in.UserID, in.MediaType, in.Cursor, in.LastID, pageSize)
 	if err != nil {
 		return nil, mapModelError(err)
 	}
-	isEnd := true
-	if len(records) > int(pageSize) {
-		isEnd = false
-		records = records[:pageSize]
+	out := &historyclient.ListHistoryResponse{
+		List:   make([]*historyclient.HistoryRecord, 0, len(result.Records)),
+		IsEnd:  result.IsEnd,
+		Cursor: result.Cursor,
+		LastID: result.LastID,
 	}
-	out := &historyclient.ListHistoryResponse{List: make([]*historyclient.HistoryRecord, 0, len(records)), IsEnd: isEnd}
-	for _, r := range records {
+	for _, r := range result.Records {
 		out.List = append(out.List, toRPCRecord(r))
-	}
-	if len(out.List) > 0 {
-		last := out.List[len(out.List)-1]
-		out.Cursor = last.LastSeenAt
-		out.LastID = last.ID
 	}
 	return out, nil
 }

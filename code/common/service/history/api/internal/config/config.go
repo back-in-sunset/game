@@ -1,6 +1,9 @@
 package config
 
 import (
+	"history/internal/historycache"
+
+	"github.com/zeromicro/go-zero/core/stores/cache"
 	"github.com/zeromicro/go-zero/rest"
 	"github.com/zeromicro/go-zero/zrpc"
 )
@@ -10,5 +13,7 @@ type Config struct {
 	Mysql struct {
 		DataSource string
 	}
-	HistoryRPC zrpc.RpcClientConf
+	CacheRedis   cache.CacheConf
+	HistoryCache historycache.Config
+	HistoryRPC   zrpc.RpcClientConf
 }

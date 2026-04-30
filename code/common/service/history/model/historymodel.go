@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/zeromicro/go-zero/core/stores/sqlc"
@@ -52,6 +53,10 @@ type mysqlHistoryModel struct {
 	table string
 }
 
+const (
+	historyRecordColumns = "id,user_id,media_type,media_id,title,cover,author_id,progress_ms,duration_ms,finished,source,device,meta,first_seen_at,last_seen_at,deleted,created_at,updated_at"
+)
+
 func NewHistoryModel(conn sqlx.SqlConn) HistoryModel {
 	return &mysqlHistoryModel{conn: conn, table: "`history_record`"}
 }
@@ -65,28 +70,12 @@ func (m *mysqlHistoryModel) UpsertRecord(ctx context.Context, data *HistoryRecor
 	}
 
 	now := time.Now()
-	err := m.conn.TransactCtx(ctx, func(ctx context.Context, s sqlx.Session) error {
-		var existing HistoryRecord
-		query := "select id,user_id,media_type,media_id,title,cover,author_id,progress_ms,duration_ms,finished,source,device,meta,first_seen_at,last_seen_at,deleted,created_at,updated_at from history_record where user_id=? and media_type=? and media_id=? limit 1 for update"
-		err := s.QueryRowCtx(ctx, &existing, query, data.UserID, data.MediaType, data.MediaID)
-		if err != nil && err != sqlc.ErrNotFound && err != sqlx.ErrNotFound {
-			return err
-		}
-		if err == sqlc.ErrNotFound || err == sqlx.ErrNotFound {
-			insert := "insert into history_record (user_id,media_type,media_id,title,cover,author_id,progress_ms,duration_ms,finished,source,device,meta,first_seen_at,last_seen_at,deleted) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,0)"
-			res, err := s.ExecCtx(ctx, insert, data.UserID, data.MediaType, data.MediaID, data.Title, data.Cover, data.AuthorID, data.ProgressMs, data.DurationMs, data.Finished, data.Source, data.Device, data.Meta, now, now)
-			if err != nil {
-				return err
-			}
-			data.ID, _ = res.LastInsertId()
-			return nil
-		}
-
-		update := "update history_record set title=?,cover=?,author_id=?,progress_ms=?,duration_ms=?,finished=?,source=?,device=?,meta=?,last_seen_at=?,deleted=0 where id=?"
-		_, err = s.ExecCtx(ctx, update, data.Title, data.Cover, data.AuthorID, data.ProgressMs, data.DurationMs, data.Finished, data.Source, data.Device, data.Meta, now, existing.ID)
-		data.ID = existing.ID
-		return err
-	})
+	query := fmt.Sprintf("insert into %s (user_id,media_type,media_id,title,cover,author_id,progress_ms,duration_ms,finished,source,device,meta,first_seen_at,last_seen_at,deleted) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,0) on duplicate key update id=last_insert_id(id),title=values(title),cover=values(cover),author_id=values(author_id),progress_ms=values(progress_ms),duration_ms=values(duration_ms),finished=values(finished),source=values(source),device=values(device),meta=values(meta),last_seen_at=values(last_seen_at),deleted=0", m.table)
+	res, err := m.conn.ExecCtx(ctx, query, data.UserID, data.MediaType, data.MediaID, data.Title, data.Cover, data.AuthorID, data.ProgressMs, data.DurationMs, data.Finished, data.Source, data.Device, data.Meta, now, now)
+	if err != nil {
+		return nil, err
+	}
+	data.ID, err = res.LastInsertId()
 	if err != nil {
 		return nil, err
 	}
@@ -108,12 +97,13 @@ func (m *mysqlHistoryModel) ListByUser(ctx context.Context, userID int64, mediaT
 		args = append(args, mediaType)
 	}
 	if cursor > 0 {
-		where += " and (last_seen_at < from_unixtime(?) or (last_seen_at = from_unixtime(?) and id < ?))"
-		args = append(args, cursor, cursor, lastID)
+		cursorTime := time.Unix(cursor, 0)
+		where += " and (last_seen_at < ? or (last_seen_at = ? and id < ?))"
+		args = append(args, cursorTime, cursorTime, lastID)
 	}
 	args = append(args, pageSize)
 
-	query := "select id,user_id,media_type,media_id,title,cover,author_id,progress_ms,duration_ms,finished,source,device,meta,first_seen_at,last_seen_at,deleted,created_at,updated_at from history_record " + where + " order by last_seen_at desc,id desc limit ?"
+	query := "select " + historyRecordColumns + " from history_record " + where + " order by last_seen_at desc,id desc limit ?"
 	var records []*HistoryRecord
 	if err := m.conn.QueryRowsCtx(ctx, &records, query, args...); err != nil {
 		return nil, err
@@ -146,7 +136,7 @@ func (m *mysqlHistoryModel) PurgeExpired(ctx context.Context, before time.Time) 
 
 func (m *mysqlHistoryModel) findOne(ctx context.Context, id int64) (*HistoryRecord, error) {
 	var record HistoryRecord
-	query := "select id,user_id,media_type,media_id,title,cover,author_id,progress_ms,duration_ms,finished,source,device,meta,first_seen_at,last_seen_at,deleted,created_at,updated_at from history_record where id=? limit 1"
+	query := "select " + historyRecordColumns + " from history_record where id=? limit 1"
 	err := m.conn.QueryRowCtx(ctx, &record, query, id)
 	if err != nil {
 		if err == sqlc.ErrNotFound || err == sqlx.ErrNotFound {
