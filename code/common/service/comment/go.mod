@@ -6,6 +6,7 @@ require (
 	game/server/core/testkit v0.0.0
 	github.com/jinzhu/copier v0.4.0
 	github.com/zeromicro/go-zero v1.9.0
+	im v0.0.0
 	golang.org/x/sync v0.16.0
 	google.golang.org/grpc v1.75.0
 	google.golang.org/protobuf v1.36.8
@@ -52,6 +53,7 @@ require (
 )
 
 replace game/server/core/testkit => ../../../../core/testkit
+replace im => ../im
 
 require (
 	contrib.go.opencensus.io/exporter/ocagent v0.7.0 // indirect

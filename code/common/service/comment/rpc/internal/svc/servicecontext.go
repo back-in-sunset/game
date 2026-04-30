@@ -8,11 +8,14 @@ import (
 
 	"comment/rpc/internal/config"
 	"comment/rpc/internal/eventbus"
+	"comment/rpc/internal/notify"
 	"comment/rpc/model"
+	"im/rpc/imclient"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/redis"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
+	"github.com/zeromicro/go-zero/zrpc"
 	"golang.org/x/sync/singleflight"
 )
 
@@ -22,6 +25,7 @@ type ServiceContext struct {
 	SignleFlightGroup singleflight.Group
 	BizRedis          *redis.Redis
 	LikeEventBus      eventbus.LikeEventBus
+	CommentNotifier   notify.CommentNotifier
 
 	bgStartOnce sync.Once
 	bgStopFn    context.CancelFunc
@@ -44,12 +48,22 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		panic(err)
 	}
 
-	return &ServiceContext{
-		Config:       c,
-		CommentModel: model.NewCommentModel(conn, c.CacheRedis),
-		BizRedis:     rds,
-		LikeEventBus: likeEventBus,
+	commentNotifier := notify.CommentNotifier(notify.NoopCommentNotifier{})
+	if hasIMClient(c.IM) {
+		commentNotifier = notify.NewIMCommentNotifier(imclient.NewIM(zrpc.MustNewClient(c.IM)))
 	}
+
+	return &ServiceContext{
+		Config:          c,
+		CommentModel:    model.NewCommentModel(conn, c.CacheRedis),
+		BizRedis:        rds,
+		LikeEventBus:    likeEventBus,
+		CommentNotifier: commentNotifier,
+	}
+}
+
+func hasIMClient(c zrpc.RpcClientConf) bool {
+	return len(c.Endpoints) > 0 || c.Target != "" || len(c.Etcd.Hosts) > 0
 }
 
 func (s *ServiceContext) Start() {

@@ -20,5 +20,14 @@ type (
 			Pass string
 			Type string
 		}
+
+		IM zrpc.RpcClientConf
+
+		ReplyNoticeScope struct {
+			Domain      string
+			TenantID    string
+			ProjectID   string
+			Environment string
+		}
 	}
 )

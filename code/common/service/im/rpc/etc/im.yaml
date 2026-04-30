@@ -1,0 +1,24 @@
+Name: im.rpc
+ListenOn: 0.0.0.0:9091
+Mode: dev
+
+Auth:
+  PublicKeyFile: ../platform/api/etc/public.key
+
+Discovery:
+  Endpoints:
+    - 127.0.0.1:2379
+  ServicePrefix: /services/im
+  LeaseTTLSeconds: 10
+
+Mysql:
+  DataSource: root:password@tcp(127.0.0.1:3306)/game_im?parseTime=true&loc=Local
+
+Redis:
+  Addr: 127.0.0.1:6379
+  Password: ""
+  DB: 0
+  KeyPrefix: im
+
+Scope:
+  DefaultEnvironment: prod

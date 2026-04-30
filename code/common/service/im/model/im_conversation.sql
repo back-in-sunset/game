@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS `im_conversation` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `principal_key` VARCHAR(255) NOT NULL,
+  `conversation_key` VARCHAR(255) NOT NULL,
+  `domain` VARCHAR(16) NOT NULL,
+  `tenant_id` VARCHAR(64) NOT NULL DEFAULT '',
+  `project_id` VARCHAR(64) NOT NULL DEFAULT '',
+  `environment` VARCHAR(64) NOT NULL DEFAULT '',
+  `owner_user_id` BIGINT NOT NULL,
+  `peer_user_id` BIGINT NOT NULL,
+  `last_message_id` BIGINT NOT NULL DEFAULT 0,
+  `last_seq` BIGINT NOT NULL DEFAULT 0,
+  `last_message_json` JSON NOT NULL,
+  `unread_count` BIGINT NOT NULL DEFAULT 0,
+  `read_seq` BIGINT NOT NULL DEFAULT 0,
+  `updated_at` DATETIME(3) NOT NULL,
+  `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_im_conversation_principal` (`principal_key`, `conversation_key`),
+  KEY `idx_im_conversation_owner_updated` (`owner_user_id`, `updated_at`, `id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

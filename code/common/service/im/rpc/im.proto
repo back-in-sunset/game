@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package imclient;
+
+option go_package = "/im";
+
+message Scope {
+  string TenantID = 1;
+  string ProjectID = 2;
+  string Environment = 3;
+}
+
+message MessagePayload {
+  string Json = 1;
+}
+
+message SendMessageRequest {
+  string Domain = 1;
+  Scope Scope = 2;
+  int64 Sender = 3;
+  int64 Receiver = 4;
+  string MsgType = 5;
+  int64 Seq = 6;
+  MessagePayload Payload = 7;
+}
+
+message SendMessageResponse {
+  bool Success = 1;
+  int64 OnlineRecipients = 2;
+  bool StoredOffline = 3;
+}
+
+message ListConversationsRequest {
+  string Domain = 1;
+  Scope Scope = 2;
+  int64 UserID = 3;
+}
+
+message Conversation {
+  string Key = 1;
+  string Domain = 2;
+  Scope Scope = 3;
+  int64 PeerUserID = 4;
+  int64 UnreadCount = 5;
+  int64 ReadSeq = 6;
+  int64 UpdatedAtUnix = 7;
+  int64 LastSender = 8;
+  int64 LastReceiver = 9;
+  string LastMsgType = 10;
+  int64 LastSeq = 11;
+  string LastPayloadJson = 12;
+  int64 LastSentAtUnix = 13;
+}
+
+message ListConversationsResponse {
+  repeated Conversation Conversations = 1;
+}
+
+message ListMessagesRequest {
+  string Domain = 1;
+  Scope Scope = 2;
+  int64 UserID = 3;
+  int64 PeerUserID = 4;
+  int64 Limit = 5;
+}
+
+message Message {
+  string Domain = 1;
+  Scope Scope = 2;
+  int64 Sender = 3;
+  int64 Receiver = 4;
+  string MsgType = 5;
+  int64 Seq = 6;
+  string PayloadJson = 7;
+  int64 SentAtUnix = 8;
+}
+
+message ListMessagesResponse {
+  repeated Message Messages = 1;
+}
+
+message MarkReadRequest {
+  string Domain = 1;
+  Scope Scope = 2;
+  int64 UserID = 3;
+  int64 PeerUserID = 4;
+  int64 Seq = 5;
+}
+
+message ActionResponse {
+  bool Success = 1;
+  string Message = 2;
+}
+
+message DeliverInternalRequest {
+  Message Message = 1;
+}
+
+message DeliverInternalResponse {
+  int64 Delivered = 1;
+}
+
+service IM {
+  rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
+  rpc ListConversations(ListConversationsRequest) returns (ListConversationsResponse);
+  rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse);
+  rpc MarkRead(MarkReadRequest) returns (ActionResponse);
+  rpc DeliverInternal(DeliverInternalRequest) returns (DeliverInternalResponse);
+}

@@ -8,6 +8,7 @@ import (
 
 	"comment/internal/errx"
 	"comment/rpc/comment"
+	"comment/rpc/internal/notify"
 	"comment/rpc/internal/svc"
 	"comment/rpc/model"
 	"comment/rpc/types"
@@ -98,6 +99,40 @@ func (l *AddCommentLogic) AddComment(in *comment.CommentRequest) (*comment.Comme
 	if err = syncCommentScores(l.ctx, l.svcCtx, commentData); err != nil {
 		return nil, errx.RPCError(http.StatusInternalServerError, errx.CodeInternalDefault, err.Error())
 	}
+	if err = l.notifyReplyIfNeeded(in, commentData); err != nil {
+		return nil, errx.RPCError(http.StatusInternalServerError, errx.CodeInternalDefault, err.Error())
+	}
 
 	return toCommentResponse(commentData), nil
+}
+
+func (l *AddCommentLogic) notifyReplyIfNeeded(in *comment.CommentRequest, commentData *model.Comment) error {
+	if in.ReplyID <= 0 || commentData == nil || l.svcCtx.CommentNotifier == nil {
+		return nil
+	}
+	replyTarget, err := l.svcCtx.CommentModel.FindOneByObjID(l.ctx, in.ObjID, in.ReplyID)
+	if err != nil {
+		return err
+	}
+	if replyTarget == nil || replyTarget.MemberID <= 0 || replyTarget.MemberID == in.MemberID {
+		return nil
+	}
+	scope := l.svcCtx.Config.ReplyNoticeScope
+	domain := scope.Domain
+	if domain == "" {
+		domain = "platform"
+	}
+	return l.svcCtx.CommentNotifier.NotifyReply(l.ctx, notify.ReplyNotice{
+		Domain:      domain,
+		TenantID:    scope.TenantID,
+		ProjectID:   scope.ProjectID,
+		Environment: scope.Environment,
+		ObjID:       in.ObjID,
+		ObjType:     in.ObjType,
+		CommentID:   commentData.ID,
+		ReplyID:     in.ReplyID,
+		SenderID:    in.MemberID,
+		ReceiverID:  replyTarget.MemberID,
+		Message:     commentData.Message,
+	})
 }

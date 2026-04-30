@@ -1,0 +1,27 @@
+service_name: im
+node_id: im-local
+
+listen:
+  websocket: ":8081"
+  tcp: ":8091"
+
+auth:
+  public_key_file: "../platform/api/etc/public.key"
+
+discovery:
+  endpoints:
+    - "127.0.0.1:2379"
+  service_prefix: "/services/im"
+  lease_ttl_seconds: 10
+
+mysql:
+  data_source: "root:password@tcp(127.0.0.1:3306)/game_im?parseTime=true&loc=Local"
+
+redis:
+  addr: "127.0.0.1:6379"
+  password: ""
+  db: 0
+  key_prefix: "im"
+
+scope:
+  default_environment: "prod"

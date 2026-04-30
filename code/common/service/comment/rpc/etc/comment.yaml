@@ -20,3 +20,13 @@ BizRedis:
     Host: localhost:6379
     Type: node
     Pass:
+
+IM:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: im.rpc
+  NonBlock: true
+
+ReplyNoticeScope:
+  Domain: platform

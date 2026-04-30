@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"comment/rpc/comment"
+	"comment/rpc/internal/config"
+	"comment/rpc/internal/notify"
 	"comment/rpc/internal/svc"
 	"comment/rpc/model"
 	"comment/rpc/types"
@@ -16,7 +18,7 @@ import (
 
 type addCommentStubModel struct {
 	addResp  *model.CommentSchema
-	findResp *model.Comment
+	findResp map[int64]*model.Comment
 	addErr   error
 	findErr  error
 
@@ -40,8 +42,14 @@ func (m *addCommentStubModel) CommentListByObjID(context.Context, int64, int64, 
 	return nil, nil
 }
 
-func (m *addCommentStubModel) FindOneByObjID(context.Context, int64, int64) (*model.Comment, error) {
-	return m.findResp, m.findErr
+func (m *addCommentStubModel) FindOneByObjID(_ context.Context, _ int64, id int64) (*model.Comment, error) {
+	if m.findErr != nil {
+		return nil, m.findErr
+	}
+	if m.findResp == nil {
+		return nil, nil
+	}
+	return m.findResp[id], nil
 }
 
 func (m *addCommentStubModel) CacheCommentsByIDs(context.Context, int64, []int64) ([]*model.Comment, error) {
@@ -58,6 +66,15 @@ func (m *addCommentStubModel) SetCommentState(context.Context, int64, int64, int
 
 func (m *addCommentStubModel) SetCommentAttrs(context.Context, int64, int64, int64) (*model.Comment, error) {
 	return nil, model.ErrNotFound
+}
+
+type fakeCommentNotifier struct {
+	notices []notify.ReplyNotice
+}
+
+func (f *fakeCommentNotifier) NotifyReply(_ context.Context, notice notify.ReplyNotice) error {
+	f.notices = append(f.notices, notice)
+	return nil
 }
 
 func TestAddCommentLogic_LevelCases(t *testing.T) {
@@ -121,11 +138,14 @@ func TestAddCommentLogic_LevelCases(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			stub := &addCommentStubModel{
-				addResp:  &model.CommentSchema{CommentID: tt.findResp.ID},
-				findResp: tt.findResp,
+				addResp: &model.CommentSchema{CommentID: tt.findResp.ID},
+				findResp: map[int64]*model.Comment{
+					tt.findResp.ID: tt.findResp,
+				},
 			}
 			l := NewAddCommentLogic(context.Background(), &svc.ServiceContext{
-				CommentModel: stub,
+				CommentModel:    stub,
+				CommentNotifier: notify.NoopCommentNotifier{},
 			})
 
 			resp, err := l.AddComment(tt.req)
@@ -157,7 +177,8 @@ func TestAddCommentLogic_LevelCases(t *testing.T) {
 func TestAddCommentLogic_ValidateMessage(t *testing.T) {
 	stub := &addCommentStubModel{}
 	l := NewAddCommentLogic(context.Background(), &svc.ServiceContext{
-		CommentModel: stub,
+		CommentModel:    stub,
+		CommentNotifier: notify.NoopCommentNotifier{},
 	})
 
 	_, err := l.AddComment(&comment.CommentRequest{
@@ -184,5 +205,74 @@ func TestAddCommentLogic_ValidateMessage(t *testing.T) {
 	}
 	if got := int(status.Code(err)); got != 400 {
 		t.Fatalf("status code=%d want=400", got)
+	}
+}
+
+func TestAddCommentLogic_NotifyReply(t *testing.T) {
+	now := time.Now()
+	stub := &addCommentStubModel{
+		addResp: &model.CommentSchema{CommentID: 9002},
+		findResp: map[int64]*model.Comment{
+			9002: {
+				ID:        9002,
+				ObjID:     1001,
+				ObjType:   1,
+				MemberID:  2002,
+				RootID:    9001,
+				ReplyID:   9001,
+				Message:   "reply body",
+				CreatedAt: now,
+			},
+			9001: {
+				ID:        9001,
+				ObjID:     1001,
+				ObjType:   1,
+				MemberID:  2001,
+				Message:   "root body",
+				CreatedAt: now,
+			},
+		},
+	}
+	notifier := &fakeCommentNotifier{}
+	l := NewAddCommentLogic(context.Background(), &svc.ServiceContext{
+		Config: config.Config{
+			ReplyNoticeScope: struct {
+				Domain      string
+				TenantID    string
+				ProjectID   string
+				Environment string
+			}{
+				Domain:      "tenant",
+				TenantID:    "t-1",
+				ProjectID:   "p-1",
+				Environment: "prod",
+			},
+		},
+		CommentModel:    stub,
+		CommentNotifier: notifier,
+	})
+
+	_, err := l.AddComment(&comment.CommentRequest{
+		ObjID:    1001,
+		ObjType:  1,
+		MemberID: 2002,
+		Message:  " reply body ",
+		RootID:   9001,
+		ReplyID:  9001,
+	})
+	if err != nil {
+		t.Fatalf("AddComment() error = %v", err)
+	}
+	if len(notifier.notices) != 1 {
+		t.Fatalf("len(notifier.notices) = %d, want 1", len(notifier.notices))
+	}
+	if notifier.notices[0].ReceiverID != 2001 {
+		t.Fatalf("ReceiverID = %d, want 2001", notifier.notices[0].ReceiverID)
+	}
+	if notifier.notices[0].Domain != "tenant" {
+		t.Fatalf("Domain = %q, want tenant", notifier.notices[0].Domain)
+	}
+	if notifier.notices[0].TenantID != "t-1" || notifier.notices[0].ProjectID != "p-1" || notifier.notices[0].Environment != "prod" {
+		t.Fatalf("scope = %+v, want tenant/project/environment populated", notifier.notices[0])
 	}
 }
