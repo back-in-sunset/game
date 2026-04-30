@@ -2,6 +2,7 @@ package session
 
 import (
 	"context"
+	"hash/fnv"
 	"sync"
 
 	"im/internal/auth"
@@ -9,57 +10,81 @@ import (
 )
 
 type Manager struct {
+	buckets []bucket
+}
+
+type bucket struct {
 	mu    sync.RWMutex
 	conns map[string]contracts.Connection
 	users map[string][]string
 }
 
 func NewManager() *Manager {
-	return &Manager{
-		conns: make(map[string]contracts.Connection),
-		users: make(map[string][]string),
+	return NewManagerWithBuckets(64)
+}
+
+func NewManagerWithBuckets(bucketCount int) *Manager {
+	if bucketCount <= 0 {
+		bucketCount = 64
 	}
+	m := &Manager{buckets: make([]bucket, bucketCount)}
+	for i := range m.buckets {
+		m.buckets[i] = bucket{
+			conns: make(map[string]contracts.Connection),
+			users: make(map[string][]string),
+		}
+	}
+	return m
 }
 
 func (m *Manager) Bind(principal auth.Principal, conn contracts.Connection) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
+	key := principalKey(principal)
+	b := m.bucket(key)
+	b.mu.Lock()
+	defer b.mu.Unlock()
 
 	connID := conn.ID()
-	key := principalKey(principal)
-	m.conns[connID] = conn
-	m.users[key] = append(m.users[key], connID)
+	b.conns[connID] = conn
+	b.users[key] = append(b.users[key], connID)
 }
 
 func (m *Manager) Unbind(principal auth.Principal, connID string) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	delete(m.conns, connID)
 	key := principalKey(principal)
-	ids := m.users[key][:0]
-	for _, id := range m.users[key] {
+	b := m.bucket(key)
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	delete(b.conns, connID)
+	existing := b.users[key]
+	if len(existing) == 0 {
+		return
+	}
+	ids := existing[:0]
+	for _, id := range existing {
 		if id != connID {
 			ids = append(ids, id)
 		}
 	}
 	if len(ids) == 0 {
-		delete(m.users, key)
+		delete(b.users, key)
 		return
 	}
-	m.users[key] = ids
+	b.users[key] = ids
 }
 
 func (m *Manager) SendToPrincipal(ctx context.Context, principal auth.Principal, payload []byte) (int, error) {
-	m.mu.RLock()
-	ids := append([]string(nil), m.users[principalKey(principal)]...)
+	key := principalKey(principal)
+	b := m.bucket(key)
+
+	b.mu.RLock()
+	ids := append([]string(nil), b.users[key]...)
 	conns := make([]contracts.Connection, 0, len(ids))
 	for _, id := range ids {
-		if conn, ok := m.conns[id]; ok {
+		if conn, ok := b.conns[id]; ok {
 			conns = append(conns, conn)
 		}
 	}
-	m.mu.RUnlock()
+	b.mu.RUnlock()
 
 	sent := 0
 	for _, conn := range conns {
@@ -71,12 +96,23 @@ func (m *Manager) SendToPrincipal(ctx context.Context, principal auth.Principal,
 	return sent, nil
 }
 
+func (m *Manager) bucket(key string) *bucket {
+	idx := int(hashKey(key) % uint32(len(m.buckets)))
+	return &m.buckets[idx]
+}
+
 func principalKey(principal auth.Principal) string {
 	scope := principal.Scope.Normalize()
 	if principal.Domain == "platform" {
 		return "platform:" + itoa(principal.UserID)
 	}
 	return "tenant:" + scope.TenantID + ":" + scope.ProjectID + ":" + scope.Environment + ":" + itoa(principal.UserID)
+}
+
+func hashKey(key string) uint32 {
+	h := fnv.New32a()
+	_, _ = h.Write([]byte(key))
+	return h.Sum32()
 }
 
 func itoa(v int64) string {

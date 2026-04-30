@@ -15,6 +15,7 @@ type Config struct {
 	Discovery   Discovery     `yaml:"discovery"`
 	Mysql       Mysql         `yaml:"mysql"`
 	Redis       Redis         `yaml:"redis"`
+	Session     Session       `yaml:"session"`
 	Scope       ScopeDefaults `yaml:"scope"`
 }
 
@@ -49,6 +50,17 @@ type ScopeDefaults struct {
 	DefaultEnvironment string `yaml:"default_environment"`
 }
 
+type Session struct {
+	BucketCount        int `yaml:"bucket_count"`
+	RingSize           int `yaml:"ring_size"`
+	ReaderBufferSize   int `yaml:"reader_buffer_size"`
+	WriterBufferSize   int `yaml:"writer_buffer_size"`
+	FrameBufferSize    int `yaml:"frame_buffer_size"`
+	HeartbeatInterval  int `yaml:"heartbeat_interval_seconds"`
+	HeartbeatMisses    int `yaml:"heartbeat_misses"`
+	WriteFlushInterval int `yaml:"write_flush_interval_ms"`
+}
+
 func Load(path string) (Config, error) {
 	var cfg Config
 	data, err := os.ReadFile(path)
@@ -72,6 +84,30 @@ func Load(path string) (Config, error) {
 	}
 	if cfg.Redis.KeyPrefix == "" {
 		cfg.Redis.KeyPrefix = "im"
+	}
+	if cfg.Session.BucketCount <= 0 {
+		cfg.Session.BucketCount = 64
+	}
+	if cfg.Session.RingSize <= 0 {
+		cfg.Session.RingSize = 256
+	}
+	if cfg.Session.ReaderBufferSize <= 0 {
+		cfg.Session.ReaderBufferSize = 4 << 10
+	}
+	if cfg.Session.WriterBufferSize <= 0 {
+		cfg.Session.WriterBufferSize = 4 << 10
+	}
+	if cfg.Session.FrameBufferSize <= 0 {
+		cfg.Session.FrameBufferSize = 8 << 10
+	}
+	if cfg.Session.HeartbeatInterval <= 0 {
+		cfg.Session.HeartbeatInterval = 30
+	}
+	if cfg.Session.HeartbeatMisses <= 0 {
+		cfg.Session.HeartbeatMisses = 3
+	}
+	if cfg.Session.WriteFlushInterval <= 0 {
+		cfg.Session.WriteFlushInterval = 5
 	}
 	return cfg, nil
 }

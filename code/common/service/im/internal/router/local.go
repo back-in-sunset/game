@@ -7,6 +7,7 @@ import (
 	"im/internal/auth"
 	"im/internal/contracts"
 	"im/internal/domain"
+	"im/internal/goimx"
 )
 
 type LocalRouter struct {
@@ -81,10 +82,14 @@ func (r *LocalRouter) Deliver(ctx context.Context, envelope domain.Envelope) (co
 }
 
 func (r *LocalRouter) DeliverLocal(ctx context.Context, envelope domain.Envelope) (int, error) {
-	payload, err := json.Marshal(map[string]any{
+	body, err := json.Marshal(map[string]any{
 		"type":     "message",
 		"envelope": envelope,
 	})
+	if err != nil {
+		return 0, err
+	}
+	payload, err := goimx.NewAdapter().NewPush(int32(envelope.Seq), body, nil)
 	if err != nil {
 		return 0, err
 	}

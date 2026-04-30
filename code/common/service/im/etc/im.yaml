@@ -23,5 +23,15 @@ redis:
   db: 0
   key_prefix: "im"
 
+session:
+  bucket_count: 64
+  ring_size: 256
+  reader_buffer_size: 4096
+  writer_buffer_size: 4096
+  frame_buffer_size: 8192
+  heartbeat_interval_seconds: 30
+  heartbeat_misses: 3
+  write_flush_interval_ms: 5
+
 scope:
   default_environment: "prod"

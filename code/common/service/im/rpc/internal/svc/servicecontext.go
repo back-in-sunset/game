@@ -26,7 +26,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	}
 
 	// RPC 服务当前仅负责业务入口和持久化；在线会话仍由长连接进程维护。
-	sessions := session.NewManager()
+	sessions := session.NewManagerWithBuckets(64)
 	registry, err := discovery.NewEtcdRegistry(c.Discovery.Endpoints, c.Discovery.ServicePrefix, c.Discovery.LeaseTTLSeconds)
 	if err != nil {
 		panic(err)

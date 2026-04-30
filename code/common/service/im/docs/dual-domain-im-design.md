@@ -153,7 +153,141 @@ IM 服务按两类业务域落地：
 - A 节点收到在线消息
 - presence 失效后消息回落离线箱
 
-## 8. 首期不做
+## 7.3 接入协议与连接模型
+
+当前长连接层借鉴 `goim` 的 comet 思路，但不直接复刻其 logic/job/broadcast 体系。
+
+客户端接入细节见：
+
+- `docs/client-protocol.md`
+
+### 协议帧
+
+TCP 和 WebSocket 统一使用 goim 风格二进制帧：
+
+- 固定 16 字节头
+- `ver`
+- `op`
+- `seq`
+- `body`
+
+当前使用的操作码：
+
+- `OpAuth`
+- `OpAuthReply`
+- `OpHeartbeat`
+- `OpHeartbeatReply`
+- `OpSendMsg`
+- `OpSendMsgReply`
+
+约束：
+
+- 首帧必须是 `OpAuth`
+- 心跳使用 `OpHeartbeat`
+- 业务命令仍然放在 `body` 中，格式仍为 JSON
+- 服务端推送消息使用 `OpSendMsg`
+- 命令应答使用 `OpSendMsgReply`
+
+这样做的目的，是把传输层协议统一，同时保留现有业务命令结构，避免一次性重写全部客户端命令体。
+
+### 连接模型
+
+每条连接按以下方式工作：
+
+1. reader goroutine 负责收包、鉴权、心跳、命令解析
+2. writer goroutine 负责消费发送缓冲并刷 socket
+3. 登录成功后把连接绑定到 `SessionManager`
+4. 连接关闭时解绑会话并清理 presence
+
+连接发送不再直接写 socket，而是先进入连接级发送缓冲，再由 writer goroutine 批量 flush。
+
+### 发送缓冲
+
+每条连接都维护一个固定大小的 Ring：
+
+- 容量按 `2^N` 归整
+- 通过 `rp/wp/mask` 读写
+- 只允许单 writer 消费
+
+当前行为：
+
+- 本地在线投递先把推送帧写入目标连接 Ring
+- writer goroutine 被 signal 唤醒后批量 flush
+- 只要任一连接成功入队，即视为在线送达
+- 所有连接都未能入队，才回落离线箱
+
+## 7.4 内存池与分桶
+
+为降低长连接热点路径上的分配和锁竞争，接入层做了两类优化。
+
+### Session 分桶
+
+`SessionManager` 使用固定数量 bucket：
+
+- 每个 bucket 独立维护连接表和用户连接索引
+- `principalKey` 哈希后落到 bucket
+- `Bind / Unbind / SendToPrincipal` 只命中单 bucket
+
+目的：
+
+- 避免全局大锁
+- 降低热点用户和普通用户之间的互相阻塞
+
+### Buffer Pool
+
+接入层引入轻量 buffer pool：
+
+- 帧编码使用 `frame buffer`
+- TCP 读写使用固定大小 reader/writer buffer
+- buffer 通过池复用，减少高频分配
+
+当前池化范围仅限接入层热点路径，不扩展到业务对象或存储对象。
+
+## 7.5 接入配置
+
+当前接入层配置如下：
+
+- `session.bucket_count`
+- `session.ring_size`
+- `session.reader_buffer_size`
+- `session.writer_buffer_size`
+- `session.frame_buffer_size`
+- `session.heartbeat_interval_seconds`
+- `session.heartbeat_misses`
+- `session.write_flush_interval_ms`
+
+默认值：
+
+```yaml
+session:
+  bucket_count: 64
+  ring_size: 256
+  reader_buffer_size: 4096
+  writer_buffer_size: 4096
+  frame_buffer_size: 8192
+  heartbeat_interval_seconds: 30
+  heartbeat_misses: 3
+  write_flush_interval_ms: 5
+```
+
+默认原则：
+
+- `ring_size` 应保持为 `2^N`
+- heartbeat 超过允许次数后直接断链
+- write loop 用小间隔批量 flush，优先吞吐而不是逐条即时刷写
+
+## 8. 当前限制
+
+当前实现已经完成接入层重构，但仍有明确边界：
+
+- 业务命令体仍使用 JSON，而不是 protobuf
+- direct message / system notice / biz push 还没有按消息类型区分不同的满队列策略
+- frame buffer 已经引入 pool，但 payload 仍会在部分路径复制
+- 尚未引入 room、broadcast、watch op 等 goim 高阶能力
+
+这些限制是当前阶段的刻意取舍，优先解决连接承载和投递路径一致性。
+
+## 9. 首期不做
 
 - 群聊
 - 频道/聊天室

@@ -40,7 +40,7 @@ func NewApp(cfg config.Config) (*App, error) {
 		return nil, err
 	}
 
-	sessions := session.NewManager()
+	sessions := session.NewManagerWithBuckets(cfg.Session.BucketCount)
 	scopeResolver := scope.NewResolver(cfg.Scope)
 	messageStore, err := store.NewMySQLRedisStore(cfg)
 	if err != nil {
@@ -61,8 +61,8 @@ func NewApp(cfg config.Config) (*App, error) {
 	return &App{
 		cfg:       cfg,
 		registry:  registry,
-		ws:        ws.New(cfg.Listen.WebSocket, cfg.NodeID, authProvider, scopeResolver, sessions, messaging, presenceTracker),
-		tcp:       tcp.New(cfg.Listen.TCP, cfg.NodeID, authProvider, scopeResolver, sessions, messaging, presenceTracker),
+		ws:        ws.New(cfg.Listen.WebSocket, cfg.NodeID, authProvider, scopeResolver, sessions, messaging, presenceTracker, cfg.Session),
+		tcp:       tcp.New(cfg.Listen.TCP, cfg.NodeID, authProvider, scopeResolver, sessions, messaging, presenceTracker, cfg.Session),
 		adapter:   goimx.NewAdapter(),
 		notifier:  notifier.New(rt),
 		messaging: messaging,
