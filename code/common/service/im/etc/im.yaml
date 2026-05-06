@@ -35,3 +35,5 @@ session:
 
 scope:
   default_environment: "prod"
+
+vda_endpoint: "127.0.0.1:9101"

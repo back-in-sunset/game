@@ -17,7 +17,10 @@ import (
 	"im/internal/transport/tcp"
 	"im/internal/transport/ws"
 
+	rpc "vda/rpc"
+
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type App struct {
@@ -56,7 +59,13 @@ func NewApp(cfg config.Config) (*App, error) {
 		return nil, err
 	}
 	rt := router.NewLocalRouter(cfg.NodeID, sessions, messageStore, registry, presenceTracker, router.NewGRPCForwarder())
-	messaging := pipeline.NewMessaging(rt, messageStore)
+
+	vdaConn, err := grpc.NewClient(cfg.VDA, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil, err
+	}
+	vdaClient := rpc.NewVDAClient(vdaConn)
+	messaging := pipeline.NewMessaging(rt, messageStore, vdaClient)
 
 	return &App{
 		cfg:       cfg,

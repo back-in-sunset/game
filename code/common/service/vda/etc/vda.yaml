@@ -1,0 +1,28 @@
+service_name: vda
+node_id: vda-local
+
+listen:
+  rpc: ":9101"
+
+redis:
+  addr: "127.0.0.1:6379"
+  password: ""
+  db: 1
+  key_prefix: "vda"
+
+livekit:
+  host: "http://localhost:7880"
+  api_key: "devkey"
+  api_secret: "secret"
+
+im:
+  endpoint: "127.0.0.1:8093"
+
+discovery:
+  endpoints:
+    - "127.0.0.1:2379"
+  service_prefix: "/services/vda"
+  lease_ttl_seconds: 10
+
+log:
+  level: debug

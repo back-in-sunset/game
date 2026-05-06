@@ -1,0 +1,141 @@
+syntax = "proto3";
+
+package vdaclient;
+
+option go_package = "/vda";
+
+message CallerInfo {
+  int64 UserID = 1;
+  string Domain = 2;
+  string TenantID = 3;
+  string ProjectID = 4;
+  string Environment = 5;
+}
+
+message InitiateCallRequest {
+  CallerInfo Caller = 1;
+  int64 Callee = 2;
+}
+
+message InitiateCallResponse {
+  string CallID = 1;
+  string State = 2;
+  string LiveKitRoom = 3;
+  string LiveKitToken = 4;
+}
+
+message AcceptCallRequest {
+  string CallID = 1;
+  int64 UserID = 2;
+}
+
+message AcceptCallResponse {
+  string CallID = 1;
+  string State = 2;
+  string LiveKitToken = 3;
+}
+
+message RejectCallRequest {
+  string CallID = 1;
+  int64 UserID = 2;
+}
+
+message EndCallRequest {
+  string CallID = 1;
+  int64 UserID = 2;
+}
+
+message CancelCallRequest {
+  string CallID = 1;
+  int64 UserID = 2;
+}
+
+message JoinVoiceRoomRequest {
+  string RoomID = 1;
+  CallerInfo User = 2;
+}
+
+message JoinVoiceRoomResponse {
+  string RoomID = 1;
+  string LiveKitToken = 2;
+  repeated int64 Participants = 3;
+}
+
+message LeaveVoiceRoomRequest {
+  string RoomID = 1;
+  int64 UserID = 2;
+}
+
+message MuteToggleRequest {
+  string RoomID = 1;
+  int64 UserID = 2;
+  bool Muted = 3;
+}
+
+message MuteToggleResponse {
+  string RoomID = 1;
+  int64 UserID = 2;
+  bool Muted = 3;
+}
+
+message VoiceEventRequest {
+  string Action = 1;
+  CallerInfo Caller = 2;
+  string CallID = 3;
+  string RoomID = 4;
+  int64 ReceiverID = 5;
+  string PayloadJson = 6;
+}
+
+message VoiceEventResponse {
+  string CallID = 1;
+  string State = 2;
+  string LiveKitToken = 3;
+  string LiveKitRoom = 4;
+  string PushJson = 5;
+  repeated int64 PushTargets = 6;
+}
+
+message GetCallStateRequest {
+  string CallID = 1;
+}
+
+message CallStateResponse {
+  string CallID = 1;
+  string State = 2;
+  int64 Caller = 3;
+  int64 Callee = 4;
+  string LiveKitRoom = 5;
+}
+
+message GetRoomStateRequest {
+  string RoomID = 1;
+}
+
+message RoomStateResponse {
+  string RoomID = 1;
+  repeated int64 Participants = 2;
+  repeated int64 Muted = 3;
+}
+
+message ActionResponse {
+  bool Success = 1;
+  string Message = 2;
+}
+
+service VDA {
+  rpc InitiateCall(InitiateCallRequest) returns (InitiateCallResponse);
+  rpc AcceptCall(AcceptCallRequest) returns (AcceptCallResponse);
+  rpc RejectCall(RejectCallRequest) returns (ActionResponse);
+  rpc EndCall(EndCallRequest) returns (ActionResponse);
+  rpc CancelCall(CancelCallRequest) returns (ActionResponse);
+
+  rpc JoinVoiceRoom(JoinVoiceRoomRequest) returns (JoinVoiceRoomResponse);
+  rpc LeaveVoiceRoom(LeaveVoiceRoomRequest) returns (ActionResponse);
+  rpc MuteToggle(MuteToggleRequest) returns (MuteToggleResponse);
+
+  rpc HandleVoiceEvent(VoiceEventRequest) returns (VoiceEventResponse);
+
+  rpc GetCallState(GetCallStateRequest) returns (CallStateResponse);
+  rpc GetRoomState(GetRoomStateRequest) returns (RoomStateResponse);
+}

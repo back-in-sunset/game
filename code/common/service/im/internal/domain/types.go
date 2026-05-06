@@ -18,6 +18,8 @@ var validMessageTypes = []string{
 	"direct_message",
 	"system_notice",
 	"biz_push",
+	"call_signal",
+	"room_signal",
 }
 
 type Scope struct {

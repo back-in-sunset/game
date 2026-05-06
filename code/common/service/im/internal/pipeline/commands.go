@@ -40,6 +40,9 @@ func (m *Messaging) HandleCommand(ctx context.Context, principal auth.Principal,
 			return nil, fmt.Errorf("invalid mark_read payload")
 		}
 		return m.HandleMarkRead(ctx, principal, input)
+	case "call_invite", "call_accept", "call_reject", "call_end", "call_cancel",
+		"room_join", "room_leave", "mute_toggle":
+		return m.HandleVoice(ctx, principal, cmd.Action, cmd.Data)
 	default:
 		return nil, fmt.Errorf("unsupported action %q", cmd.Action)
 	}

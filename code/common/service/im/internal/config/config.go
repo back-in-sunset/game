@@ -17,6 +17,7 @@ type Config struct {
 	Redis       Redis         `yaml:"redis"`
 	Session     Session       `yaml:"session"`
 	Scope       ScopeDefaults `yaml:"scope"`
+	VDA         string        `yaml:"vda_endpoint"`
 }
 
 type Listen struct {

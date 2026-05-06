@@ -16,7 +16,7 @@ import (
 func TestHandleCommandListConversations(t *testing.T) {
 	mem := store.NewMemoryStore()
 	sessions := session.NewManager()
-	msg := NewMessaging(router.NewLocalRouter("", sessions, mem, nil, nil, nil), mem)
+	msg := NewMessaging(router.NewLocalRouter("", sessions, mem, nil, nil, nil), mem, nil)
 	principal := auth.Principal{
 		UserID: 1,
 		Domain: domain.DomainPlatform,

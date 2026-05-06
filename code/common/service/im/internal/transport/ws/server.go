@@ -128,6 +128,7 @@ func (s *Server) handleWS(w http.ResponseWriter, r *http.Request) {
 		if s.presence != nil {
 			_ = s.presence.Unbind(context.Background(), principal, s.nodeID)
 		}
+		s.messaging.OnDisconnect(context.Background(), principal)
 		_ = c.Close()
 	}()
 

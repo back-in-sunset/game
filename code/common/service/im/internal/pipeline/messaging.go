@@ -8,6 +8,8 @@ import (
 	"im/internal/auth"
 	"im/internal/contracts"
 	"im/internal/domain"
+
+	rpc "vda/rpc"
 )
 
 type MessageInput struct {
@@ -26,10 +28,39 @@ type QueryInput struct {
 type Messaging struct {
 	router contracts.Router
 	store  contracts.MessageStore
+	voice  *VoiceHandler
 }
 
-func NewMessaging(router contracts.Router, store contracts.MessageStore) *Messaging {
-	return &Messaging{router: router, store: store}
+func NewMessaging(router contracts.Router, store contracts.MessageStore, vdaClient rpc.VDAClient) *Messaging {
+	return &Messaging{
+		router: router,
+		store:  store,
+		voice:  NewVoiceHandler(vdaClient),
+	}
+}
+
+func (m *Messaging) HandleVoice(ctx context.Context, principal auth.Principal, action string, data json.RawMessage) ([]byte, error) {
+	ack, pushData, err := m.voice.HandleVoiceCommand(ctx, principal, action, data)
+	if err != nil {
+		return nil, err
+	}
+	// TODO: push pushData to target recipients via notifier
+	_ = pushData
+	return ack, nil
+}
+
+func (m *Messaging) OnDisconnect(ctx context.Context, principal auth.Principal) {
+	req := &rpc.VoiceEventRequest{
+		Action: "disconnect",
+		Caller: &rpc.CallerInfo{
+			UserID:      principal.UserID,
+			Domain:      string(principal.Domain),
+			TenantID:    principal.Scope.TenantID,
+			ProjectID:   principal.Scope.ProjectID,
+			Environment: principal.Scope.Environment,
+		},
+	}
+	m.voice.vda.HandleVoiceEvent(ctx, req)
 }
 
 func (m *Messaging) HandleSend(ctx context.Context, principal auth.Principal, input MessageInput) ([]byte, error) {
