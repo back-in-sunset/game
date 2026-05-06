@@ -181,18 +181,7 @@ func (u *customCQLUserModel) FindOneByMobile(ctx context.Context, mobile string)
 		if err != nil {
 			return err
 		}
-
-		user, err := u.FindOne(ctx, resp.UserID)
-		if err != nil {
-			return err
-		}
-		resp.Gender = user.Gender
-		resp.Email = user.Email
-		resp.Name = user.Name
-		resp.CreatedAt = user.CreatedAt
-		resp.Password = user.Password
-		resp.UpdatedAt = user.UpdatedAt
-		return nil
+		return u.fillUserFields(ctx, &resp)
 	})
 	switch err {
 	case nil:
@@ -219,18 +208,7 @@ func (u *customCQLUserModel) FindOneByEmail(ctx context.Context, email string) (
 		if err != nil {
 			return err
 		}
-
-		user, err := u.FindOne(ctx, resp.UserID)
-		if err != nil {
-			return err
-		}
-		resp.Gender = user.Gender
-		resp.Mobile = user.Mobile
-		resp.Name = user.Name
-		resp.CreatedAt = user.CreatedAt
-		resp.Password = user.Password
-		resp.UpdatedAt = user.UpdatedAt
-		return nil
+		return u.fillUserFields(ctx, &resp)
 	})
 	switch err {
 	case nil:
@@ -241,6 +219,20 @@ func (u *customCQLUserModel) FindOneByEmail(ctx context.Context, email string) (
 		log.Println(err)
 		return nil, err
 	}
+}
+
+func (u *customCQLUserModel) fillUserFields(ctx context.Context, dst *User) error {
+	userQuery := fmt.Sprintf(`select %s from %s where user_id=?`, buildFileds(&User{}), u.TableName())
+	return u.Session.Query(userQuery, dst.UserID).Scan(
+		&dst.UserID,
+		&dst.Name,
+		&dst.Gender,
+		&dst.Mobile,
+		&dst.Email,
+		&dst.Password,
+		&dst.CreatedAt,
+		&dst.UpdatedAt,
+	)
 }
 
 func (u *customCQLUserModel) Update(ctx context.Context, data *User) error {

@@ -3,6 +3,7 @@ package session
 import (
 	"context"
 	"hash/fnv"
+	"strconv"
 	"sync"
 
 	"im/internal/auth"
@@ -104,32 +105,13 @@ func (m *Manager) bucket(key string) *bucket {
 func principalKey(principal auth.Principal) string {
 	scope := principal.Scope.Normalize()
 	if principal.Domain == "platform" {
-		return "platform:" + itoa(principal.UserID)
+		return "platform:" + strconv.FormatInt(principal.UserID, 10)
 	}
-	return "tenant:" + scope.TenantID + ":" + scope.ProjectID + ":" + scope.Environment + ":" + itoa(principal.UserID)
+	return "tenant:" + scope.TenantID + ":" + scope.ProjectID + ":" + scope.Environment + ":" + strconv.FormatInt(principal.UserID, 10)
 }
 
 func hashKey(key string) uint32 {
 	h := fnv.New32a()
 	_, _ = h.Write([]byte(key))
 	return h.Sum32()
-}
-
-func itoa(v int64) string {
-	if v == 0 {
-		return "0"
-	}
-	sign := ""
-	if v < 0 {
-		sign = "-"
-		v = -v
-	}
-	var buf [20]byte
-	i := len(buf)
-	for v > 0 {
-		i--
-		buf[i] = byte('0' + v%10)
-		v /= 10
-	}
-	return sign + string(buf[i:])
 }

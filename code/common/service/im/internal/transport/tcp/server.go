@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -154,19 +155,17 @@ func (s *Server) handleConn(conn net.Conn) {
 		_ = c.Close()
 	}()
 
-	authReply, err := s.adapter.NewAuthReply(loginSeq, mustJSON(map[string]any{
+	authBody, err := json.Marshal(map[string]any{
 		"type":    "login_ok",
 		"user_id": principal.UserID,
 		"domain":  principal.Domain,
 		"scope":   principal.Scope,
-	}), s.framePool.Get())
+	})
 	if err == nil {
-		_ = c.Send(ctx, authReply)
+		s.encodeAndSend(ctx, c, goimx.OpAuthReply, loginSeq, authBody)
 	}
 	if offline, err := s.messaging.DrainOffline(ctx, principal); err == nil {
-		if frame, ferr := s.adapter.NewPush(0, offline, s.framePool.Get()); ferr == nil {
-			_ = c.Send(ctx, frame)
-		}
+		s.encodeAndSend(ctx, c, goimx.OpServerPush, 0, offline)
 	}
 
 	_ = conn.SetReadDeadline(time.Now().Add(s.heartbeat * time.Duration(s.missLimit)))
@@ -178,24 +177,27 @@ func (s *Server) handleConn(conn net.Conn) {
 		_ = conn.SetReadDeadline(time.Now().Add(s.heartbeat * time.Duration(s.missLimit)))
 		switch frame.Op {
 		case goimx.OpHeartbeat:
-			reply, err := s.adapter.NewHeartbeatReply(frame.Seq, s.framePool.Get())
-			if err == nil {
-				_ = c.Send(ctx, reply)
-			}
+			s.encodeAndSend(ctx, c, goimx.OpHeartbeatReply, frame.Seq, nil)
 		case goimx.OpServerPush:
 			reply, err := s.messaging.HandleCommand(ctx, principal, frame.Body)
 			if err != nil {
 				_ = s.writeErrorReply(c, frame.Seq, err)
 				continue
 			}
-			wire, err := s.adapter.NewCommandReply(frame.Seq, reply, s.framePool.Get())
-			if err == nil {
-				_ = c.Send(ctx, wire)
-			}
+			s.encodeAndSend(ctx, c, goimx.OpCommandReply, frame.Seq, reply)
 		default:
 			_ = s.writeErrorReply(c, frame.Seq, errors.New("unsupported operation"))
 		}
 	}
+}
+
+func (s *Server) encodeAndSend(ctx context.Context, c *tcpConn, op int32, seq int32, body []byte) {
+	buf := s.framePool.Get()
+	wire, err := s.adapter.Encode(op, seq, body, buf)
+	if err == nil {
+		_ = c.Send(ctx, wire)
+	}
+	s.framePool.Put(buf)
 }
 
 func (s *Server) authenticateConn(reader *bufio.Reader) (auth.Principal, int32, error) {
@@ -220,7 +222,9 @@ func (s *Server) authenticateConn(reader *bufio.Reader) (auth.Principal, int32, 
 }
 
 func (s *Server) writeFrame(conn net.Conn, seq int32, message string) error {
-	wire, err := s.adapter.NewError(seq, message, s.framePool.Get())
+	buf := s.framePool.Get()
+	defer s.framePool.Put(buf)
+	wire, err := s.adapter.NewError(seq, message, buf)
 	if err != nil {
 		return err
 	}
@@ -229,7 +233,9 @@ func (s *Server) writeFrame(conn net.Conn, seq int32, message string) error {
 }
 
 func (s *Server) writeErrorReply(conn *tcpConn, seq int32, err error) error {
-	wire, ferr := s.adapter.NewError(seq, err.Error(), s.framePool.Get())
+	buf := s.framePool.Get()
+	defer s.framePool.Put(buf)
+	wire, ferr := s.adapter.NewError(seq, err.Error(), buf)
 	if ferr != nil {
 		return ferr
 	}
@@ -237,7 +243,7 @@ func (s *Server) writeErrorReply(conn *tcpConn, seq int32, err error) error {
 }
 
 func (s *Server) nextConnID() string {
-	return "tcp-" + itoa(s.nextID.Add(1))
+	return "tcp-" + strconv.FormatInt(s.nextID.Add(1), 10)
 }
 
 type tcpConn struct {
@@ -336,26 +342,4 @@ func domainScope(login loginRequest) domain.Scope {
 		ProjectID:   login.Scope.ProjectID,
 		Environment: login.Scope.Environment,
 	}
-}
-
-func mustJSON(v any) []byte {
-	data, err := json.Marshal(v)
-	if err != nil {
-		panic(errors.New("marshal response: " + err.Error()))
-	}
-	return data
-}
-
-func itoa(v int64) string {
-	if v == 0 {
-		return "0"
-	}
-	var buf [20]byte
-	i := len(buf)
-	for v > 0 {
-		i--
-		buf[i] = byte('0' + v%10)
-		v /= 10
-	}
-	return string(buf[i:])
 }

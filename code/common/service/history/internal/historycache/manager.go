@@ -315,17 +315,13 @@ func (m *Manager) flushUser(ctx context.Context, userID int64) error {
 		_, _ = m.rds.SremCtx(ctx, m.deleteMarkersKey(userID), deleteMarkerTypePref+strconv.FormatInt(mediaType, 10))
 	}
 
-	items, err := m.rds.SmembersCtx(ctx, m.dirtyItemsKey(userID))
+	items, err := m.scanDirtyItems(ctx, userID)
 	if err != nil {
 		return err
 	}
 
-	limit := m.cfg.FlushBatchItems
-	if limit > len(items) {
-		limit = len(items)
-	}
 	deleteKey := m.deleteMarkersKey(userID)
-	for _, identity := range items[:limit] {
+	for _, identity := range items {
 		mediaType, mediaID, parseErr := parseIdentity(identity)
 		if parseErr != nil {
 			_, _ = m.rds.SremCtx(ctx, m.dirtyItemsKey(userID), identity)
@@ -630,6 +626,27 @@ func (m *Manager) membersForListKey(ctx context.Context, key string) ([]string, 
 	return m.rds.ZrangeCtx(ctx, key, 0, -1)
 }
 
+func (m *Manager) scanDirtyItems(ctx context.Context, userID int64) ([]string, error) {
+	key := m.dirtyItemsKey(userID)
+	limit := m.cfg.FlushBatchItems
+	var (
+		cursor uint64
+		items  []string
+	)
+	for len(items) < limit {
+		page, nextCursor, err := m.rds.SscanCtx(ctx, key, cursor, "", int64(limit-len(items)))
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, page...)
+		if nextCursor == 0 {
+			break
+		}
+		cursor = nextCursor
+	}
+	return items, nil
+}
+
 func (m *Manager) hasDeleteMarkers(ctx context.Context, userID int64) (bool, error) {
 	return m.rds.ExistsCtx(ctx, m.deleteMarkersKey(userID))
 }
@@ -699,7 +716,7 @@ func (c Config) withDefaults() Config {
 }
 
 func historyMember(sortID, mediaType, mediaID int64) string {
-	return fmt.Sprintf("%d:%d:%d", sortID, mediaType, mediaID)
+	return fmt.Sprintf("%020d:%d:%d", sortID, mediaType, mediaID)
 }
 
 func historyIdentity(mediaType, mediaID int64) string {
