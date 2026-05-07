@@ -67,7 +67,7 @@ func (l *UserInfoLogic) UserInfo() (resp *types.UserInfoResponse, err error) {
 			if profile.Extra.Valid {
 				out.Extra = profile.Extra.String
 			}
-		} else if pErr != nil && pErr != model.ErrNotFound {
+		} else if pErr != model.ErrNotFound {
 			logx.WithContext(l.ctx).Errorf("load user profile failed, uid=%d err=%v", uid, pErr)
 		}
 	}
