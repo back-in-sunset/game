@@ -7,15 +7,16 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Config VDA 服务顶层配置，从 etc/vda.yaml 加载。
 type Config struct {
 	ServiceName string    `yaml:"service_name"`
 	NodeID      string    `yaml:"node_id"`
-	Listen      Listen    `yaml:"listen"`
-	Redis       Redis     `yaml:"redis"`
-	LiveKit     LiveKit   `yaml:"livekit"`
-	IM          IM        `yaml:"im"`
-	Discovery   Discovery `yaml:"discovery"`
-	Log         Log       `yaml:"log"`
+	Listen      Listen    `yaml:"listen"`     // 监听地址
+	Redis       Redis     `yaml:"redis"`      // Redis 状态存储
+	LiveKit     LiveKit   `yaml:"livekit"`    // LiveKit 服务器连接
+	IM          IM        `yaml:"im"`         // IM 服务地址（预留）
+	Discovery   Discovery `yaml:"discovery"`  // etcd 服务发现
+	Log         Log       `yaml:"log"`        // 日志级别
 }
 
 type Listen struct {
@@ -49,6 +50,7 @@ type Log struct {
 	Level string `yaml:"level"`
 }
 
+// Load 从 YAML 文件加载配置并进行默认值填充和校验。
 func Load(path string) (Config, error) {
 	var cfg Config
 	data, err := os.ReadFile(path)

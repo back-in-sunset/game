@@ -10,16 +10,18 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+// RedisStore 封装 VDA 所有 Redis 操作：通话状态、用户通话绑定、房间参与者、语音 presence。
 type RedisStore struct {
 	rdb    *redis.Client
-	prefix string
+	prefix string // key 前缀，默认 "vda"
 }
 
+// NewRedisStore 创建 Redis 存储实例。
 func NewRedisStore(rdb *redis.Client, prefix string) *RedisStore {
 	return &RedisStore{rdb: rdb, prefix: prefix}
 }
 
-// Call state keys.
+// ---- 通话状态 (call) ----
 
 func (s *RedisStore) callKey(callID, field string) string {
 	return fmt.Sprintf("%s:call:%s:%s", s.prefix, callID, field)
@@ -110,7 +112,7 @@ func (s *RedisStore) DelUserCall(ctx context.Context, userID int64) error {
 	return err
 }
 
-// Room keys.
+// ---- 房间参与者 (room) ----
 
 func (s *RedisStore) roomParticipantsKey(roomID string) string {
 	return fmt.Sprintf("%s:room:%s:participants", s.prefix, roomID)
@@ -158,7 +160,7 @@ func (s *RedisStore) IsMuted(ctx context.Context, roomID string, userID int64) (
 	return s.rdb.SIsMember(ctx, s.roomMutedKey(roomID), userID).Result()
 }
 
-// Voice presence.
+// ---- 语音 presence (voice presence) ----
 
 func (s *RedisStore) voicePresenceKey(userID int64) string {
 	return fmt.Sprintf("%s:presence:voice:%d", s.prefix, userID)

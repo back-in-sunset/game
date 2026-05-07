@@ -155,6 +155,7 @@ type InitiateCallResponse struct {
 	State         string                 `protobuf:"bytes,2,opt,name=State,proto3" json:"State,omitempty"`
 	LiveKitRoom   string                 `protobuf:"bytes,3,opt,name=LiveKitRoom,proto3" json:"LiveKitRoom,omitempty"`
 	LiveKitToken  string                 `protobuf:"bytes,4,opt,name=LiveKitToken,proto3" json:"LiveKitToken,omitempty"`
+	LiveKitUrl    string                 `protobuf:"bytes,5,opt,name=LiveKitUrl,proto3" json:"LiveKitUrl,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -217,6 +218,13 @@ func (x *InitiateCallResponse) GetLiveKitToken() string {
 	return ""
 }
 
+func (x *InitiateCallResponse) GetLiveKitUrl() string {
+	if x != nil {
+		return x.LiveKitUrl
+	}
+	return ""
+}
+
 type AcceptCallRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	CallID        string                 `protobuf:"bytes,1,opt,name=CallID,proto3" json:"CallID,omitempty"`
@@ -274,6 +282,7 @@ type AcceptCallResponse struct {
 	CallID        string                 `protobuf:"bytes,1,opt,name=CallID,proto3" json:"CallID,omitempty"`
 	State         string                 `protobuf:"bytes,2,opt,name=State,proto3" json:"State,omitempty"`
 	LiveKitToken  string                 `protobuf:"bytes,3,opt,name=LiveKitToken,proto3" json:"LiveKitToken,omitempty"`
+	LiveKitUrl    string                 `protobuf:"bytes,4,opt,name=LiveKitUrl,proto3" json:"LiveKitUrl,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -325,6 +334,13 @@ func (x *AcceptCallResponse) GetState() string {
 func (x *AcceptCallResponse) GetLiveKitToken() string {
 	if x != nil {
 		return x.LiveKitToken
+	}
+	return ""
+}
+
+func (x *AcceptCallResponse) GetLiveKitUrl() string {
+	if x != nil {
+		return x.LiveKitUrl
 	}
 	return ""
 }
@@ -542,6 +558,7 @@ type JoinVoiceRoomResponse struct {
 	RoomID        string                 `protobuf:"bytes,1,opt,name=RoomID,proto3" json:"RoomID,omitempty"`
 	LiveKitToken  string                 `protobuf:"bytes,2,opt,name=LiveKitToken,proto3" json:"LiveKitToken,omitempty"`
 	Participants  []int64                `protobuf:"varint,3,rep,packed,name=Participants,proto3" json:"Participants,omitempty"`
+	LiveKitUrl    string                 `protobuf:"bytes,4,opt,name=LiveKitUrl,proto3" json:"LiveKitUrl,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -595,6 +612,13 @@ func (x *JoinVoiceRoomResponse) GetParticipants() []int64 {
 		return x.Participants
 	}
 	return nil
+}
+
+func (x *JoinVoiceRoomResponse) GetLiveKitUrl() string {
+	if x != nil {
+		return x.LiveKitUrl
+	}
+	return ""
 }
 
 type LeaveVoiceRoomRequest struct {
@@ -861,6 +885,7 @@ type VoiceEventResponse struct {
 	LiveKitRoom   string                 `protobuf:"bytes,4,opt,name=LiveKitRoom,proto3" json:"LiveKitRoom,omitempty"`
 	PushJson      string                 `protobuf:"bytes,5,opt,name=PushJson,proto3" json:"PushJson,omitempty"`
 	PushTargets   []int64                `protobuf:"varint,6,rep,packed,name=PushTargets,proto3" json:"PushTargets,omitempty"`
+	LiveKitUrl    string                 `protobuf:"bytes,7,opt,name=LiveKitUrl,proto3" json:"LiveKitUrl,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -935,6 +960,13 @@ func (x *VoiceEventResponse) GetPushTargets() []int64 {
 		return x.PushTargets
 	}
 	return nil
+}
+
+func (x *VoiceEventResponse) GetLiveKitUrl() string {
+	if x != nil {
+		return x.LiveKitUrl
+	}
+	return ""
 }
 
 type GetCallStateRequest struct {
@@ -1227,19 +1259,25 @@ const file_rpc_vda_proto_rawDesc = "" +
 	"\vEnvironment\x18\x05 \x01(\tR\vEnvironment\"\\\n" +
 	"\x13InitiateCallRequest\x12-\n" +
 	"\x06Caller\x18\x01 \x01(\v2\x15.vdaclient.CallerInfoR\x06Caller\x12\x16\n" +
-	"\x06Callee\x18\x02 \x01(\x03R\x06Callee\"\x8a\x01\n" +
+	"\x06Callee\x18\x02 \x01(\x03R\x06Callee\"\xaa\x01\n" +
 	"\x14InitiateCallResponse\x12\x16\n" +
 	"\x06CallID\x18\x01 \x01(\tR\x06CallID\x12\x14\n" +
 	"\x05State\x18\x02 \x01(\tR\x05State\x12 \n" +
 	"\vLiveKitRoom\x18\x03 \x01(\tR\vLiveKitRoom\x12\"\n" +
-	"\fLiveKitToken\x18\x04 \x01(\tR\fLiveKitToken\"C\n" +
+	"\fLiveKitToken\x18\x04 \x01(\tR\fLiveKitToken\x12\x1e\n" +
+	"\n" +
+	"LiveKitUrl\x18\x05 \x01(\tR\n" +
+	"LiveKitUrl\"C\n" +
 	"\x11AcceptCallRequest\x12\x16\n" +
 	"\x06CallID\x18\x01 \x01(\tR\x06CallID\x12\x16\n" +
-	"\x06UserID\x18\x02 \x01(\x03R\x06UserID\"f\n" +
+	"\x06UserID\x18\x02 \x01(\x03R\x06UserID\"\x86\x01\n" +
 	"\x12AcceptCallResponse\x12\x16\n" +
 	"\x06CallID\x18\x01 \x01(\tR\x06CallID\x12\x14\n" +
 	"\x05State\x18\x02 \x01(\tR\x05State\x12\"\n" +
-	"\fLiveKitToken\x18\x03 \x01(\tR\fLiveKitToken\"C\n" +
+	"\fLiveKitToken\x18\x03 \x01(\tR\fLiveKitToken\x12\x1e\n" +
+	"\n" +
+	"LiveKitUrl\x18\x04 \x01(\tR\n" +
+	"LiveKitUrl\"C\n" +
 	"\x11RejectCallRequest\x12\x16\n" +
 	"\x06CallID\x18\x01 \x01(\tR\x06CallID\x12\x16\n" +
 	"\x06UserID\x18\x02 \x01(\x03R\x06UserID\"@\n" +
@@ -1251,11 +1289,14 @@ const file_rpc_vda_proto_rawDesc = "" +
 	"\x06UserID\x18\x02 \x01(\x03R\x06UserID\"Y\n" +
 	"\x14JoinVoiceRoomRequest\x12\x16\n" +
 	"\x06RoomID\x18\x01 \x01(\tR\x06RoomID\x12)\n" +
-	"\x04User\x18\x02 \x01(\v2\x15.vdaclient.CallerInfoR\x04User\"w\n" +
+	"\x04User\x18\x02 \x01(\v2\x15.vdaclient.CallerInfoR\x04User\"\x97\x01\n" +
 	"\x15JoinVoiceRoomResponse\x12\x16\n" +
 	"\x06RoomID\x18\x01 \x01(\tR\x06RoomID\x12\"\n" +
 	"\fLiveKitToken\x18\x02 \x01(\tR\fLiveKitToken\x12\"\n" +
-	"\fParticipants\x18\x03 \x03(\x03R\fParticipants\"G\n" +
+	"\fParticipants\x18\x03 \x03(\x03R\fParticipants\x12\x1e\n" +
+	"\n" +
+	"LiveKitUrl\x18\x04 \x01(\tR\n" +
+	"LiveKitUrl\"G\n" +
 	"\x15LeaveVoiceRoomRequest\x12\x16\n" +
 	"\x06RoomID\x18\x01 \x01(\tR\x06RoomID\x12\x16\n" +
 	"\x06UserID\x18\x02 \x01(\x03R\x06UserID\"Y\n" +
@@ -1275,14 +1316,17 @@ const file_rpc_vda_proto_rawDesc = "" +
 	"\n" +
 	"ReceiverID\x18\x05 \x01(\x03R\n" +
 	"ReceiverID\x12 \n" +
-	"\vPayloadJson\x18\x06 \x01(\tR\vPayloadJson\"\xc6\x01\n" +
+	"\vPayloadJson\x18\x06 \x01(\tR\vPayloadJson\"\xe6\x01\n" +
 	"\x12VoiceEventResponse\x12\x16\n" +
 	"\x06CallID\x18\x01 \x01(\tR\x06CallID\x12\x14\n" +
 	"\x05State\x18\x02 \x01(\tR\x05State\x12\"\n" +
 	"\fLiveKitToken\x18\x03 \x01(\tR\fLiveKitToken\x12 \n" +
 	"\vLiveKitRoom\x18\x04 \x01(\tR\vLiveKitRoom\x12\x1a\n" +
 	"\bPushJson\x18\x05 \x01(\tR\bPushJson\x12 \n" +
-	"\vPushTargets\x18\x06 \x03(\x03R\vPushTargets\"-\n" +
+	"\vPushTargets\x18\x06 \x03(\x03R\vPushTargets\x12\x1e\n" +
+	"\n" +
+	"LiveKitUrl\x18\a \x01(\tR\n" +
+	"LiveKitUrl\"-\n" +
 	"\x13GetCallStateRequest\x12\x16\n" +
 	"\x06CallID\x18\x01 \x01(\tR\x06CallID\"\x93\x01\n" +
 	"\x11CallStateResponse\x12\x16\n" +

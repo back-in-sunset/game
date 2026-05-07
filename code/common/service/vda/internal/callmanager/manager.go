@@ -13,26 +13,29 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-var callTTL = 5 * time.Minute
+var callTTL = 5 * time.Minute // 通话状态 TTL（过期自动清理）
 
+// Manager 管理 1v1 通话的完整生命周期。
+// 状态机：ringing → connected → ended / rejected / cancelled
 type Manager struct {
-	lk    *livekit.Client
-	store *storage.RedisStore
-	rdb   *redis.Client
+	lk    domain.TokenGenerator // LiveKit token 生成器
+	store *storage.RedisStore   // Redis 持久化
+	rdb   *redis.Client         // Redis 客户端（user_call 约束检查）
 }
 
-func New(lk *livekit.Client, store *storage.RedisStore, rdb *redis.Client) *Manager {
+// New 创建通话管理器。
+func New(lk domain.TokenGenerator, store *storage.RedisStore, rdb *redis.Client) *Manager {
 	return &Manager{lk: lk, store: store, rdb: rdb}
 }
 
-// Initiate starts a new call. Returns the call ID, LiveKit room, and caller's token.
+// Initiate 发起新通话。返回 callID、LiveKit 房间名和主叫 token。
 func (m *Manager) Initiate(ctx context.Context, caller domain.CallerInfo, calleeID int64) (callID string, lkToken string, lkRoom string, err error) {
-	// Check if caller is already in a call.
+	// 主叫是否已在通话中？
 	existing, _ := m.store.GetUserCall(ctx, caller.UserID)
 	if existing != "" {
 		return "", "", "", fmt.Errorf("user %d is already in call %s", caller.UserID, existing)
 	}
-	// Check if callee is already in a call.
+	// 被叫是否已在通话中？
 	existing, _ = m.store.GetUserCall(ctx, calleeID)
 	if existing != "" {
 		return "", "", "", fmt.Errorf("user %d is already in call %s", calleeID, existing)
@@ -67,7 +70,7 @@ func (m *Manager) Initiate(ctx context.Context, caller domain.CallerInfo, callee
 	return callID, token, lkRoom, nil
 }
 
-// Accept transitions a call from ringing to connected and returns the callee's token.
+// Accept 接听通话：状态 ringing→connected，返回被叫 token。
 func (m *Manager) Accept(ctx context.Context, callID string, userID int64) (string, error) {
 	call, err := m.store.GetCall(ctx, callID)
 	if err != nil {
@@ -96,7 +99,7 @@ func (m *Manager) Accept(ctx context.Context, callID string, userID int64) (stri
 	return token, nil
 }
 
-// Reject transitions a call from ringing to rejected.
+// Reject 拒接通话：状态 ringing→rejected，只能被叫操作。
 func (m *Manager) Reject(ctx context.Context, callID string, userID int64) error {
 	call, err := m.store.GetCall(ctx, callID)
 	if err != nil {
@@ -115,7 +118,7 @@ func (m *Manager) Reject(ctx context.Context, callID string, userID int64) error
 	return nil
 }
 
-// Cancel transitions an outgoing call from ringing to cancelled. Only the caller can cancel.
+// Cancel 主叫取消通话：状态 ringing→cancelled，只能主叫操作。
 func (m *Manager) Cancel(ctx context.Context, callID string, userID int64) error {
 	call, err := m.store.GetCall(ctx, callID)
 	if err != nil {
@@ -134,7 +137,7 @@ func (m *Manager) Cancel(ctx context.Context, callID string, userID int64) error
 	return nil
 }
 
-// End terminates an active call. Either party can end.
+// End 挂断通话：状态 connected/ringing→ended，双方均可操作。
 func (m *Manager) End(ctx context.Context, callID string, userID int64) error {
 	call, err := m.store.GetCall(ctx, callID)
 	if err != nil {
@@ -154,12 +157,12 @@ func (m *Manager) End(ctx context.Context, callID string, userID int64) error {
 	return nil
 }
 
-// GetState returns the current state of a call.
+// GetState 查询当前通话状态。
 func (m *Manager) GetState(ctx context.Context, callID string) (domain.VoiceCall, error) {
 	return m.store.GetCall(ctx, callID)
 }
 
-// OnDisconnect cleans up calls when a user disconnects from IM.
+// OnDisconnect 处理 IM 断线：主叫 ringing 时断线→cancel，connected 时断线→清除 presence。
 func (m *Manager) OnDisconnect(ctx context.Context, userID int64) error {
 	callID, err := m.store.GetUserCall(ctx, userID)
 	if err != nil || callID == "" {
@@ -170,12 +173,12 @@ func (m *Manager) OnDisconnect(ctx context.Context, userID int64) error {
 		return nil
 	}
 	if call.State == domain.CallStateRinging && call.CallerID == userID {
-		// Caller disconnected while ringing — cancel.
+			// 主叫在 ringing 时断线 → 自动取消通话。
 		_ = m.store.UpdateCallState(ctx, callID, domain.CallStateCancelled, callTTL)
 		m.cleanupCall(ctx, call)
 		return nil
 	}
-	// For connected calls, just remove user presence (other party can end).
+	// connected 状态下断线：只清除用户 presence，对方仍可挂断。
 	m.store.DelVoicePresence(ctx, userID)
 	m.store.DelUserCall(ctx, userID)
 	return nil

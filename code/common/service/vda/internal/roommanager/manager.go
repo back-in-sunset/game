@@ -15,17 +15,19 @@ import (
 
 var defaultTTL = 24 * time.Hour
 
+// Manager 管理语音房间：加入/离开/静音/参与者查询。
 type Manager struct {
-	lk    *livekit.Client
-	store *storage.RedisStore
-	rdb   *redis.Client
+	lk    domain.TokenGenerator // LiveKit token 生成器
+	store *storage.RedisStore   // Redis 持久化
+	rdb   *redis.Client         // Redis 客户端（muted 集合操作）
 }
 
-func New(lk *livekit.Client, store *storage.RedisStore, rdb *redis.Client) *Manager {
+// New 创建房间管理器。
+func New(lk domain.TokenGenerator, store *storage.RedisStore, rdb *redis.Client) *Manager {
 	return &Manager{lk: lk, store: store, rdb: rdb}
 }
 
-// Join adds a user to a voice room and returns a LiveKit token.
+// Join 用户加入语音房间，返回 LiveKit token 和当前参与者列表。
 func (m *Manager) Join(ctx context.Context, roomID string, user domain.CallerInfo) (token string, participants []int64, err error) {
 	lkRoom := livekit.RoomNameForRoom(roomID)
 
@@ -51,7 +53,7 @@ func (m *Manager) Join(ctx context.Context, roomID string, user domain.CallerInf
 	return token, participants, nil
 }
 
-// Leave removes a user from a voice room.
+// Leave 用户离开语音房间，同时清除静音状态和 presence。
 func (m *Manager) Leave(ctx context.Context, roomID string, userID int64) error {
 	if err := m.store.RemoveRoomParticipant(ctx, roomID, userID); err != nil {
 		return fmt.Errorf("remove participant: %w", err)
@@ -60,12 +62,12 @@ func (m *Manager) Leave(ctx context.Context, roomID string, userID int64) error 
 	return nil
 }
 
-// ToggleMute toggles a user's mute state in a room.
+// ToggleMute 切换用户在房间中的静音状态。
 func (m *Manager) ToggleMute(ctx context.Context, roomID string, userID int64, muted bool) error {
 	return m.store.SetMuted(ctx, roomID, userID, muted)
 }
 
-// GetParticipants returns all participants in a room and their mute states.
+// GetParticipants 返回房间所有参与者及其静音状态。
 func (m *Manager) GetParticipants(ctx context.Context, roomID string) ([]domain.Participant, error) {
 	ids, err := m.store.GetRoomParticipants(ctx, roomID)
 	if err != nil {
@@ -82,7 +84,7 @@ func (m *Manager) GetParticipants(ctx context.Context, roomID string) ([]domain.
 	return participants, nil
 }
 
-// GetMuted returns the list of muted user IDs in a room.
+// GetMuted 返回房间中所有已静音的用户 ID 列表。
 func (m *Manager) GetMuted(ctx context.Context, roomID string) ([]int64, error) {
 	vals, err := m.rdb.SMembers(ctx, m.storePrefix()+":room:"+roomID+":muted").Result()
 	if err != nil {

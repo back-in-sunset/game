@@ -22,6 +22,7 @@ message InitiateCallResponse {
   string State = 2;
   string LiveKitRoom = 3;
   string LiveKitToken = 4;
+  string LiveKitUrl = 5;
 }
 
 message AcceptCallRequest {
@@ -33,6 +34,7 @@ message AcceptCallResponse {
   string CallID = 1;
   string State = 2;
   string LiveKitToken = 3;
+  string LiveKitUrl = 4;
 }
 
 message RejectCallRequest {
@@ -59,6 +61,7 @@ message JoinVoiceRoomResponse {
   string RoomID = 1;
   string LiveKitToken = 2;
   repeated int64 Participants = 3;
+  string LiveKitUrl = 4;
 }
 
 message LeaveVoiceRoomRequest {
@@ -94,6 +97,7 @@ message VoiceEventResponse {
   string LiveKitRoom = 4;
   string PushJson = 5;
   repeated int64 PushTargets = 6;
+  string LiveKitUrl = 7;
 }
 
 message GetCallStateRequest {

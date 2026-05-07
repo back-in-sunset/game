@@ -17,6 +17,7 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
+// App 封装 VDA 服务的所有依赖和生命周期。
 type App struct {
 	cfg        config.Config
 	livekit    *livekit.Client
@@ -27,6 +28,7 @@ type App struct {
 	roomMgr    *roommanager.Manager
 }
 
+// NewApp 创建 VDA 应用实例，初始化 Redis、LiveKit 客户端和业务管理器。
 func NewApp(cfg config.Config) (*App, error) {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     cfg.Redis.Addr,
@@ -47,6 +49,7 @@ func NewApp(cfg config.Config) (*App, error) {
 	}, nil
 }
 
+// Start 启动 gRPC 服务器并注册 VDA 服务。
 func (a *App) Start(ctx context.Context) error {
 	lis, err := net.Listen("tcp", a.cfg.Listen.RPC)
 	if err != nil {
@@ -56,7 +59,7 @@ func (a *App) Start(ctx context.Context) error {
 	srv := grpc.NewServer()
 	a.grpcServer = srv
 
-	rpc.RegisterVDAServer(srv, NewVDAServer(a.callMgr, a.roomMgr))
+	rpc.RegisterVDAServer(srv, NewVDAServer(a.callMgr, a.roomMgr, a.livekit.Host()))
 	reflection.Register(srv)
 
 	go func() {
@@ -67,6 +70,7 @@ func (a *App) Start(ctx context.Context) error {
 	return nil
 }
 
+// Stop 优雅关闭 gRPC 服务器并释放 Redis 连接。
 func (a *App) Stop(ctx context.Context) {
 	if a.grpcServer != nil {
 		a.grpcServer.GracefulStop()

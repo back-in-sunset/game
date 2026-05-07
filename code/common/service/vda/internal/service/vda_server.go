@@ -9,14 +9,17 @@ import (
 	rpc "vda/rpc"
 )
 
+// VDAServer 实现 VDA gRPC 服务，负责 1v1 通话和语音房间的业务信令。
 type VDAServer struct {
 	rpc.UnimplementedVDAServer
-	calls *callmanager.Manager
-	rooms *roommanager.Manager
+	calls  *callmanager.Manager // 1v1 通话状态机
+	rooms  *roommanager.Manager // 房间管理
+	lkHost string               // LiveKit 服务器地址（返回给客户端用于 WebRTC 连接）
 }
 
-func NewVDAServer(calls *callmanager.Manager, rooms *roommanager.Manager) *VDAServer {
-	return &VDAServer{calls: calls, rooms: rooms}
+// NewVDAServer 创建 gRPC 服务实例。
+func NewVDAServer(calls *callmanager.Manager, rooms *roommanager.Manager, lkHost string) *VDAServer {
+	return &VDAServer{calls: calls, rooms: rooms, lkHost: lkHost}
 }
 
 func toDomainCaller(c *rpc.CallerInfo) domain.CallerInfo {
@@ -43,6 +46,7 @@ func (s *VDAServer) InitiateCall(ctx context.Context, req *rpc.InitiateCallReque
 		State:        string(domain.CallStateRinging),
 		LiveKitRoom:  room,
 		LiveKitToken: token,
+		LiveKitUrl:   s.lkHost,
 	}, nil
 }
 
@@ -55,6 +59,7 @@ func (s *VDAServer) AcceptCall(ctx context.Context, req *rpc.AcceptCallRequest) 
 		CallID:       req.CallID,
 		State:        string(domain.CallStateConnected),
 		LiveKitToken: token,
+		LiveKitUrl:   s.lkHost,
 	}, nil
 }
 
@@ -89,6 +94,7 @@ func (s *VDAServer) JoinVoiceRoom(ctx context.Context, req *rpc.JoinVoiceRoomReq
 		RoomID:       req.RoomID,
 		LiveKitToken: token,
 		Participants: participants,
+		LiveKitUrl:   s.lkHost,
 	}, nil
 }
 
@@ -123,6 +129,7 @@ func (s *VDAServer) HandleVoiceEvent(ctx context.Context, req *rpc.VoiceEventReq
 			State:        string(domain.CallStateRinging),
 			LiveKitToken: token,
 			LiveKitRoom:  room,
+			LiveKitUrl:   s.lkHost,
 			PushTargets:  []int64{req.ReceiverID, caller.UserID},
 		}, nil
 
@@ -137,6 +144,7 @@ func (s *VDAServer) HandleVoiceEvent(ctx context.Context, req *rpc.VoiceEventReq
 			State:        string(domain.CallStateConnected),
 			LiveKitToken: token,
 			LiveKitRoom:  call.LiveKitRoom,
+			LiveKitUrl:   s.lkHost,
 			PushTargets:  []int64{call.CallerID},
 		}, nil
 
@@ -180,6 +188,7 @@ func (s *VDAServer) HandleVoiceEvent(ctx context.Context, req *rpc.VoiceEventReq
 		return &rpc.VoiceEventResponse{
 			LiveKitToken: token,
 			LiveKitRoom:  req.RoomID,
+			LiveKitUrl:   s.lkHost,
 			PushTargets:  participants,
 		}, nil
 

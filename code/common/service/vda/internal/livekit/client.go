@@ -16,12 +16,14 @@ const (
 	roomEmptyLimit = 5 * time.Minute
 )
 
+// Client 封装 LiveKit 服务器 API，负责 token 签发。
 type Client struct {
-	host      string
+	host      string // LiveKit 服务地址
 	apiKey    string
 	apiSecret string
 }
 
+// New 创建 LiveKit 客户端。
 func New(host, apiKey, apiSecret string) *Client {
 	return &Client{
 		host:      host,
@@ -34,8 +36,7 @@ func (c *Client) Host() string {
 	return c.host
 }
 
-// GenerateToken creates a LiveKit access token for a user to join a room.
-// The token grants both publish (microphone) and subscribe permissions.
+// GenerateToken 签发 LiveKit 访问 JWT，授予麦克风发布和订阅权限。
 func (c *Client) GenerateToken(roomName string, userID int64, userName string) (string, error) {
 	identity := userName
 	if identity == "" {
@@ -60,12 +61,12 @@ func (c *Client) GenerateToken(roomName string, userID int64, userName string) (
 	return at.ToJWT()
 }
 
-// RoomNameForCall generates a deterministic room name for a private call.
+// RoomNameForCall 生成 1v1 通话的 LiveKit 房间名（前缀 call_）。
 func RoomNameForCall(callID string) string {
 	return "call_" + callID
 }
 
-// RoomNameForRoom generates a deterministic room name prefix for a voice room.
+// RoomNameForRoom 生成语音房间的 LiveKit 房间名（前缀 room_）。
 func RoomNameForRoom(roomID string) string {
 	return "room_" + roomID
 }

@@ -10,14 +10,18 @@ import (
 	rpc "vda/rpc"
 )
 
+// VoiceHandler 处理客户端发来的语音信令（call_*, room_*, mute_toggle）。
+// 将客户端请求转换为 VDA gRPC 调用，返回 ACK 和推送数据。
 type VoiceHandler struct {
 	vda rpc.VDAClient
 }
 
+// NewVoiceHandler 创建语音信令处理器。
 func NewVoiceHandler(vda rpc.VDAClient) *VoiceHandler {
 	return &VoiceHandler{vda: vda}
 }
 
+// HandleVoiceCommand 解析语音信令 JSON → 构造 gRPC 请求 → 调用 VDA → 返回 ACK + pushData。
 func (h *VoiceHandler) HandleVoiceCommand(ctx context.Context, principal auth.Principal, action string, data json.RawMessage) ([]byte, json.RawMessage, error) {
 	req := &rpc.VoiceEventRequest{
 		Action: action,
@@ -88,6 +92,9 @@ func (h *VoiceHandler) HandleVoiceCommand(ctx context.Context, principal auth.Pr
 	}
 	if resp.LiveKitRoom != "" {
 		ack["livekit_room"] = resp.LiveKitRoom
+	}
+	if resp.LiveKitUrl != "" {
+		ack["livekit_url"] = resp.LiveKitUrl
 	}
 	ackJSON, _ := json.Marshal(ack)
 

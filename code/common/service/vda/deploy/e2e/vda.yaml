@@ -1,0 +1,27 @@
+service_name: vda
+node_id: vda-e2e
+
+listen:
+  rpc: ":9101"
+
+redis:
+  addr: "redis:6379"
+  password: ""
+  db: 0
+  key_prefix: "vda"
+
+livekit:
+  host: "http://livekit:7880"
+  api_key: "devkey"
+  api_secret: "secret"
+
+im:
+  endpoint: ""
+
+discovery:
+  endpoints: []
+  service_prefix: ""
+  lease_ttl_seconds: 10
+
+log:
+  level: debug

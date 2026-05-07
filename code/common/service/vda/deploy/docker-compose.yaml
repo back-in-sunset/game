@@ -1,0 +1,62 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 10
+
+  livekit:
+    image: livekit/livekit-server:latest
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "50000-50200:50000-50200/udp"
+    environment:
+      LIVEKIT_CONFIG: |
+        port: 7880
+        rtc:
+          port_range_start: 50000
+          port_range_end: 50200
+          use_external_ip: false
+        keys:
+          devkey: secret
+        redis:
+          address: redis:6379
+        logging:
+          level: debug
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:7880/version"]
+      interval: 3s
+      timeout: 5s
+      retries: 15
+
+  vda:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    ports:
+      - "9101:9101"
+    volumes:
+      - ./e2e/vda.yaml:/app/etc/vda.yaml:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+      livekit:
+        condition: service_healthy
+
+  e2e:
+    build:
+      context: ..
+      dockerfile: deploy/e2e/Dockerfile
+    depends_on:
+      vda:
+        condition: service_started
+    environment:
+      VDA_ADDR: "vda:9101"
