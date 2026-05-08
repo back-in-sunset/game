@@ -10,7 +10,7 @@ import (
 	"vda/internal/livekit"
 	"vda/internal/roommanager"
 	"vda/internal/storage"
-	rpc "vda/rpc"
+	rpc "vda/rpc/vdaclient"
 
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
@@ -40,12 +40,12 @@ func NewApp(cfg config.Config) (*App, error) {
 	store := storage.NewRedisStore(rdb, cfg.Redis.KeyPrefix)
 
 	return &App{
-		cfg:      cfg,
-		livekit:  lk,
-		store:    store,
-		rdb:      rdb,
-		callMgr:  callmanager.New(lk, store, rdb),
-		roomMgr:  roommanager.New(lk, store, rdb),
+		cfg:     cfg,
+		livekit: lk,
+		store:   store,
+		rdb:     rdb,
+		callMgr: callmanager.New(lk, store, rdb),
+		roomMgr: roommanager.New(lk, store, rdb),
 	}, nil
 }
 

@@ -9,7 +9,7 @@ import (
 	"im/internal/contracts"
 	"im/internal/domain"
 
-	rpc "vda/rpc"
+	rpc "vda/rpc/vdaclient"
 )
 
 type MessageInput struct {

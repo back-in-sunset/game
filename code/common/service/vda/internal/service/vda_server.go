@@ -6,7 +6,7 @@ import (
 	"vda/internal/callmanager"
 	"vda/internal/domain"
 	"vda/internal/roommanager"
-	rpc "vda/rpc"
+	rpc "vda/rpc/vdaclient"
 )
 
 // VDAServer 实现 VDA gRPC 服务，负责 1v1 通话和语音房间的业务信令。

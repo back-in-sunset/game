@@ -221,7 +221,7 @@ func (u *customCQLUserModel) FindOneByEmail(ctx context.Context, email string) (
 	}
 }
 
-func (u *customCQLUserModel) fillUserFields(ctx context.Context, dst *User) error {
+func (u *customCQLUserModel) fillUserFields(_ context.Context, dst *User) error {
 	userQuery := fmt.Sprintf(`select %s from %s where user_id=?`, buildFileds(&User{}), u.TableName())
 	return u.Session.Query(userQuery, dst.UserID).Scan(
 		&dst.UserID,

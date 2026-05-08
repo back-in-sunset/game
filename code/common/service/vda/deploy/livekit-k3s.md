@@ -464,7 +464,115 @@ VDA 与 LiveKit 之间的关键配置对照：
 
 ---
 
-## 8. 部署检查清单
+## 8. 健康检查
+
+### 服务依赖链
+
+```
+IM ──gRPC──▶ VDA ──HTTP──▶ LiveKit
+ │              │              │
+ │              └─── Redis ◀───┘
+ │
+ └── Etcd (服务发现)
+```
+
+健康检查顺序：Redis → LiveKit → VDA → IM
+
+### VDA
+
+VDA 的 gRPC 端口即健康检查端点：
+
+```bash
+# TCP 探测（k3s liveness/readiness）
+kubectl exec -n voice deployment/vda -- nc -zv localhost 9101
+
+# gRPC 健康检查（需 grpc-health-probe 工具）
+grpc-health-probe -addr=vda.voice.svc.cluster.local:9101
+```
+
+k3s 探针配置（已在 Deployment 中包含）：
+```yaml
+livenessProbe:
+  tcpSocket:
+    port: 9101
+  initialDelaySeconds: 5
+  periodSeconds: 10
+readinessProbe:
+  tcpSocket:
+    port: 9101
+  initialDelaySeconds: 3
+  periodSeconds: 5
+```
+
+### LiveKit
+
+```bash
+# API 可用性
+curl -s http://livekit.voice:7880/version
+# 预期: {"version":"1.x.x", ...}
+
+# WebRTC 端口监听
+kubectl exec -n voice deployment/livekit -- ss -tuln | grep 7881
+```
+
+### Redis
+
+```bash
+kubectl exec -n voice deployment/redis -- redis-cli ping
+# 预期: PONG
+```
+
+---
+
+## 9. 监控指标
+
+### VDA 指标（当前状态）
+
+当前 VDA 未内置 Prometheus metrics endpoint。建议在后续版本中增加以下指标：
+
+| 指标名 | 类型 | 说明 |
+|--------|------|------|
+| `vda_calls_active` | Gauge | 当前活跃通话数 |
+| `vda_rooms_active` | Gauge | 当前活跃房间数 |
+| `vda_call_duration_seconds` | Histogram | 通话时长分布 |
+| `vda_token_generate_errors_total` | Counter | Token 签发失败次数 |
+| `vda_redis_errors_total` | Counter | Redis 操作失败次数 |
+| `vda_grpc_requests_total` | Counter | gRPC 请求总数（按 method） |
+| `vda_grpc_request_duration_seconds` | Histogram | gRPC 请求延迟分布 |
+
+实施方式：使用 `go-prometheus` interceptor 自动拦截 gRPC 请求，自定义指标通过 `prometheus.NewRegistry()` 注册。
+
+### LiveKit 指标
+
+LiveKit 内置 Prometheus metrics，可通过 Helm values 开启：
+
+```yaml
+# livekit-values.yaml
+livekit:
+  prometheus:
+    enabled: true
+    port: 9090
+```
+
+### k3s 基础监控
+
+```bash
+# Node 资源
+kubectl top nodes
+
+# Pod 资源
+kubectl top pods -n voice
+
+# LiveKit 日志异常检测
+kubectl logs -n voice deployment/livekit | grep -E "error|ERROR|warn|WARN" | tail -50
+
+# VDA 日志异常检测
+kubectl logs -n voice deployment/vda | grep -E "error|ERROR|panic" | tail -50
+```
+
+---
+
+## 10. 部署检查清单
 
 - [ ] cert-manager 已安装并运行
 - [ ] ClusterIssuer 已就绪（`kubectl get clusterissuer`）
@@ -480,7 +588,7 @@ VDA 与 LiveKit 之间的关键配置对照：
 
 ---
 
-## 9. 常见问题
+## 11. 常见问题
 
 ### 客户端无法连接 LiveKit
 
@@ -488,6 +596,7 @@ VDA 与 LiveKit 之间的关键配置对照：
 1. 确认 LiveKit TLS 证书有效
 2. 确认 UDP 端口段已在 NAT/防火墙放行
 3. 检查 LiveKit 日志：`kubectl logs -n voice deployment/livekit`
+4. 确认客户端使用的 `livekit_url` 为 `wss://` 协议（WebSocket over TLS）
 
 ### VDA 无法签发 token
 
@@ -501,3 +610,28 @@ VDA 与 LiveKit 之间的关键配置对照：
 1. 确认 `rtc_port_range_start/end` 端口段在防火墙已放行
 2. 检查 k3s 节点间网络延迟：`ping <node-ip>`
 3. 考虑启用 TURN 中继（LiveKit 内置 TURN 或外部 coturn）
+
+### Redis 连接失败
+
+**排查**：
+1. 检查 VDA 日志：`kubectl logs -n voice deployment/vda | grep -i redis`
+2. 验证 Redis Service 可达：`kubectl exec -n voice deployment/vda -- nc -zv redis.voice 6379`
+3. 检查 Redis 是否 OOM：`kubectl describe pod -n voice -l app=redis | grep OOM`
+4. 确认 VDA config 中 `redis.addr` 与 Redis Service 名称一致
+
+### IM 无法连接 VDA
+
+**排查**：
+1. 检查 VDA Pod 状态：`kubectl get pods -n voice -l app=vda`
+2. 确认 VDA Service ClusterIP 可达：`kubectl exec -n voice deployment/im -- nc -zv vda.voice 9101`
+3. 检查 IM 配置中 `vda_endpoint` 是否为 `vda.voice.svc.cluster.local:9101`
+4. 查看 IM 日志中 gRPC 连接错误
+5. 确认 VDA 没有达到资源限制被 throttling：`kubectl top pods -n voice -l app=vda`
+
+### LiveKit 房间不释放
+
+长时间空闲的 LiveKit 房间应自动销毁。如果房间堆积：
+
+1. 检查 LiveKit 日志中 `room` 相关记录
+2. 确认 LiveKit Redis 配置正确（房间状态存储在 Redis）
+3. 手动清理：`kubectl exec -n voice deployment/redis -- redis-cli KEYS "lk:*" | wc -l`

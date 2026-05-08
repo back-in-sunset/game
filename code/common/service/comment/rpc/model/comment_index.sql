@@ -11,7 +11,7 @@ CREATE TABLE `comment_index` (
   `like_count` int(11) NOT NULL DEFAULT '0' COMMENT '点赞数',
   `hate_count` int(11) NOT NULL DEFAULT '0' COMMENT '点踩数',
   `state` tinyint(3)  NOT NULL DEFAULT '0' COMMENT '0-正常, 1-隐藏',
-  `attrs` int(11) NOT NULL DEFAULT '0' COMMENT '属性(bit 0-运营置顶, 1-owner置顶 2-大数据)',
+  `attrs` int(11) NOT NULL DEFAULT '0' COMMENT '属性(bit位 0-运营置顶, 1-owner置顶 2-大数据)',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),

@@ -17,7 +17,7 @@ import (
 	"im/internal/transport/tcp"
 	"im/internal/transport/ws"
 
-	rpc "vda/rpc"
+	rpc "vda/rpc/vdaclient"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

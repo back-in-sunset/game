@@ -10,7 +10,7 @@ import (
 	"im/internal/auth"
 	"im/internal/domain"
 
-	rpc "vda/rpc"
+	rpc "vda/rpc/vdaclient"
 
 	"google.golang.org/grpc"
 )

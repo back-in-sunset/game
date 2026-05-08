@@ -7,7 +7,7 @@ import (
 
 	"im/internal/auth"
 
-	rpc "vda/rpc"
+	rpc "vda/rpc/vdaclient"
 )
 
 // VoiceHandler 处理客户端发来的语音信令（call_*, room_*, mute_toggle）。
