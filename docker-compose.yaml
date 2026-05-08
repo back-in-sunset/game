@@ -158,7 +158,7 @@ services:
     environment:
       - TZ=${TZ}
     volumes:
-      - ./deploy/docker/prometheus/prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml # 将 prometheus 配置文件挂载到容器里
+      - ./deploy/docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml # 将 prometheus 配置文件挂载到容器里
     ports:
       - "${PROMETHEUS_PORT}:9090" # 设置容器9090端口映射指定宿主机端口，用于宿主机访问可视化web
     networks:
@@ -184,6 +184,28 @@ services:
     ports:
       - "${JAEGER_PORT}:16686" # 设置容器16686端口映射指定宿主机端口，用于宿主机访问可视化web
       - "14268:14268"
+    networks:
+      - backend
+    restart: always
+
+  livekit:
+    build:
+      context: ./deploy/docker/livekit
+    container_name: livekit
+    environment:
+      - TZ=${TZ}
+      - LIVEKIT_PORT=${LIVEKIT_PORT}
+      - LIVEKIT_RTC_PORT_RANGE_START=${LIVEKIT_RTC_START}
+      - LIVEKIT_RTC_PORT_RANGE_END=${LIVEKIT_RTC_END}
+      - LIVEKIT_KEYS=${LIVEKIT_KEYS}
+      - LIVEKIT_REDIS_ADDRESS=${LIVEKIT_REDIS_ADDRESS}
+      - LIVEKIT_LOGGING_LEVEL=${LIVEKIT_LOGGING_LEVEL}
+    ports:
+      - "${LIVEKIT_API_PORT}:7880"
+      - "${LIVEKIT_WS_PORT}:7881"
+      - "${LIVEKIT_RTC_START}-${LIVEKIT_RTC_END}:${LIVEKIT_RTC_START}-${LIVEKIT_RTC_END}/udp"
+    depends_on:
+      - redis
     networks:
       - backend
     restart: always

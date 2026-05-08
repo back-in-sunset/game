@@ -87,3 +87,25 @@ services:
     networks:
       - backend
     restart: always
+
+  livekit:
+    build:
+      context: ./deploy/docker/livekit
+    container_name: livekit
+    environment:
+      - TZ=${TZ}
+      - LIVEKIT_PORT=${LIVEKIT_PORT}
+      - LIVEKIT_RTC_PORT_RANGE_START=${LIVEKIT_RTC_START}
+      - LIVEKIT_RTC_PORT_RANGE_END=${LIVEKIT_RTC_END}
+      - LIVEKIT_KEYS=${LIVEKIT_KEYS}
+      - LIVEKIT_REDIS_ADDRESS=${LIVEKIT_REDIS_ADDRESS}
+      - LIVEKIT_LOGGING_LEVEL=${LIVEKIT_LOGGING_LEVEL}
+    ports:
+      - "${LIVEKIT_API_PORT}:7880"
+      - "${LIVEKIT_WS_PORT}:7881"
+      - "${LIVEKIT_RTC_START}-${LIVEKIT_RTC_END}:${LIVEKIT_RTC_START}-${LIVEKIT_RTC_END}/udp"
+    depends_on:
+      - redis
+    networks:
+      - backend
+    restart: always

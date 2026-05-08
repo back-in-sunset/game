@@ -5,7 +5,7 @@ services:
     environment:
       - TZ=${TZ}
     volumes:
-      - ./deploy/docker/prometheus/prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml
+      - ./deploy/docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "${PROMETHEUS_PORT}:9090"
     networks:
