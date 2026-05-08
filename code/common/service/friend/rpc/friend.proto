@@ -1,0 +1,138 @@
+syntax = "proto3";
+package friendclient;
+option go_package = "/friend";
+
+service Friend {
+  // 好友申请
+  rpc SendRequest(SendRequestReq) returns (SendRequestResp);
+  rpc AcceptRequest(AcceptRequestReq) returns (AcceptRequestResp);
+  rpc RejectRequest(RejectRequestReq) returns (RejectRequestResp);
+  rpc ListRequests(ListRequestsReq) returns (ListRequestsResp);
+
+  // 好友管理
+  rpc RemoveFriend(RemoveFriendReq) returns (RemoveFriendResp);
+  rpc ListFriends(ListFriendsReq) returns (ListFriendsResp);
+  rpc CheckFriendship(CheckFriendshipReq) returns (CheckFriendshipResp);
+
+  // 黑名单
+  rpc BlockUser(BlockUserReq) returns (BlockUserResp);
+  rpc UnblockUser(UnblockUserReq) returns (UnblockUserResp);
+  rpc ListBlockedUsers(ListBlockedUsersReq) returns (ListBlockedUsersResp);
+}
+
+// ========== 好友申请 ==========
+
+message SendRequestReq {
+  int64 from_user_id = 1;
+  int64 to_user_id = 2;
+  string domain = 3;
+  string tenant_id = 4;
+  string message = 5;
+}
+
+message SendRequestResp {
+  int64 request_id = 1;
+}
+
+message AcceptRequestReq {
+  int64 request_id = 1;
+  int64 user_id = 2;
+}
+
+message AcceptRequestResp {}
+
+message RejectRequestReq {
+  int64 request_id = 1;
+  int64 user_id = 2;
+}
+
+message RejectRequestResp {}
+
+message ListRequestsReq {
+  int64 user_id = 1;
+  int32 status = 2;     // 0=pending, 1=accepted, 2=rejected
+  int32 offset = 3;
+  int32 limit = 4;
+}
+
+message FriendRequestInfo {
+  int64 request_id = 1;
+  int64 from_user_id = 2;
+  int64 to_user_id = 3;
+  string message = 4;
+  int32 status = 5;
+  int64 created_at = 6;
+}
+
+message ListRequestsResp {
+  repeated FriendRequestInfo requests = 1;
+  int64 total = 2;
+}
+
+// ========== 好友管理 ==========
+
+message RemoveFriendReq {
+  int64 user_id = 1;
+  int64 friend_id = 2;
+  string domain = 3;
+  string tenant_id = 4;
+}
+
+message RemoveFriendResp {}
+
+message ListFriendsReq {
+  int64 user_id = 1;
+  string domain = 2;
+  string tenant_id = 3;
+  int32 offset = 4;
+  int32 limit = 5;
+}
+
+message ListFriendsResp {
+  repeated int64 friend_ids = 1;
+  int64 total = 2;
+}
+
+message CheckFriendshipReq {
+  int64 user_id = 1;
+  int64 target_id = 2;
+  string domain = 3;
+  string tenant_id = 4;
+}
+
+message CheckFriendshipResp {
+  bool is_friend = 1;
+}
+
+// ========== 黑名单 ==========
+
+message BlockUserReq {
+  int64 user_id = 1;
+  int64 blocked_user_id = 2;
+  string domain = 3;
+  string tenant_id = 4;
+}
+
+message BlockUserResp {}
+
+message UnblockUserReq {
+  int64 user_id = 1;
+  int64 blocked_user_id = 2;
+  string domain = 3;
+  string tenant_id = 4;
+}
+
+message UnblockUserResp {}
+
+message ListBlockedUsersReq {
+  int64 user_id = 1;
+  string domain = 2;
+  string tenant_id = 3;
+  int32 offset = 4;
+  int32 limit = 5;
+}
+
+message ListBlockedUsersResp {
+  repeated int64 blocked_user_ids = 1;
+  int64 total = 2;
+}
