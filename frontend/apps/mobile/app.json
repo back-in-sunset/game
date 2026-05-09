@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "Game Mobile",
+    "slug": "game-mobile",
+    "scheme": "game-mobile",
+    "platforms": ["ios", "android"],
+    "orientation": "portrait",
+    "plugins": [],
+    "extra": {
+      "eas": {
+        "projectId": "00000000-0000-0000-0000-000000000000"
+      }
+    }
+  }
+}
+
