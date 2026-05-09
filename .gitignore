@@ -31,5 +31,8 @@ go.work.sum
 # Editor/IDE
 .idea/
 .vscode/
+
+# Claude Code
+.omc/
 # .idea/
 # .vscode/

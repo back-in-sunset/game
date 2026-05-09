@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"go build ./... 2>&1\",\"timeout\":120000,\"description\":\"Build friend service\"}",
-  "error": "Exit code 1\ninternal/friendcache/cache.go:1:1: expected 'package', found 'EOF'",
-  "timestamp": "2026-05-07T08:07:20.618Z",
-  "retry_count": 1
-}
