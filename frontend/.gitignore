@@ -5,6 +5,4 @@ dist/
 web-build/
 test-results/
 *.tsbuildinfo
-**/src/**/*.js
-**/src/**/*.d.ts
 .omc/
