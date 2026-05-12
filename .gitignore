@@ -36,3 +36,5 @@ go.work.sum
 .omc/
 # .idea/
 # .vscode/
+scripts
+worktrees

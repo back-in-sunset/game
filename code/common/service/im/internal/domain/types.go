@@ -20,6 +20,7 @@ var validMessageTypes = []string{
 	"biz_push",
 	"call_signal",
 	"room_signal",
+	"room_message",
 }
 
 type Scope struct {

@@ -8,6 +8,15 @@ import {
 import type { Conversation, Message } from "@game/shared";
 import { useVoiceStore } from "./voiceStore";
 
+export type RoomMessageData = {
+  id: string;
+  text: string;
+  senderIdentity: string;
+  displayName: string;
+  roomId: string;
+  time: string;
+};
+
 type IMState = {
   client: IMClient | null;
   status: IMClientStatus;
@@ -15,6 +24,8 @@ type IMState = {
   conversations: Conversation[];
   messages: Message[];
   activeConversationId: string | null;
+  onRoomMessage: ((msg: RoomMessageData) => void) | null;
+  onRoomHistory: ((messages: RoomMessageData[]) => void) | null;
 
   connect: (url: string, auth: IMAuthRequest) => Promise<void>;
   disconnect: () => void;
@@ -22,9 +33,26 @@ type IMState = {
   setActiveConversation: (id: string) => void;
   sendMessage: (receiver: number, text: string) => void;
   sendVoiceAction: (action: string, data: Record<string, unknown>) => void;
+  sendRoomMessage: (roomId: string, text: string, identity: string, displayName: string) => void;
+  loadRoomHistory: (roomId: string) => Promise<void>;
+  setOnRoomMessage: (fn: ((msg: RoomMessageData) => void) | null) => void;
+  setOnRoomHistory: (fn: ((msgs: RoomMessageData[]) => void) | null) => void;
   addMessage: (msg: Message) => void;
   setStatus: (status: IMClientStatus, error?: string) => void;
 };
+
+function makeRoomMessage(env: Record<string, unknown>): RoomMessageData | null {
+  const payload = env.payload as Record<string, unknown> | undefined;
+  if (!payload?.room_id || !payload?.text) return null;
+  return {
+    id: `room-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    text: String(payload.text),
+    senderIdentity: String(payload.sender_identity ?? ""),
+    displayName: String(payload.display_name ?? payload.sender_identity ?? ""),
+    roomId: String(payload.room_id),
+    time: new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
+  };
+}
 
 export const useIMStore = create<IMState>((set, get) => ({
   client: null,
@@ -33,12 +61,15 @@ export const useIMStore = create<IMState>((set, get) => ({
   conversations: [],
   messages: [],
   activeConversationId: null,
+  onRoomMessage: null,
+  onRoomHistory: null,
 
   loadConversations: (convs) => set({ conversations: convs }),
 
   connect: async (url, auth: IMAuthRequest) => {
     console.log("[imStore] connect called, url:", url, "token len:", auth.token.length, "token prefix:", auth.token.slice(0, 20) + "...");
     const client = createIMClient(url);
+    set({ client }); // set early so loadRoomHistory can use it when status flips to "connected"
 
     client.onStatusChange((status) =>
       set({ status, error: status === "error" ? "connection lost" : "" }),
@@ -75,11 +106,34 @@ export const useIMStore = create<IMState>((set, get) => ({
             return;
           }
 
+          // offline batch — drain on login, route room messages
+          if (data.type === "offline_batch" && Array.isArray(data.messages)) {
+            const roomMsgs: RoomMessageData[] = [];
+            (data.messages as Record<string, unknown>[]).forEach((env) => {
+              const rm = makeRoomMessage(env);
+              if (rm) roomMsgs.push(rm);
+            });
+            if (roomMsgs.length > 0) {
+              const onRoomHistory = get().onRoomHistory;
+              if (onRoomHistory) onRoomHistory(roomMsgs);
+            }
+            return;
+          }
+
           // server-pushed message (envelope format from router)
           if (data.type === "message" && data.envelope) {
-            const env = data.envelope;
-            const sender = env.sender;
-            const text = env.payload?.text ?? JSON.stringify(env.payload ?? {});
+            const env = data.envelope as Record<string, unknown>;
+
+            // room message — route to room callback instead of conversation
+            if (env.msg_type === "room_message") {
+              const rm = makeRoomMessage(env);
+              if (rm) get().onRoomMessage?.(rm);
+              return;
+            }
+
+            // direct message
+            const sender = env.sender as number;
+            const text = (env.payload as Record<string, unknown>)?.text as string ?? JSON.stringify(env.payload ?? {});
             const msg: Message = {
               id: `push-${Date.now()}`,
               text,
@@ -104,12 +158,12 @@ export const useIMStore = create<IMState>((set, get) => ({
           // legacy flat format
           const msg: Message = {
             id: `push-${Date.now()}`,
-            text: data.payload?.text ?? packet.body.slice(0, 200),
+            text: (data.payload as Record<string, unknown>)?.text as string ?? packet.body.slice(0, 200),
             mine: false,
             time: new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
           };
           set((s) => {
-            const convId = s.conversations.find((c) => c.userId === data.sender)?.id;
+            const convId = s.conversations.find((c) => c.userId === (data.sender as number))?.id;
             const isActive = convId === s.activeConversationId;
             return {
               conversations: isActive
@@ -128,7 +182,6 @@ export const useIMStore = create<IMState>((set, get) => ({
       if (packet.op === 5 || packet.op === 6) {
         try {
           const data = JSON.parse(packet.body);
-          // send_ack — silently update seq tracking, don't spam chat
           if (data.type === "send_ack") return;
           set((s) => ({
             messages: [
@@ -149,10 +202,12 @@ export const useIMStore = create<IMState>((set, get) => ({
 
     try {
       await client.connect(auth);
-      set({ client, error: "" });
+      set({ error: "" });
     } catch (err) {
-      set({ error: err instanceof Error ? err.message : "failed to connect" });
-      throw err;
+      // Only clear client if it's still the one we created (Strict Mode may have replaced it)
+      if (get().client === client) {
+        set({ client: null, error: err instanceof Error ? err.message : "failed to connect" });
+      }
     }
   },
 
@@ -193,6 +248,47 @@ export const useIMStore = create<IMState>((set, get) => ({
   sendVoiceAction: (action, data) => {
     get().client?.send(action, data);
   },
+
+  sendRoomMessage: (roomId, text, identity, displayName) => {
+    get().client?.send("send", {
+      receiver: 1,
+      msg_type: "room_message",
+      payload: {
+        text,
+        room_id: roomId,
+        sender_identity: identity,
+        display_name: displayName,
+      },
+    });
+  },
+
+  loadRoomHistory: async (roomId) => {
+    const client = get().client;
+    if (!client) return;
+    try {
+      const data = await client.request(
+        "list_messages",
+        { peer_user_id: 1, limit: 100 },
+        "message_list",
+      );
+      const messages = (data.messages as Record<string, unknown>[]) ?? [];
+      const roomMsgs: RoomMessageData[] = [];
+      messages.forEach((env) => {
+        if (env.msg_type === "room_message") {
+          const rm = makeRoomMessage(env);
+          if (rm && rm.roomId === roomId) roomMsgs.push(rm);
+        }
+      });
+      const onRoomHistory = get().onRoomHistory;
+      if (onRoomHistory) onRoomHistory(roomMsgs);
+    } catch (e) {
+      console.warn("[imStore] loadRoomHistory failed:", e);
+    }
+  },
+
+  setOnRoomMessage: (fn) => set({ onRoomMessage: fn }),
+
+  setOnRoomHistory: (fn) => set({ onRoomHistory: fn }),
 
   addMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
 

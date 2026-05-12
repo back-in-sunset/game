@@ -4,6 +4,7 @@ import { Card, Button, Badge, Composer, MessageBubble } from "@game/ui";
 import { generateLiveKitToken } from "@game/api";
 import { useRoomStore } from "../store/roomStore";
 import { useSettingsStore } from "../store/settingsStore";
+import { useIMStore, type RoomMessageData } from "../store/imStore";
 
 const DEMO_API_KEY = "devkey";
 const DEMO_API_SECRET = "this-is-a-32-character-secret-key!!";
@@ -26,7 +27,7 @@ function getRoomSize(roomId: string): number {
 type RoomMessage = {
   id: string;
   text: string;
-  sender: string;
+  senderIdentity: string;
   time: string;
 };
 
@@ -41,6 +42,23 @@ function saveMessages(roomId: string, msgs: RoomMessage[]): void {
   sessionStorage.setItem(`room-msgs-${roomId}`, JSON.stringify(msgs.slice(-200)));
 }
 
+function getDisplayName(roomId: string, identity: string): string {
+  return localStorage.getItem(`room-dn-${roomId}-${identity}`) || identity;
+}
+
+function setDisplayName(roomId: string, identity: string, name: string): void {
+  localStorage.setItem(`room-dn-${roomId}-${identity}`, name);
+}
+
+function roomDataToMessage(data: RoomMessageData): RoomMessage {
+  return {
+    id: data.id,
+    text: data.text,
+    senderIdentity: data.senderIdentity,
+    time: data.time,
+  };
+}
+
 export function DemoRoomPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
@@ -49,16 +67,29 @@ export function DemoRoomPage() {
   const { participants, duration, error, lk, joinRoom, leaveRoom, toggleMute, tickDuration, setError } =
     useRoomStore();
 
+  const {
+    status: imStatus,
+    sendRoomMessage,
+    loadRoomHistory,
+    setOnRoomMessage,
+    setOnRoomHistory,
+  } = useIMStore();
+
   const [connecting, setConnecting] = useState(true);
   const [messages, setMessages] = useState<RoomMessage[]>(() => (roomId ? loadMessages(roomId) : []));
   const [copied, setCopied] = useState(false);
+  const [editingName, setEditingName] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const myIdentity = useRef(getDemoIdentity());
   const roomSizeRef = useRef(5);
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
 
-  // Connect to room on mount
+  // display name for current user in this room
+  const myDisplayName = roomId ? getDisplayName(roomId, myIdentity.current) : myIdentity.current;
+  const [draftName, setDraftName] = useState(myDisplayName);
+
+  // Connect to LiveKit room on mount
   useEffect(() => {
     if (!roomId) return;
 
@@ -94,6 +125,50 @@ export function DemoRoomPage() {
     };
   }, [lk, tickDuration]);
 
+  // IM room message listener — real-time
+  useEffect(() => {
+    if (!roomId) return;
+    setOnRoomMessage((data: RoomMessageData) => {
+      if (data.roomId !== roomId) return;
+      const msg = roomDataToMessage(data);
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === msg.id)) return prev;
+        // dedup by sender + text (self-message echo from server push)
+        if (prev.some((m) => m.senderIdentity === msg.senderIdentity && m.text === msg.text)) return prev;
+        const next = [...prev, msg];
+        saveMessages(roomId, next);
+        return next;
+      });
+    });
+    return () => setOnRoomMessage(null);
+  }, [roomId, setOnRoomMessage]);
+
+  // Load room history via IM when connected
+  useEffect(() => {
+    if (!roomId || imStatus !== "connected") return;
+    loadRoomHistory(roomId);
+  }, [roomId, imStatus, loadRoomHistory]);
+
+  // IM history callback — merges history from server into local state
+  useEffect(() => {
+    if (!roomId) return;
+    setOnRoomHistory((roomMsgs: RoomMessageData[]) => {
+      const histMsgs = roomMsgs
+        .filter((d) => d.roomId === roomId)
+        .map(roomDataToMessage);
+      if (histMsgs.length === 0) return;
+      setMessages((prev) => {
+        const existingIds = new Set(prev.map((m) => m.id));
+        const newMsgs = histMsgs.filter((m) => !existingIds.has(m.id));
+        if (newMsgs.length === 0) return prev;
+        const next = [...newMsgs.reverse(), ...prev];
+        saveMessages(roomId, next);
+        return next;
+      });
+    });
+    return () => setOnRoomHistory(null);
+  }, [roomId, setOnRoomHistory]);
+
   const handleCopyLink = useCallback(() => {
     const url = window.location.href;
     navigator.clipboard.writeText(url).then(() => {
@@ -108,19 +183,34 @@ export function DemoRoomPage() {
   }, [leaveRoom, navigate]);
 
   const handleSend = useCallback((text: string) => {
+    if (!roomId) return;
+    const msg: RoomMessage = {
+      id: `me-${Date.now()}`,
+      text,
+      senderIdentity: myIdentity.current,
+      time: new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
+    };
     setMessages((prev) => {
-      const next = [
-        ...prev,
-        {
-          id: `msg-${Date.now()}`,
-          text,
-          sender: myIdentity.current,
-          time: new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
-        },
-      ];
-      if (roomId) saveMessages(roomId, next);
+      const next = [...prev, msg];
+      saveMessages(roomId, next);
       return next;
     });
+    sendRoomMessage(roomId, text, myIdentity.current, myDisplayName);
+  }, [roomId, sendRoomMessage, myDisplayName]);
+
+  const handleRenameConfirm = useCallback(() => {
+    const name = draftName.trim();
+    if (!name || !roomId) return;
+    setDisplayName(roomId, myIdentity.current, name);
+    setEditingName(false);
+    // Force re-render to update displayed names
+    setMessages((prev) => [...prev]);
+  }, [draftName, roomId]);
+
+  const resolveDisplayName = useCallback((identity: string): string => {
+    if (!roomId) return identity;
+    if (identity === myIdentity.current) return getDisplayName(roomId, identity);
+    return identity; // other users' identities shown as-is (could resolve from cache)
   }, [roomId]);
 
   const isMuted = lk?.isMuted ?? false;
@@ -138,7 +228,7 @@ export function DemoRoomPage() {
         </p>
       </header>
 
-      {/* Invite bar — always visible */}
+      {/* Invite bar */}
       <div style={{
         padding: "20px 24px",
         background: "linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #6366f1 100%)",
@@ -214,7 +304,43 @@ export function DemoRoomPage() {
           {String(Math.floor(duration / 60)).padStart(2, "0")}:
           {String(duration % 60).padStart(2, "0")}
         </span>
+        <span style={{ fontSize: 13, color: "#cbd5e1", fontWeight: 300 }}>|</span>
+        {/* Display name editor */}
+        {editingName ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <input
+              value={draftName}
+              onChange={(e) => setDraftName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleRenameConfirm(); if (e.key === "Escape") setEditingName(false); }}
+              style={{
+                width: 120, padding: "4px 8px", borderRadius: 6, border: "2px solid #3b82f6",
+                fontSize: 13, outline: "none",
+              }}
+              autoFocus
+            />
+            <button onClick={handleRenameConfirm} style={{ padding: "4px 10px", borderRadius: 6, border: "none", background: "#3b82f6", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+              确定
+            </button>
+            <button onClick={() => setEditingName(false)} style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", color: "#64748b", fontSize: 12, cursor: "pointer" }}>
+              取消
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => { setDraftName(myDisplayName); setEditingName(true); }}
+            style={{
+              padding: "4px 12px", borderRadius: 6, border: "1px dashed #cbd5e1",
+              background: "#f8fafc", color: "#475569", fontSize: 13, cursor: "pointer",
+            }}
+            title="点击改名"
+          >
+            {myDisplayName} ✎
+          </button>
+        )}
         <div style={{ flex: 1 }} />
+        <Badge tone={imStatus === "connected" ? "success" : "warning"}>
+          IM: {imStatus === "connected" ? "已连接" : imStatus}
+        </Badge>
         <button
           onClick={toggleMute}
           style={{
@@ -274,21 +400,27 @@ export function DemoRoomPage() {
 
         {/* Right: Chat */}
         <div className="feed" style={{ flex: 1 }}>
-          <Card title="房间消息" subtitle="消息仅当前房间可见">
+          <Card title="房间消息" subtitle="消息通过IM同步，跨设备可见">
             <div className="chatFeed" style={{ minHeight: 240 }}>
               {messages.map((m) => (
                 <MessageBubble
                   key={m.id}
                   message={{
                     id: m.id,
-                    text: `${m.sender}: ${m.text}`,
-                    mine: m.sender === myIdentity.current,
+                    text: `${resolveDisplayName(m.senderIdentity)}: ${m.text}`,
+                    mine: m.senderIdentity === myIdentity.current,
                     time: m.time,
                   }}
                 />
               ))}
               {messages.length === 0 ? (
-                <div className="emptyState">发送第一条消息开始交流</div>
+                <div className="emptyState">
+                  {imStatus === "connected"
+                    ? "发送第一条消息开始交流 — 消息通过IM同步给房间其他人"
+                    : imStatus === "connecting"
+                    ? "正在连接IM服务..."
+                    : "IM未连接，消息无法同步"}
+                </div>
               ) : null}
             </div>
             <Composer placeholder="输入消息..." onSend={handleSend} />

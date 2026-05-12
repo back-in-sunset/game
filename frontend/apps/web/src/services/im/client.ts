@@ -62,6 +62,29 @@ export class IMClient {
     this.sendPacket(encodeSendFrame(this.seq++, { action, data }));
   }
 
+  async request(action: string, data: Record<string, unknown>, matchType: string, timeoutMs = 8000): Promise<Record<string, unknown>> {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.listeners.delete(handler);
+        reject(new Error(`IM request "${action}" timed out after ${timeoutMs}ms`));
+      }, timeoutMs);
+
+      const handler = (packet: IMPacket) => {
+        try {
+          const parsed = JSON.parse(packet.body);
+          if (parsed.type === matchType) {
+            clearTimeout(timer);
+            this.listeners.delete(handler);
+            resolve(parsed);
+          }
+        } catch { /* ignore non-JSON */ }
+      };
+
+      this.listeners.add(handler);
+      this.sendPacket(encodeSendFrame(this.seq++, { action, data }));
+    });
+  }
+
   private sendPacket(frame: Uint8Array<ArrayBuffer>): void {
     if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
       throw new Error("IM websocket is not connected");

@@ -66,6 +66,29 @@ export type IMPacket = {
   body: string;
 };
 
+export type IMRoomMessagePayload = {
+  text: string;
+  room_id: string;
+  sender_identity: string;
+  display_name: string;
+};
+
+export type IMMessageEnvelope = {
+  domain: string;
+  scope: IMScope;
+  sender: number;
+  receiver: number;
+  msg_type: string;
+  seq: number;
+  payload: IMRoomMessagePayload;
+  sent_at: string;
+};
+
+export type IMMessageListReply = {
+  type: "message_list";
+  messages: IMMessageEnvelope[];
+};
+
 export { generateLiveKitToken } from "./livekit/token";
 
 export {
