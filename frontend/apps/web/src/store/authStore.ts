@@ -18,10 +18,10 @@ type AuthState = {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
-      baseUrl: "",
-      token: "",
-      userId: null,
-      nickname: "",
+      baseUrl: "http://localhost:8080",
+      token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODEwNzk1MDUsImlhdCI6MTc3ODQ4NzUwNSwidWlkIjoxfQ.33SwLTGOs9TFGLN7NyC7TtiNbsGtAJYqKU5QcPBNifHM3UrChj6NJ8AurvuEEnY7qTZZsIozZLmOdgVWXOsMRVzh9R-wfxGVGDXXrFB8YCmqZjkDaaeHkBes0GvXt_P34SSLYYwpubCB9KVKbujeg4oFLnhTKEin_FomzLWeq_3qtis3I9zBl-j3qZbf0GgCzNosMhvtfzKWqMjXcUkpYR-SAmT-9i-U5unJCEEe4L5Y8aur1pBWHowhkxpxHNo-MLQWpreqAYdVosxvzH0r-cgSmSETSorgDegjZF6GeEdVA7bPCMRGaiU4T9Sg1hVYrvla41VoEFvE_1EHsp_6LQ",
+      userId: 1,
+      nickname: "dev",
 
       login: (baseUrl, token) => {
         resetAPIs();
@@ -38,6 +38,6 @@ export const useAuthStore = create<AuthState>()(
 
       isLoggedIn: () => get().token.length > 0,
     }),
-    { name: "vda-auth", partialize: (s) => ({ baseUrl: s.baseUrl, userId: s.userId, nickname: s.nickname }) },
+    { name: "vda-auth-v2", partialize: (s) => ({ baseUrl: s.baseUrl, token: s.token, userId: s.userId, nickname: s.nickname }) },
   ),
 );

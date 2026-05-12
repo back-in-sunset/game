@@ -66,6 +66,8 @@ export type IMPacket = {
   body: string;
 };
 
+export { generateLiveKitToken } from "./livekit/token";
+
 export {
   HttpClient,
   HttpError,

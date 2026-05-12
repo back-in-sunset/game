@@ -1,0 +1,10 @@
+port: 7880
+rtc:
+  node_ip: 127.0.0.1
+  port_range_start: 50000
+  port_range_end: 50100
+  use_external_ip: false
+keys:
+  devkey: this-is-a-32-character-secret-key!!
+logging:
+  level: debug

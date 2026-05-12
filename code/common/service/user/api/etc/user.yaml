@@ -3,11 +3,11 @@ Host: 0.0.0.0
 Port: 8001
 
 Mysql:
-  DataSource: root:123456@tcp(192.168.10.16:3306)/user?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
+  DataSource: root:123456@tcp(127.0.0.1:3306)/user?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
 
 CacheRedis:
-  - Host: 192.168.10.16:6379
-    Pass: "123456"
+  - Host: 127.0.0.1:6379
+    Pass: ""
     Type: node
 
 Salt: DADSFHIASDFPTryzICwd7qnJa
@@ -37,13 +37,11 @@ Auth:
 UserRpc:
   Etcd:
     Hosts:
-      - 192.168.10.16:2379
-      - 192.168.10.16:12379
-      - 192.168.10.16:22379
+      - 127.0.0.1:2379
     Key: user.rpc
 
 Telemetry:
   Name: "user-api"
-  Endpoint: "http://192.168.10.16:14268/api/traces"
+  Endpoint: "http://127.0.0.1:14268/api/traces"
   Sampler: 1.0
   Batcher: "jaeger"

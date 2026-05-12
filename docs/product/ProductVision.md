@@ -1,8 +1,8 @@
 # 产品总纲
 
 **产品名称**：Game Backend Cloud  
-**文档版本**：v0.1  
-**更新时间**：2026-04-27  
+**文档版本**：v0.2  
+**更新时间**：2026-05-09（基于实际代码状态修订）  
 **文档目标**：定义整个平台的产品形态、核心能力、租户模型和分阶段路线，作为后续各版本 PRD 的上位文档。  
 
 ---
@@ -374,18 +374,21 @@ Game Backend Cloud 是一个以游戏为核心的 SaaS 化后端平台，面向�
 
 ## 9. 当前仓库映射
 
-基于当前仓库，已经有一定基础的模块：
+基于当前仓库（2026-05-09），已有实际运行能力的模块：
 
-- 用户服务：`code/common/service/user`
-- 评论服务：`code/common/service/comment`
-- IM 基础代码：`code/common/service/im`
-- 部署拆分：`deploy/docker`
+- 用户服务：`code/common/service/user` — 注册/登录/鉴权/用户信息，完整闭环
+- 评论服务：`code/common/service/comment` — CRUD + 列表，基本闭环
+- IM 服务：`code/common/service/im` — WebSocket/TSL 鉴权/单聊/离线消息，基础闭环
+- 好友服务：`code/common/service/friend` — go-zero RPC 基础 CRUD
+- VDA 语音服务：`code/common/service/vda` — LiveKit 集成 + gRPC 信令
+- 前端：`frontend/` — pnpm monorepo（Web SPA + Mobile 壳 + 4 共享包）
+- 部署拆分：`deploy/docker` — Docker Compose 按需组合
 
-因此当前最现实的推进方式是：
+当前最现实的推进方式：
 
-1. 先把现有 `user/comment/im` 变成稳定基础模块
+1. 先补齐前端最大体验缺口（LiveKit 集成、好友 UI）
 2. 再引入租户、项目和后台模型
-3. 最后再建设实时游戏层
+3. 最后再建设实时游戏层（匹配/房间/战斗）
 
 ---
 

@@ -19,6 +19,19 @@ export type Conversation = {
 
 export const conversations: Conversation[] = [
   {
+    id: "me",
+    userId: 1,
+    title: "自己 (多设备)",
+    preview: "当前设备的消息会同步到其他设备",
+    subtitle: "跨设备消息同步",
+    online: true,
+    statusText: "IM 已连接，消息可在多个标签页同步",
+    messages: [
+      { id: "s1", text: "打开两个浏览器标签页，发消息试试看", time: "17:00" },
+    ],
+    unread: 0,
+  },
+  {
     id: "alice",
     userId: 2002,
     title: "Alice",

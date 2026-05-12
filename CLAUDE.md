@@ -63,3 +63,8 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+## 5. 重要
+先读取docs查看产品文档
+再制定在plan文件夹制定plan
+编写代码前要提前讨论确认

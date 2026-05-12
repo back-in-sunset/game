@@ -1,53 +1,94 @@
-import { useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
-import { Card, Badge, Composer, MessageBubble, Divider } from "@game/ui";
-import { useIMStore } from "../store/imStore";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { Avatar, Badge, Button, Card, Composer, ConversationRow, Divider, MessageBubble } from "@game/ui";
 import { conversations } from "@game/shared";
+import { useIMStore } from "../store/imStore";
+import { WebShell } from "../components/WebShell";
 
 export function ChatPage() {
   const { userId } = useParams<{ userId: string }>();
-  const { messages, sendMessage, setActiveConversation } = useIMStore();
+  const [query, setQuery] = useState("");
+  const { messages, sendMessage, setActiveConversation, conversations: storeConvs, loadConversations } = useIMStore();
 
-  const conv = conversations.find((c) => c.userId === Number(userId));
+  useEffect(() => {
+    loadConversations(conversations);
+  }, [loadConversations]);
+
+  const conv = useMemo(
+    () => storeConvs.find((item) => item.userId === Number(userId)) ?? conversations.find((item) => item.userId === Number(userId)),
+    [storeConvs, userId],
+  );
 
   useEffect(() => {
     if (conv) setActiveConversation(conv.id);
-  }, [conv?.id]);
+  }, [conv?.id, setActiveConversation]);
 
   if (!conv) {
     return (
-      <div className="shell">
-        <main className="main">
+      <WebShell title="聊天框" subtitle="未找到对话" activeTab="chat">
+        <section className="feed">
           <Card title="未找到对话" subtitle={`userId: ${userId}`}>
-            <Link to="/">返回仪表盘</Link>
+            <Link to="/">返回广场</Link>
           </Card>
-        </main>
-      </div>
+        </section>
+      </WebShell>
     );
   }
 
+  const filteredMessages = query
+    ? messages.filter((msg) => msg.text.toLowerCase().includes(query.toLowerCase()))
+    : messages;
+
   return (
-    <div className="shell">
-      <aside className="sidebar">
-        <div className="brand">
-          <div className="brandMark">V</div>
-          <div>
-            <h1>VDA + IM Studio</h1>
+    <WebShell
+      title="聊天框"
+      subtitle={`当前会话：${conv.title}`}
+      activeTab="chat"
+      rightRail={
+        <div className="stack">
+          <div className="sectionHeader">
+            <div className="titleBlock">
+              <h3>会话信息</h3>
+              <p>快速查看在线、状态和常用动作</p>
+            </div>
+          </div>
+          <div className="profileRow">
+            <Avatar name={conv.title} />
+            <div>
+              <strong>{conv.title}</strong>
+              <p>{conv.subtitle}</p>
+            </div>
+          </div>
+          <Badge tone={conv.online ? "success" : "neutral"}>{conv.online ? "在线" : "离线"}</Badge>
+          <Divider />
+          <div className="stack">
+            <Button variant="primary" onClick={() => sendMessage(conv.userId, "你好，刚从聊天框发出的测试消息")}>
+              快速发消息
+            </Button>
+            <Button variant="secondary">查看资料</Button>
+            <Link to="/friends" style={{ textDecoration: "none" }}>
+              <Button variant="ghost">去好友管理</Button>
+            </Link>
           </div>
         </div>
-        <Card title={conv.title} subtitle={conv.subtitle}>
-          <Badge tone={conv.online ? "success" : "neutral"}>
-            {conv.online ? "在线" : "离线"}
-          </Badge>
-        </Card>
-        <Link to="/" style={{ display: "block", marginTop: 12 }}>← 返回</Link>
-      </aside>
-      <main className="main">
-        <Card title={`与 ${conv.title} 的对话`}>
+      }
+    >
+      <section className="feed">
+        <Card title={conv.title} subtitle={conv.statusText}>
+          <div className="channelSearch">
+            <input
+              className="searchInput"
+              placeholder="搜索当前会话里的消息"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
           <div className="chatFeed">
-            {messages.map((msg) => (
-              <MessageBubble key={msg.id} message={msg} />
-            ))}
+            {filteredMessages.length > 0 ? (
+              filteredMessages.map((msg) => <MessageBubble key={msg.id} message={msg} />)
+            ) : (
+              <div className="emptyState">没有匹配的消息。</div>
+            )}
           </div>
           <Divider />
           <Composer
@@ -55,7 +96,22 @@ export function ChatPage() {
             onSend={(text) => sendMessage(conv.userId, text)}
           />
         </Card>
-      </main>
-    </div>
+      </section>
+
+      <aside className="stack">
+        <Card title="会话列表" subtitle="最近互动的联系人">
+          <div className="conversationList">
+            {storeConvs.map((item) => (
+              <ConversationRow
+                key={item.id}
+                conversation={item}
+                active={item.id === conv.id}
+                onClick={() => setActiveConversation(item.id)}
+              />
+            ))}
+          </div>
+        </Card>
+      </aside>
+    </WebShell>
   );
 }

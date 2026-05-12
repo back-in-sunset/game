@@ -115,6 +115,7 @@ export class IMClient {
         this.socket?.removeEventListener("error", onError);
         this.socket?.addEventListener("message", this.onMessage);
         this.socket?.addEventListener("close", this.onClose);
+        console.log("[IMClient] sending auth frame, url:", this.url, "token prefix:", auth.token.slice(0, 30) + "...", "token len:", auth.token.length);
         this.socket?.send(encodeAuthFrame(this.seq++, auth));
         this.setStatus("connected");
         this.reconnectAttempts = 0;
@@ -132,6 +133,7 @@ export class IMClient {
     if (typeof event.data === "string") return;
     const buffer = await event.data.arrayBuffer();
     const frame = decodeFrame(buffer);
+    console.log("[IMClient] received op:", frame.op, "body:", frame.body.slice(0, 200));
 
     // heartbeat reply — not forwarded to listeners
     if (frame.op === 3) return;

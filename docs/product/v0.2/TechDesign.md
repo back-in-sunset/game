@@ -2,7 +2,7 @@
 
 **项目名称**：Game 社交化游戏后端  
 **文档版本**：v0.2  
-**更新时间**：2026-04-27  
+**更新时间**：2026-05-09（基于实际代码状态修订）  
 **文档目标**：描述当前仓库真实技术基线、服务现状、部署结构和主要技术风险。  
 
 ---
@@ -99,17 +99,84 @@
 
 当前状态：
 
-- 已有 TCP 服务基础代码
-- 已有连接层、round、buffer、time 等基础工具
-- 尚未形成完整消息业务闭环
+- WebSocket 接入层完整（`/ws` 端点，端口 8082）
+- TCP 接入层完整（端口 8091）
+- 二进制帧协议：16 字节大端 header（totalLen|headerLen|version|op|seq）+ JSON body
+- JWT RS256 鉴权（platform API 公钥验证，提取 uid）
+- 单聊消息路由：在线投递 + 离线 MySQL 存储
+- 会话管理：bucket + ring 分片，心跳保活 30s
+- etcd 服务发现注册
+- Redis 会话存储 + MySQL 消息持久化
+- 操作码：OpAuth(7)、OpAuthReply(8)、OpHeartbeat(2)、OpServerPush(4)、OpError(6)
+- 前端 Web 客户端已接入，可实时收发消息
 
 当前缺口：
 
-- 协议模型
-- 身份认证
-- 消息投递链路
-- 存储边界
-- 接入方式定稿
+- 群聊/频道
+- 已读回执
+- 消息搜索
+- 多媒体消息
+- TCP 客户端 SDK
+
+## 2.4 friend 服务
+
+目录：
+
+- `code/common/service/friend`
+
+当前状态：
+
+- go-zero RPC 服务，提供好友 CRUD
+- HTTP API 层已就绪（可通过 platform API 转发）
+- 好友添加/删除/查询/在线状态
+- 前端 API 客户端已封装（`packages/api/src/http/friend.ts`）
+
+当前缺口：
+
+- 好友分组/标签
+- 黑名单
+- 前端完整 UI 页面（API 层已就绪）
+
+## 2.5 VDA 语音服务
+
+目录：
+
+- `code/common/service/vda`
+
+当前状态：
+
+- gRPC 服务（端口 9101）：token 签发、房间管理
+- LiveKit 服务端集成（Docker 部署，端口 7880）
+- 语音信令协议：call_invite / call_accept / call_reject / call_end
+- 通话状态管理
+
+当前缺口：
+
+- 语音分钟数计量
+- 通话录制
+
+## 2.6 前端 Monorepo
+
+目录：
+
+- `frontend/`
+
+当前状态：
+
+- pnpm workspace monorepo
+- `apps/web`：Vite + React SPA，Zustand 状态管理，React Router v7
+- `apps/mobile`：Expo + React Native 壳工程
+- `packages/api`：IM 协议编解码（二进制帧）+ HTTP API 客户端
+- `packages/ui`：共享 UI 组件库（Card、StatusRow、ChatBubble 等）
+- `packages/config`：共享配置
+- `packages/shared`：共享类型和工具
+- IM WebSocket 客户端已接入，可实时收发消息
+
+当前缺口：
+
+- Mobile 端功能实现
+- E2E 测试（Playwright）
+- 组件测试（Vitest + React Testing Library）
 
 ---
 
@@ -189,9 +256,27 @@
 - 评论主题统计未同步扣减
 - 缓存、统计、删除的一致性仍需补齐
 
-### 5.3 全局
+### 5.3 IM 服务
 
-- 文档和代码已基本对齐，但测试体系仍明显不足
+- 单节点部署，未验证水平扩展
+- 离线消息量增长后 MySQL 性能风险
+- WebSocket 重连时消息去重未完整覆盖
+
+### 5.4 VDA 服务
+
+- LiveKit 单实例部署，未验证多节点
+- 通话分钟数未计量，无法计费
+
+### 5.5 前端
+
+- 无自动化测试覆盖
+- Mobile 端为占位页面
+- LiveKit Web SDK 未集成，语音链路未端到端打通
+
+### 5.6 全局
+
+- 测试体系仍明显不足
+- 服务间无统一错误码
 - 仓库里存在实验性服务和未完成模块，需要持续标注边界
 
 ---

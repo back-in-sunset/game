@@ -37,6 +37,7 @@ export const useIMStore = create<IMState>((set, get) => ({
   loadConversations: (convs) => set({ conversations: convs }),
 
   connect: async (url, auth: IMAuthRequest) => {
+    console.log("[imStore] connect called, url:", url, "token len:", auth.token.length, "token prefix:", auth.token.slice(0, 20) + "...");
     const client = createIMClient(url);
 
     client.onStatusChange((status) =>
@@ -74,6 +75,33 @@ export const useIMStore = create<IMState>((set, get) => ({
             return;
           }
 
+          // server-pushed message (envelope format from router)
+          if (data.type === "message" && data.envelope) {
+            const env = data.envelope;
+            const sender = env.sender;
+            const text = env.payload?.text ?? JSON.stringify(env.payload ?? {});
+            const msg: Message = {
+              id: `push-${Date.now()}`,
+              text,
+              mine: false,
+              time: new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
+            };
+            set((s) => {
+              const convId = s.conversations.find((c) => c.userId === sender)?.id;
+              const isActive = convId === s.activeConversationId;
+              return {
+                conversations: isActive
+                  ? s.conversations
+                  : s.conversations.map((c) =>
+                      c.id === convId ? { ...c, unread: c.unread + 1 } : c,
+                    ),
+                messages: isActive ? [...s.messages, msg] : s.messages,
+              };
+            });
+            return;
+          }
+
+          // legacy flat format
           const msg: Message = {
             id: `push-${Date.now()}`,
             text: data.payload?.text ?? packet.body.slice(0, 200),
@@ -83,13 +111,12 @@ export const useIMStore = create<IMState>((set, get) => ({
           set((s) => {
             const convId = s.conversations.find((c) => c.userId === data.sender)?.id;
             const isActive = convId === s.activeConversationId;
-            const convs = isActive
-              ? s.conversations
-              : s.conversations.map((c) =>
-                  c.id === convId ? { ...c, unread: c.unread + 1 } : c,
-                );
             return {
-              conversations: convs,
+              conversations: isActive
+                ? s.conversations
+                : s.conversations.map((c) =>
+                    c.id === convId ? { ...c, unread: c.unread + 1 } : c,
+                  ),
               messages: isActive ? [...s.messages, msg] : s.messages,
             };
           });
@@ -100,13 +127,15 @@ export const useIMStore = create<IMState>((set, get) => ({
 
       if (packet.op === 5 || packet.op === 6) {
         try {
-          JSON.parse(packet.body);
+          const data = JSON.parse(packet.body);
+          // send_ack — silently update seq tracking, don't spam chat
+          if (data.type === "send_ack") return;
           set((s) => ({
             messages: [
               ...s.messages,
               {
                 id: `srv-${Date.now()}`,
-                text: `收到服务端响应: ${packet.body.slice(0, 100)}`,
+                text: `收到服务端响应: ${JSON.stringify(data).slice(0, 100)}`,
                 mine: false,
                 time: new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
               },

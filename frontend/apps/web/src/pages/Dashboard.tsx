@@ -1,126 +1,152 @@
-import { useEffect } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import {
-  Card, Badge, Button, Avatar, Divider, Composer,
-  ConversationRow, MessageBubble, StatusRow,
-} from "@game/ui";
+import { Avatar, Badge, Card, Composer, ConversationRow, Divider, MessageBubble } from "@game/ui";
+import { conversations } from "@game/shared";
 import { useIMStore } from "../store/imStore";
-import { useVoiceStore } from "../store/voiceStore";
-import { useAuthStore } from "../store/authStore";
-import { conversations, callHighlights } from "@game/shared";
-import { serviceConfig } from "../config";
+import { WebShell } from "../components/WebShell";
+import { useIMBootstrap } from "../hooks/useIMBootstrap";
+
+const posts = [
+  {
+    id: "p1",
+    author: "Mina",
+    role: "产品经理",
+    time: "2 分钟前",
+    tag: "广场",
+    title: "今晚把新 UI 的三栏结构过一遍",
+    body: "把广场、好友、聊天框放在同一套空间里，消息层级和导航都要比现在更明确。",
+    likes: 23,
+    comments: 6,
+  },
+  {
+    id: "p2",
+    author: "Jasper",
+    role: "设计",
+    time: "18 分钟前",
+    tag: "视觉",
+    title: "浅色 Discord 风格更适合当前产品",
+    body: "我们保留浅色底，但把左侧入口、频道和内容区的层级做得更清晰，避免“工具台”感太重。",
+    likes: 41,
+    comments: 9,
+  },
+  {
+    id: "p3",
+    author: "Echo",
+    role: "工程",
+    time: "1 小时前",
+    tag: "状态",
+    title: "IM 连接和聊天框先统一到一个 shell",
+    body: "不用让每个页面都单独处理连接状态，减少跳页后体验断裂。",
+    likes: 15,
+    comments: 2,
+  },
+];
+
+const quickLinks = [
+  { label: "好友管理", to: "/friends", help: "查看在线和离线联系人" },
+  { label: "聊天框", to: "/history", help: "查看和发送消息" },
+  { label: "语音面板", to: "/voice", help: "进入通话控制" },
+];
+
+const channelHighlights = [
+  { name: "广场", hint: "帖子流", active: true },
+  { name: "公告", hint: "系统发布", active: false },
+  { name: "创意", hint: "设计讨论", active: false },
+  { name: "开发", hint: "实现细节", active: false },
+];
 
 export function DashboardPage() {
-  const {
-    status, error, messages, conversations: storeConvs, activeConversationId,
-    connect, disconnect, loadConversations, setActiveConversation, sendMessage, sendVoiceAction,
-  } = useIMStore();
-  const voice = useVoiceStore();
-  const { isLoggedIn, nickname, logout } = useAuthStore();
+  const { status, error, messages, conversations: storeConvs, activeConversationId, setActiveConversation, sendMessage } =
+    useIMStore();
+  useIMBootstrap();
 
-  useEffect(() => {
-    loadConversations(conversations);
-    if (serviceConfig.imWsUrl) {
-      connect(serviceConfig.imWsUrl, {
-      token: serviceConfig.imToken,
-      domain: serviceConfig.imDomain,
-      scope: {
-        tenant_id: serviceConfig.imTenantId,
-        project_id: serviceConfig.imProjectId,
-        environment: serviceConfig.imEnvironment,
-      },
-    });
-    }
-    return () => disconnect();
-  }, []);
-
-  const active = storeConvs.find((c) => c.id === activeConversationId) ?? storeConvs[0];
-
-  if (!active) {
-    return (
-      <div className="shell">
-        <main className="main" style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
-          <p>Loading...</p>
-        </main>
-      </div>
-    );
-  }
+  const active = useMemo(
+    () => storeConvs.find((c) => c.id === activeConversationId) ?? storeConvs[0] ?? conversations[0],
+    [activeConversationId, storeConvs],
+  );
 
   return (
-    <div className="shell">
-      <aside className="sidebar">
-        <div className="brand">
-          <div className="brandMark">V</div>
-          <div>
-            <h1>VDA + IM Studio</h1>
-            <p>Web · Mobile · Voice</p>
+    <WebShell
+      title="广场"
+      subtitle="帖子流 / 推荐内容 / 快捷会话"
+      activeTab="square"
+      rightRail={
+        <div className="stack">
+          <div className="sectionHeader">
+            <div className="titleBlock">
+              <h3>推荐频道</h3>
+              <p>当前最活跃的讨论板块</p>
+            </div>
           </div>
-        </div>
-
-        <Card title="会话列表" subtitle="统一承接消息与通话">
-          <div className="conversationList">
-            {storeConvs.map((item) => (
-              <Link key={item.id} to={`/chat/${item.userId}`} style={{ textDecoration: "none", color: "inherit" }}>
-                <ConversationRow
-                  conversation={item}
-                  active={item.id === activeConversationId}
-                  onClick={() => setActiveConversation(item.id)}
-                />
-              </Link>
-            ))}
-          </div>
-        </Card>
-
-        <Card title="在线状态" subtitle="当前服务面板">
           <div className="stack">
-            <StatusRow label="IM WebSocket" value={status} tone={status === "connected" ? "success" : "warning"} />
-            <StatusRow label="VDA gRPC" value={serviceConfig.vdaGrpcUrl || "not configured"} tone={serviceConfig.vdaGrpcUrl ? "success" : "warning"} />
-            <StatusRow label="LiveKit" value={serviceConfig.livekitUrl || "not configured"} tone={serviceConfig.livekitUrl ? "success" : "warning"} />
-          </div>
-          {error ? <p className="errorText">{error}</p> : null}
-        </Card>
-
-        <Card title="导航">
-          <div className="stack" style={{ marginTop: 12 }}>
-            {isLoggedIn() ? (
-              <Badge tone="success">{nickname || "已登录"}</Badge>
-            ) : (
-              <Link to="/login"><Button variant="primary">登录</Button></Link>
-            )}
-            <Link to="/"><Button variant="secondary">仪表盘</Button></Link>
-            <Link to="/voice"><Button variant="secondary">语音通话</Button></Link>
-            <Link to="/friends"><Button variant="secondary">好友</Button></Link>
-            <Link to="/history"><Button variant="secondary">历史记录</Button></Link>
-            <Link to="/settings"><Button variant="secondary">设置</Button></Link>
-            {isLoggedIn() ? (
-              <Button variant="ghost" onClick={() => { logout(); disconnect(); }}>退出</Button>
-            ) : null}
-          </div>
-        </Card>
-      </aside>
-
-      <main className="main">
-        <header className="hero">
-          <div>
-            <Badge>Product UI · light theme</Badge>
-            <h2>聊天和语音通话统一工作台</h2>
-            <p>先把 IM 和 VDA 放进同一个前端骨架，后面可以无缝扩展到 React Native。</p>
-          </div>
-          <div className="heroStats">
-            {callHighlights.map((item) => (
-              <Card key={item.label} title={item.label} subtitle={item.help}>
-                <strong>{item.value}</strong>
-              </Card>
+            {channelHighlights.map((item) => (
+              <div key={item.name} className="statusRow">
+                <span>{item.name}</span>
+                <Badge tone={item.active ? "success" : "neutral"}>{item.hint}</Badge>
+              </div>
             ))}
           </div>
-        </header>
+          <Divider />
+          <div className="sectionHeader">
+            <div className="titleBlock">
+              <h3>连接状态</h3>
+              <p>广场内容与会话状态统一展示</p>
+            </div>
+          </div>
+          <Badge tone={status === "connected" ? "success" : "warning"}>{status}</Badge>
+          {error ? <p className="errorText">{error}</p> : null}
+        </div>
+      }
+    >
+      <section className="feed">
+        <Card title="广场帖子" subtitle="把讨论、通知和项目动态放在同一个流里">
+          <div className="postStream">
+            {posts.map((post) => (
+              <article key={post.id} className="postCard">
+                <div className="postHeader">
+                  <div className="postAuthor">
+                    <Avatar name={post.author} />
+                    <div>
+                      <h4>{post.author}</h4>
+                      <p>{post.role} · {post.time}</p>
+                    </div>
+                  </div>
+                  <Badge tone="neutral">{post.tag}</Badge>
+                </div>
+                <h3 style={{ margin: 0, fontSize: 18 }}>{post.title}</h3>
+                <p className="postBody" style={{ marginTop: 10 }}>{post.body}</p>
+                <div className="postActions">
+                  <span className="pillButton">♥ {post.likes}</span>
+                  <span className="pillButton">✎ {post.comments}</span>
+                  <span className="pillButton">↗ 分享</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </Card>
 
-        <section className="contentGrid">
+        <div className="workspace">
+          <Card title="快捷入口" subtitle="从广场直接跳到具体模块">
+            <div className="stack">
+              {quickLinks.map((item) => (
+                <Link key={item.to} to={item.to} className="linkRow">
+                  <span>↗</span>
+                  <span className="channelMeta">
+                    <strong>{item.label}</strong>
+                    <span>{item.help}</span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </Card>
+
           <Card title={active.title} subtitle={active.subtitle}>
             <div className="chatFeed">
-              {messages.map((msg) => (
-                <MessageBubble key={msg.id} message={msg} />
-              ))}
+              {messages.length > 0 ? (
+                messages.map((msg) => <MessageBubble key={msg.id} message={msg} />)
+              ) : (
+                <div className="emptyState">还没有消息，先从右侧会话里发一条试试。</div>
+              )}
             </div>
             <Divider />
             <Composer
@@ -128,29 +154,23 @@ export function DashboardPage() {
               onSend={(text) => sendMessage(active.userId, text)}
             />
           </Card>
+        </div>
+      </section>
 
-          <Card title="通话控制" subtitle="VDA 面板">
-            <div className="callPanel">
-              <Avatar name={active.title} />
-              <div>
-                <strong>{active.title}</strong>
-                <p>{active.statusText}</p>
-              </div>
-            </div>
-            <div className="buttonGrid">
-              <Button variant="primary" onClick={() => sendVoiceAction("call_invite", { callee: active.userId })}>
-                发起通话
-              </Button>
-              <Button variant="secondary" onClick={() => sendVoiceAction("call_accept", { call_id: voice.callId || "call_pending" })}>
-                接听
-              </Button>
-              <Button variant="ghost" onClick={() => sendVoiceAction("call_end", { call_id: voice.callId || "call_pending" })}>
-                挂断
-              </Button>
-            </div>
-          </Card>
-        </section>
-      </main>
-    </div>
+      <aside className="stack">
+        <Card title="好友预览" subtitle="最近互动的人">
+          <div className="conversationList">
+            {storeConvs.map((item) => (
+              <ConversationRow
+                key={item.id}
+                conversation={item}
+                active={item.id === activeConversationId}
+                onClick={() => setActiveConversation(item.id)}
+              />
+            ))}
+          </div>
+        </Card>
+      </aside>
+    </WebShell>
   );
 }

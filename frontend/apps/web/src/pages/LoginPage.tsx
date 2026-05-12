@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { Card, Button } from "@game/ui";
 import { useAuthStore } from "../store/authStore";
+import { WebShell } from "../components/WebShell";
 
 export function LoginPage() {
   const { login, isLoggedIn } = useAuthStore();
@@ -26,16 +27,18 @@ export function LoginPage() {
   }
 
   return (
-    <div className="shell" style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
-      <main style={{ maxWidth: 420, width: "100%" }}>
-        <Card title="VDA Studio" subtitle="登录以使用 IM 和语音通话">
+    <WebShell title="登录" subtitle="进入广场、好友管理和聊天框" activeTab="square">
+      <section className="feed" style={{ maxWidth: 520 }}>
+        <Card title="登录" subtitle="输入 API 地址和 JWT Token">
           <form
-            onSubmit={(e) => { e.preventDefault(); doLogin(); }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              doLogin();
+            }}
             className="stack"
-            style={{ gap: 16 }}
           >
             <div>
-              <label style={{ display: "block", marginBottom: 4, fontSize: 13, color: "#64748b" }}>API 地址</label>
+              <label style={{ display: "block", marginBottom: 4, fontSize: 13, color: "#667085" }}>API 地址</label>
               <input
                 className="searchInput"
                 value={baseUrl}
@@ -44,7 +47,7 @@ export function LoginPage() {
               />
             </div>
             <div>
-              <label style={{ display: "block", marginBottom: 4, fontSize: 13, color: "#64748b" }}>JWT Token</label>
+              <label style={{ display: "block", marginBottom: 4, fontSize: 13, color: "#667085" }}>JWT Token</label>
               <input
                 className="searchInput"
                 value={token}
@@ -54,10 +57,12 @@ export function LoginPage() {
               />
             </div>
             {error ? <p className="errorText">{error}</p> : null}
-            <Button variant="primary" onClick={doLogin}>登录</Button>
+            <Button variant="primary" onClick={doLogin}>
+              登录
+            </Button>
           </form>
         </Card>
-      </main>
-    </div>
+      </section>
+    </WebShell>
   );
 }
