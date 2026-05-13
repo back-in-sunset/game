@@ -9,22 +9,10 @@ import (
 	"comment/rpc/comment"
 	"comment/rpc/internal/svc"
 	"comment/rpc/model"
-
-	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
 func TestUnLikeCommentLogic_ConcurrentIdempotent(t *testing.T) {
-	if !portReachable("127.0.0.1:6379") {
-		t.Skip("skip integration test: redis is unavailable at 127.0.0.1:6379")
-	}
-
-	rds, err := redis.NewRedis(redis.RedisConf{
-		Host: "127.0.0.1:6379",
-		Type: "node",
-	})
-	if err != nil {
-		t.Fatalf("create redis client: %v", err)
-	}
+	rds := mustTestRedis(t)
 
 	objID := time.Now().UnixNano()
 	objType := int64(1)
@@ -35,7 +23,7 @@ func TestUnLikeCommentLogic_ConcurrentIdempotent(t *testing.T) {
 	likedUsersKey := likeKeyLikedUsers(objID, commentID)
 	likeKey := likeKeyByLikeScore(objID, objType, rootID)
 	likeCompatKey := likeKeyByLikeScoreCompat(objID, objType, rootID)
-	if _, err = rds.EvalCtx(context.Background(), `return redis.call("DEL", KEYS[1], KEYS[2], KEYS[3])`, []string{likedUsersKey, likeKey, likeCompatKey}); err != nil {
+	if _, err := rds.EvalCtx(context.Background(), `return redis.call("DEL", KEYS[1], KEYS[2], KEYS[3])`, []string{likedUsersKey, likeKey, likeCompatKey}); err != nil {
 		t.Fatalf("cleanup redis keys: %v", err)
 	}
 	defer func() {
@@ -60,7 +48,7 @@ func TestUnLikeCommentLogic_ConcurrentIdempotent(t *testing.T) {
 	}
 
 	likeLogic := NewLikeCommentLogic(context.Background(), serviceCtx)
-	_, err = likeLogic.LikeComment(&comment.LikeCommentRequest{
+	_, err := likeLogic.LikeComment(&comment.LikeCommentRequest{
 		ObjID:     objID,
 		ObjType:   objType,
 		CommentID: commentID,

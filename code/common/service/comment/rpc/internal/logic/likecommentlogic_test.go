@@ -96,7 +96,7 @@ func TestLikeCommentLogic_ConcurrentIdempotent(t *testing.T) {
 	likedUsersKey := likeKeyLikedUsers(objID, commentID)
 	likeKey := likeKeyByLikeScore(objID, objType, rootID)
 	likeCompatKey := likeKeyByLikeScoreCompat(objID, objType, rootID)
-	if _, err = rds.EvalCtx(context.Background(), `return redis.call("DEL", KEYS[1], KEYS[2], KEYS[3])`, []string{likedUsersKey, likeKey, likeCompatKey}); err != nil {
+	if _, err := rds.EvalCtx(context.Background(), `return redis.call("DEL", KEYS[1], KEYS[2], KEYS[3])`, []string{likedUsersKey, likeKey, likeCompatKey}); err != nil {
 		t.Fatalf("cleanup redis keys: %v", err)
 	}
 	defer func() {
@@ -212,5 +212,14 @@ func portReachable(addr string) bool {
 		return false
 	}
 	_ = conn.Close()
+	return true
+}
+
+func portReachable(addr string) bool {
+	conn, err := net.DialTimeout("tcp", addr, 500*time.Millisecond)
+	if err != nil {
+		return false
+	}
+	defer conn.Close()
 	return true
 }
