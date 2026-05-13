@@ -38,7 +38,14 @@ private.key
 
 # Claude Code
 .omc/
+.claude/
 # .idea/
 # .vscode/
 scripts
 worktrees
+
+# Project docs
+AI_CONTEXT.md
+ARCH.md
+TASK.md
+plan/
