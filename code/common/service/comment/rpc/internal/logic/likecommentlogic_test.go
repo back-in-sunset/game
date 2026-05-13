@@ -211,15 +211,20 @@ func portReachable(addr string) bool {
 	if err != nil {
 		return false
 	}
-	_ = conn.Close()
+	defer conn.Close()
 	return true
 }
 
-func portReachable(addr string) bool {
-	conn, err := net.DialTimeout("tcp", addr, 500*time.Millisecond)
-	if err != nil {
-		return false
+func mustTestRedis(t *testing.T) *redis.Redis {
+	if !portReachable("127.0.0.1:6379") {
+		t.Skip("skip integration test: redis is unavailable at 127.0.0.1:6379")
 	}
-	defer conn.Close()
-	return true
+	rds, err := redis.NewRedis(redis.RedisConf{
+		Host: "127.0.0.1:6379",
+		Type: "node",
+	})
+	if err != nil {
+		t.Fatalf("create redis client: %v", err)
+	}
+	return rds
 }
