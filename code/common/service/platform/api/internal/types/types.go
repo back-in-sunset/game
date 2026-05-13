@@ -3,6 +3,14 @@
 
 package types
 
+type DemoTokenReq struct{}
+
+type DemoTokenResp struct {
+	AccessToken string `json:"accessToken"`
+	ExpiresIn   int64  `json:"expiresIn"`
+	LiveKitUrl  string `json:"livekitUrl"`
+}
+
 type CreateEnvironmentReq struct {
 	ProjectId   string `json:"projectId"`
 	Name        string `json:"name"`

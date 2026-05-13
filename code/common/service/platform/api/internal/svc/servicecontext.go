@@ -33,8 +33,10 @@ type ServiceContext struct {
 	Config config.Config
 	Repo   Repository
 
-	JwtAuth   rest.Middleware
-	PublicKey *rsa.PublicKey
+	JwtAuth    rest.Middleware
+	DemoRL     rest.Middleware
+	PublicKey  *rsa.PublicKey
+	PrivateKey *rsa.PrivateKey
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -47,10 +49,20 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	if err != nil {
 		panic(err)
 	}
+	privateKeyData, err := os.ReadFile(c.Auth.PrivateKeyFile)
+	if err != nil {
+		panic(err)
+	}
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privateKeyData)
+	if err != nil {
+		panic(err)
+	}
 	return &ServiceContext{
-		Config:    c,
-		Repo:      model.NewMySQLRepository(conn, c.CacheRedis),
-		PublicKey: publicKey,
-		JwtAuth:   middleware.NewJwtAuthMiddleware(publicKey).Handle,
+		Config:     c,
+		Repo:       model.NewMySQLRepository(conn, c.CacheRedis),
+		PublicKey:  publicKey,
+		PrivateKey: privateKey,
+		JwtAuth:    middleware.NewJwtAuthMiddleware(publicKey).Handle,
+		DemoRL:     middleware.NewDemoRateLimitMiddleware().Handle,
 	}
 }

@@ -11,7 +11,12 @@ import (
 type Config struct {
 	rest.RestConf
 	Auth struct {
-		PublicKeyFile string
+		PublicKeyFile  string
+		PrivateKeyFile string
+	}
+	LiveKit struct {
+		ApiKey    string
+		ApiSecret string
 	}
 	Mysql struct {
 		DataSource string

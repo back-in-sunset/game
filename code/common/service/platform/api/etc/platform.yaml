@@ -4,6 +4,11 @@ Port: 8888
 
 Auth:
   PublicKeyFile: "./etc/public.key"
+  PrivateKeyFile: "./etc/private.key"
+
+LiveKit:
+  ApiKey: "devkey"
+  ApiSecret: "this-is-a-32-character-secret-key!!"
 
 Mysql:
   DataSource: root:123456@tcp(127.0.0.1:3306)/platform?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai

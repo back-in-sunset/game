@@ -96,6 +96,8 @@ export {
   HttpError,
   createUserAPI,
   createFriendAPI,
+  COMMENT_SORT_CREATED_TIME,
+  COMMENT_SORT_LIKE_COUNT,
   createCommentAPI,
   createHistoryAPI,
   createPlatformAPI,
@@ -105,12 +107,29 @@ export type {
   UserAPI,
   FriendItem,
   FriendAPI,
+  CommentActionResponse,
   CommentItem,
+  CommentCreateRequest,
+  CommentListRequest,
+  CommentListResponse,
+  CommentMutationRequest,
+  CommentSortType,
   CommentAPI,
   HistoryItem,
   HistoryAPI,
   PlatformConfig,
+  PlatformTenant,
+  PlatformProject,
+  PlatformEnvironment,
+  CreateTenantRequest,
+  UpdateTenantRequest,
+  CreateProjectRequest,
+  CreateEnvironmentRequest,
+  MyTenantsResponse,
+  ListProjectsResponse,
+  ListEnvironmentsResponse,
   PlatformAPI,
+  DemoTokenResponse,
 } from "./http";
 
 // IM binary frame codec — 16-byte header + JSON payload
@@ -157,4 +176,3 @@ export function decodeFrame(buffer: ArrayBuffer): IMPacket {
     body: new TextDecoder().decode(buffer.slice(16)),
   };
 }
-

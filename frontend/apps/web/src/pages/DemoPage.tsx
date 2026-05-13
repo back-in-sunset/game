@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, Badge, Button, Card, Composer, ConversationRow, MessageBubble } from "@game/ui";
 import { conversations } from "@game/shared";
+import type { DemoTokenResponse } from "@game/api";
 import { useIMStore } from "../store/imStore";
 import { useSettingsStore } from "../store/settingsStore";
 import { useVoiceStore } from "../store/voiceStore";
 import { useLiveKit } from "../hooks/useLiveKit";
+import { getHttp } from "../services/http";
 
 export function DemoPage() {
   const navigate = useNavigate();
@@ -45,18 +47,22 @@ export function DemoPage() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [callState, tickDuration]);
 
-  const handleCall = () => {
-    const callId = `demo-${Date.now()}`;
-    const room = `demo-room`;
-    // demo token — VDA service generates this for real use
-    const demoToken = "dev-token";
-    setCall({ callId, token: demoToken, room, url: livekitUrl });
-    sendVoiceAction("call_invite", {
-      call_id: callId,
-      livekit_url: livekitUrl,
-      livekit_token: demoToken,
-      livekit_room: room,
-    });
+  const handleCall = async () => {
+    try {
+      const data = await getHttp().post<DemoTokenResponse>("/api/v1/demo/token", {});
+      const [, lkToken] = data.accessToken.split("|");
+      const callId = `demo-${Date.now()}`;
+      const room = `demo-room`;
+      setCall({ callId, token: lkToken, room, url: livekitUrl });
+      sendVoiceAction("call_invite", {
+        call_id: callId,
+        livekit_url: livekitUrl,
+        livekit_token: lkToken,
+        livekit_room: room,
+      });
+    } catch (e) {
+      console.error("Failed to get demo token:", e);
+    }
   };
 
   const handleHangUp = () => {

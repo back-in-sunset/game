@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, Button, Badge, Composer, MessageBubble } from "@game/ui";
-import { generateLiveKitToken } from "@game/api";
+import type { DemoTokenResponse } from "@game/api";
 import { useRoomStore } from "../store/roomStore";
 import { useSettingsStore } from "../store/settingsStore";
 import { useIMStore, type RoomMessageData } from "../store/imStore";
-
-const DEMO_API_KEY = "devkey";
-const DEMO_API_SECRET = "this-is-a-32-character-secret-key!!";
+import { getHttp } from "../services/http";
 
 function getDemoIdentity(): string {
   const key = "demo-identity";
@@ -63,12 +61,15 @@ export function DemoRoomPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
   const livekitUrl = useSettingsStore((s) => s.livekitUrl);
+  const imWsUrl = useSettingsStore((s) => s.imWsUrl);
 
   const { participants, duration, error, lk, joinRoom, leaveRoom, toggleMute, tickDuration, setError } =
     useRoomStore();
 
   const {
     status: imStatus,
+    connect: connectIM,
+    disconnect: disconnectIM,
     sendRoomMessage,
     loadRoomHistory,
     setOnRoomMessage,
@@ -89,22 +90,25 @@ export function DemoRoomPage() {
   const myDisplayName = roomId ? getDisplayName(roomId, myIdentity.current) : myIdentity.current;
   const [draftName, setDraftName] = useState(myDisplayName);
 
-  // Connect to LiveKit room on mount
+  // Connect to LiveKit + IM on mount
   useEffect(() => {
     if (!roomId) return;
 
     const size = getRoomSize(roomId);
     roomSizeRef.current = size;
-    const roomName = `demo-room-${roomId}`;
 
-    generateLiveKitToken({
-      roomName,
-      participantId: myIdentity.current,
-      apiKey: DEMO_API_KEY,
-      apiSecret: DEMO_API_SECRET,
-      ttl: 3600,
-    })
-      .then((token) => joinRoom(roomId, size, token, livekitUrl))
+    getHttp().post<DemoTokenResponse>("/api/v1/demo/token", {})
+      .then((data) => {
+        const [imToken, lkToken] = data.accessToken.split("|");
+        // Connect IM with demo token
+        connectIM(imWsUrl, {
+          token: imToken,
+          domain: "platform",
+          scope: { tenant_id: "", project_id: "", environment: "prod" },
+        });
+        // Connect LiveKit
+        joinRoom(roomId, size, lkToken, livekitUrl);
+      })
       .catch((e) => {
         setError(e instanceof Error ? e.message : "连接房间失败");
       })
@@ -112,6 +116,7 @@ export function DemoRoomPage() {
 
     return () => {
       leaveRoom();
+      disconnectIM();
     };
   }, [roomId]); // eslint-disable-line react-hooks/exhaustive-deps
 

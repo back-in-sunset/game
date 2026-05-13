@@ -11,10 +11,12 @@ export class HttpClient {
     this.token = token;
   }
 
-  async get<T>(path: string, params?: Record<string, string>): Promise<T> {
+  async get<T>(path: string, params?: Record<string, string | number | boolean | null | undefined>): Promise<T> {
     const url = new URL(`${this.baseUrl}${path}`);
     if (params) {
-      Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+      Object.entries(params).forEach(([k, v]) => {
+        if (v !== undefined && v !== null) url.searchParams.set(k, String(v));
+      });
     }
     return this.request<T>(url, { headers: this.headers() });
   }
@@ -27,8 +29,19 @@ export class HttpClient {
     });
   }
 
-  async delete<T>(path: string): Promise<T> {
-    return this.request<T>(`${this.baseUrl}${path}`, {
+  async delete<T>(path: string, params?: Record<string, string | number | boolean | null | undefined>): Promise<T> {
+    if (!params || Object.keys(params).length === 0) {
+      return this.request<T>(`${this.baseUrl}${path}`, {
+        method: "DELETE",
+        headers: this.headers(),
+      });
+    }
+
+    const url = new URL(`${this.baseUrl}${path}`);
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) url.searchParams.set(k, String(v));
+    });
+    return this.request<T>(url, {
       method: "DELETE",
       headers: this.headers(),
     });
