@@ -28,6 +28,10 @@ go.work.sum
 # env file
 .env
 
+# Private keys
+*.key
+private.key
+
 # Editor/IDE
 .idea/
 .vscode/
