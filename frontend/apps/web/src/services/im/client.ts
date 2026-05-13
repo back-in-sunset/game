@@ -138,7 +138,7 @@ export class IMClient {
         this.socket?.removeEventListener("error", onError);
         this.socket?.addEventListener("message", this.onMessage);
         this.socket?.addEventListener("close", this.onClose);
-        console.log("[IMClient] sending auth frame, url:", this.url, "token prefix:", auth.token.slice(0, 30) + "...", "token len:", auth.token.length);
+        console.log("[IMClient] sending auth frame, url:", this.url, "token len:", auth.token.length);
         this.socket?.send(encodeAuthFrame(this.seq++, auth));
         this.setStatus("connected");
         this.reconnectAttempts = 0;

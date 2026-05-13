@@ -67,7 +67,7 @@ export const useIMStore = create<IMState>((set, get) => ({
   loadConversations: (convs) => set({ conversations: convs }),
 
   connect: async (url, auth: IMAuthRequest) => {
-    console.log("[imStore] connect called, url:", url, "token len:", auth.token.length, "token prefix:", auth.token.slice(0, 20) + "...");
+    console.log("[imStore] connect called, url:", url, "token len:", auth.token.length);
     const client = createIMClient(url);
     set({ client }); // set early so loadRoomHistory can use it when status flips to "connected"
 
