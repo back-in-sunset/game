@@ -1,11 +1,13 @@
 # VDA + IM Frontend
 
 pnpm monorepo with web (Vite + React) and mobile (Expo + React Native) apps, sharing protocol, UI components, config, and types packages.
+It also includes a dedicated platform console for tenant/project/environment management.
 
 ## Structure
 
 ```
 apps/
+  platform/     @game/platform - Platform console (Vite, React Router, Tailwind)
   web/          @game/web      - Web SPA (Vite, React Router, Tailwind)
   mobile/       @game/mobile   - React Native app (Expo)
 packages/
@@ -19,10 +21,17 @@ packages/
 
 ```bash
 pnpm install
-pnpm dev          # start web dev server
+pnpm dev          # start all dev servers
 pnpm typecheck    # type-check all packages
 pnpm lint         # lint all packages
 pnpm test         # run unit tests
+```
+
+### Platform App
+
+```bash
+cd apps/platform
+pnpm dev                  # http://localhost:5174
 ```
 
 ### Web App

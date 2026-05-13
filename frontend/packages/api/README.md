@@ -68,6 +68,12 @@ import {
 const http = new HttpClient("http://localhost:8080", "jwt-token");
 const userAPI = createUserAPI(http);
 const profile = await userAPI.getProfile(1001);
+const comments = await createCommentAPI(http).list({
+  objId: 1001,
+  objType: 1,
+  pageSize: 20,
+  sortType: 0,
+});
 ```
 
 ### Endpoints
@@ -76,6 +82,6 @@ const profile = await userAPI.getProfile(1001);
 |-----|---------|
 | UserAPI | `getProfile`, `searchUsers` |
 | FriendAPI | `list`, `add`, `remove` |
-| CommentAPI | `list`, `create` |
+| CommentAPI | `list`, `get`, `create`, `delete`, `like`, `unlike`, `block`, `unblock`, `pin`, `unpin` |
 | HistoryAPI | `list` |
-| PlatformAPI | `getJWT`, `getConfig` |
+| PlatformAPI | `getDemoToken`, `createTenant`, `getTenant`, `updateTenant`, `deleteTenant`, `myTenants`, `createProject`, `listProjects`, `createEnvironment`, `listEnvironments` |
