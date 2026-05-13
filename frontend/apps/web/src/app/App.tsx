@@ -5,6 +5,7 @@ import { VoicePage } from "../pages/VoicePage";
 import { FriendsPage } from "../pages/FriendsPage";
 import { HistoryPage } from "../pages/HistoryPage";
 import { SettingsPage } from "../pages/SettingsPage";
+import { CommentPage } from "../pages/CommentPage";
 import { LoginPage } from "../pages/LoginPage";
 import { DemoPage } from "../pages/DemoPage";
 import { DemoRoomPage } from "../pages/DemoRoomPage";
@@ -28,6 +29,7 @@ function AppRoutes() {
       <Route path="/chat/:userId" element={<ChatPage />} />
       <Route path="/voice" element={<VoicePage />} />
       <Route path="/friends" element={<FriendsPage />} />
+      <Route path="/comments" element={<CommentPage />} />
       <Route path="/history" element={<HistoryPage />} />
       <Route path="/settings" element={<SettingsPage />} />
       <Route path="/demo" element={<DemoPage />} />

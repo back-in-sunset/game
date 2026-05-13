@@ -9,13 +9,14 @@ import { useVoiceStore } from "../store/voiceStore";
 type WebShellProps = {
   title: string;
   subtitle?: string;
-  activeTab?: "square" | "friends" | "chat";
+  activeTab?: "square" | "friends" | "chat" | "comments";
   children: ReactNode;
   rightRail?: ReactNode;
 };
 
 const channelLinks = [
   { to: "/", label: "广场", active: "square" as const, icon: "◎" },
+  { to: "/comments", label: "评论", active: "comments" as const, icon: "◫" },
   { to: "/friends", label: "好友", active: "friends" as const, icon: "◌" },
   { to: "/history", label: "聊天框", active: "chat" as const, icon: "☰" },
   { to: "/voice", label: "语音", icon: "♪" },
@@ -78,6 +79,8 @@ export function WebShell({ title, subtitle, activeTab, children, rightRail }: We
                     <span>
                       {item.label === "广场"
                         ? "帖子流 / 推荐内容"
+                        : item.label === "评论"
+                          ? "评论列表 / 高级能力"
                         : item.label === "好友"
                           ? "管理联系人"
                           : item.label === "聊天框"
@@ -87,7 +90,7 @@ export function WebShell({ title, subtitle, activeTab, children, rightRail }: We
                               : "服务配置"}
                     </span>
                   </span>
-                  {item.label === "广场" ? <Badge tone="success">New</Badge> : null}
+                  {item.label === "评论" ? <Badge tone="success">New</Badge> : null}
                 </NavLink>
               ))}
             </div>

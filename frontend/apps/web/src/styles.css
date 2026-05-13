@@ -418,10 +418,48 @@ body {
   gap: 14px;
 }
 
+.buttonGrid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
 .postStream,
 .chatFeed {
   display: grid;
   gap: 12px;
+}
+
+.commentComposer {
+  display: grid;
+  gap: 12px;
+}
+
+.commentTextarea {
+  width: 100%;
+  min-height: 160px;
+  padding: 16px 18px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--color-text);
+  font: inherit;
+  resize: vertical;
+  outline: none;
+}
+
+.commentTextarea:focus {
+  border-color: rgba(88, 101, 242, 0.5);
+  box-shadow: 0 0 0 4px rgba(88, 101, 242, 0.08);
+}
+
+.commentComposerFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .postCard {
@@ -458,9 +496,29 @@ body {
   font-size: 12px;
 }
 
+.commentCard {
+  border-left: 4px solid rgba(88, 101, 242, 0.14);
+}
+
+.commentCard.mine {
+  border-left-color: rgba(88, 101, 242, 0.42);
+  background: rgba(88, 101, 242, 0.04);
+}
+
+.commentCard.target {
+  border-color: rgba(245, 158, 11, 0.24);
+  box-shadow: 0 24px 60px rgba(245, 158, 11, 0.08);
+}
+
 .postBody {
   color: var(--color-text);
   line-height: 1.65;
+}
+
+.commentBody {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.75;
 }
 
 .postActions {
@@ -468,6 +526,13 @@ body {
   gap: 10px;
   margin-top: 14px;
   flex-wrap: wrap;
+}
+
+.commentMetaRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .pillButton,
