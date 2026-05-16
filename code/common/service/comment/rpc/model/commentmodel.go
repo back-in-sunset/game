@@ -377,9 +377,9 @@ func (m *customCommentModel) CommentListByObjID(ctx context.Context, objID int64
 	}
 
 	if sortField == "like_count" {
-		sql = fmt.Sprintf("select id from %s%s order by like_count desc, id desc limit ?", m.newCustomCommentIndexModelFunc(objID).table, where)
+		sql = fmt.Sprintf("select id from %s%s order by attrs desc, like_count desc, id desc limit ?", m.newCustomCommentIndexModelFunc(objID).table, where)
 	} else {
-		sql = fmt.Sprintf("select id from %s%s order by created_at desc, id desc limit ?", m.newCustomCommentIndexModelFunc(objID).table, where)
+		sql = fmt.Sprintf("select id from %s%s order by attrs desc, created_at desc, id desc limit ?", m.newCustomCommentIndexModelFunc(objID).table, where)
 	}
 	args = append(args, limit)
 
