@@ -97,6 +97,6 @@ require (
 )
 
 replace (
-	game/server/core/testkit => ../../../../../core/testkit
+	game/server/core/testkit => ../../../../core/testkit
 	platform => ../
 )

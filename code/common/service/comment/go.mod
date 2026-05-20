@@ -52,7 +52,7 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.61.0 // indirect
 )
 
-replace game/server/core/testkit => ../../../../core/testkit
+replace game/server/core/testkit => ../../../core/testkit
 replace im => ../im
 
 require (

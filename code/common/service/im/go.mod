@@ -16,7 +16,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-replace game/server/core/testkit => ../../../../core/testkit
+replace game/server/core/testkit => ../../../core/testkit
 
 require (
 	dario.cat/mergo v1.0.0 // indirect
